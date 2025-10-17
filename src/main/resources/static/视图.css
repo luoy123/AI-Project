@@ -1,0 +1,343 @@
+/* 视图页面特有样式 */
+
+/* 视图控制面板样式 */
+.view-controls {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.view-tabs {
+    display: flex;
+    gap: 10px;
+}
+
+.tab-btn {
+    padding: 8px 16px;
+    background-color: #f5f7fa;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+}
+
+.tab-btn:hover {
+    background-color: #e2e8f0;
+}
+
+.tab-btn.active {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.view-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.action-btn {
+    padding: 8px 16px;
+    background-color: #f5f7fa;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.3s;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.action-btn:hover {
+    background-color: #e2e8f0;
+}
+
+/* 视图内容区域样式 */
+.view-content {
+    background-color: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.view-panel {
+    display: none;
+}
+
+.view-panel.active {
+    display: block;
+}
+
+/* 仪表盘视图样式 */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.dashboard-card {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.dashboard-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
+}
+
+.full-width {
+    grid-column: span 2;
+}
+
+.card-header {
+    background: linear-gradient(to right, #f8fafc, #f1f5f9);
+    padding: 15px;
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.card-header h3 {
+    display: flex;
+    align-items: center;
+    margin: 0;
+    font-size: 16px;
+    color: #1e293b;
+}
+
+.card-header h3 i {
+    margin-right: 10px;
+    font-size: 18px;
+    color: #3b82f6;
+}
+
+.card-body {
+    padding: 15px;
+}
+
+/* 链路航线图样式 */
+.route-map-container {
+    height: 400px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #f8fafc;
+}
+
+/* Visio视图样式 */
+.visio-view-container {
+    height: 400px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+}
+
+.visio-controls {
+    padding: 10px;
+    background-color: #f1f5f9;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    gap: 10px;
+}
+
+.visio-canvas {
+    flex: 1;
+    overflow: hidden;
+    background-color: white;
+    position: relative;
+}
+
+.visio-image {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform-origin: top left;
+    transition: transform 0.2s ease;
+    max-width: none;
+}
+
+/* 机房仪表盘样式 */
+.room-layout-container {
+    height: 350px;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    overflow: hidden;
+    background-color: #f8fafc;
+}
+
+.room-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    margin-top: 15px;
+}
+
+.stat-card {
+    background-color: #f8fafc;
+    padding: 15px;
+    border-radius: 8px;
+    text-align: center;
+}
+
+.stat-value {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 5px 0;
+}
+
+.stat-label {
+    font-size: 14px;
+    color: #64748b;
+}
+
+/* 专线大屏样式 */
+.line-dashboard {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+
+.line-status-container {
+    background-color: #f8fafc;
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.line-status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.line-status-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.line-status-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    background-color: white;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.03);
+}
+
+.line-status {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+
+.line-info {
+    display: flex;
+    align-items: center;
+}
+
+.line-name {
+    font-weight: 500;
+}
+
+.line-traffic {
+    font-family: monospace;
+    font-size: 14px;
+    color: #64748b;
+}
+
+/* 设备列表样式 */
+.device-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.device-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+.device-item i {
+    margin-right: 10px;
+    color: #64748b;
+}
+
+.status {
+    margin-left: auto;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+}
+
+.status.online {
+    background-color: #00b42a;
+}
+
+.status.warning {
+    background-color: #faad14;
+}
+
+.status.offline {
+    background-color: #ff4d4f;
+}
+
+/* 告警列表样式 */
+.alert-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.alert-item {
+    padding: 10px 0;
+    border-bottom: 1px solid #e2e8f0;
+    display: flex;
+    align-items: center;
+    font-size: 14px;
+}
+
+.alert-item i {
+    margin-right: 10px;
+}
+
+.alert-item.critical {
+    color: #ff4d4f;
+}
+
+.alert-item.warning {
+    color: #faad14;
+}
+
+.alert-item.info {
+    color: #1890ff;
+}
+
+/* 响应式设计 */
+@media (max-width: 992px) {
+    .dashboard-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* 图表容器样式 */
+canvas {
+    width: 100% !important;
+    height: 250px !important;
+}

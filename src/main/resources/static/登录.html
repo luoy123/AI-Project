@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>登录 - 人工智能运维平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="登录.css">
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-left">
+            <div class="carousel-container">
+                <div class="carousel-slide active" style="background-image: url('https://picsum.photos/id/180/800/600');"></div>
+                <div class="carousel-slide" style="background-image: url('https://picsum.photos/id/160/800/600');"></div>
+                <div class="carousel-slide" style="background-image: url('https://picsum.photos/id/0/800/600');"></div>
+                <div class="carousel-navigation">
+                    <button class="carousel-dot active" data-index="0"></button>
+                    <button class="carousel-dot" data-index="1"></button>
+                    <button class="carousel-dot" data-index="2"></button>
+                </div>
+                <div class="carousel-caption">
+                    <h1>全国产化、完全自主可控，避免安全隐患</h1>
+                    <p>从处理器到操作系统、数据库、中间件、WebServer都是自主研发，不依赖于第三方的组件</p>
+                </div>
+            </div>
+        </div>
+        <div class="login-right">
+            <div class="login-logo">
+                <div class="logo-icon"><i class="fas fa-shield-alt"></i></div>
+                <h2>人工智能运维平台</h2>
+            </div>
+            <form id="login-form">
+                <div class="form-group">
+                    <label for="username"><i class="fas fa-user"></i> 请输入用户名</label>
+                    <input type="text" id="username" name="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password"><i class="fas fa-lock"></i> 请输入密码</label>
+                    <input type="password" id="password" name="password" required>
+                </div>
+                <div class="form-group">
+                    <label for="captcha"><i class="fas fa-key"></i> 请输入验证码</label>
+                    <div class="captcha-container">
+                        <input type="text" id="captcha" name="captcha" required>
+                        <div class="captcha-image" id="captchaImage">
+                            <!-- 验证码将通过JS生成 -->
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="login-btn">登录</button>
+                <div class="login-links">
+                    <a href="#" class="activate-link">激活</a>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script src="登录.js"></script>
+</body>
+</html>

@@ -1,0 +1,468 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>业务管理 - 人工智能运维平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="业务管理.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>人工智能运维平台</h2>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>总览</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-eye"></i>
+                <span>视图</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-bell"></i>
+                <span>告警中心</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-server"></i>
+                <span>设备管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-network-wired"></i>
+                <span>网络拓扑</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-chart-line"></i>
+                <span>统计报表</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-tools"></i>
+                <span>运维工具</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">拓展中心</div>
+            <div class="sidebar-item active">
+                <i class="fas fa-layer-group"></i>
+                <span>业务管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-globe"></i>
+                <span>网络管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-video"></i>
+                <span>视频管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-building"></i>
+                <span>机房管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-cubes"></i>
+                <span>资产管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-user-cog"></i>
+                <span>运维管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-database"></i>
+                <span>CMDB</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-file-alt"></i>
+                <span>日志管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-chart-pie"></i>
+                <span>智能预测管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-cloud"></i>
+                <span>云平台</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">设置中心</div>
+            <div class="sidebar-item">
+                <i class="fas fa-cog"></i>
+                <span>设置</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-plug"></i>
+                <span>对接配置</span>
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 顶部导航 -->
+            <div class="top-navigation">
+                <div class="nav-left">
+                    <div class="breadcrumb">
+                        <span class="breadcrumb-item">业务管理</span>
+                        <i class="fas fa-chevron-right"></i>
+                        <span class="breadcrumb-item active">业务组件</span>
+                    </div>
+                </div>
+                <div class="nav-right">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="搜索业务组件..." id="searchInput">
+                    </div>
+                    <div class="user-actions">
+                        <button class="btn btn-icon" title="刷新">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                        <button class="btn btn-icon" title="设置">
+                            <i class="fas fa-cog"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 业务管理内容 -->
+            <div class="business-content">
+                <!-- 左侧业务树 -->
+                <div class="business-tree-panel">
+                    <div class="tree-header">
+                        <h3>业务列表</h3>
+                        <button class="btn btn-primary btn-sm" id="addBusinessBtn">
+                            <i class="fas fa-plus"></i>
+                            新增业务
+                        </button>
+                    </div>
+                    <div class="tree-container">
+                        <div class="business-tree" id="businessTree">
+                            <!-- 业务树将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧组件管理 -->
+                <div class="component-management">
+                    <div class="component-header">
+                        <div class="header-left">
+                            <h3>业务组件</h3>
+                            <div class="component-stats">
+                                <span class="stat-item">
+                                    <span class="stat-label">总数:</span>
+                                    <span class="stat-value" id="totalComponents">0</span>
+                                </span>
+                                <span class="stat-item">
+                                    <span class="stat-label">运行中:</span>
+                                    <span class="stat-value running" id="runningComponents">0</span>
+                                </span>
+                                <span class="stat-item">
+                                    <span class="stat-label">已停止:</span>
+                                    <span class="stat-value stopped" id="stoppedComponents">0</span>
+                                </span>
+                                <span class="stat-item">
+                                    <span class="stat-label">异常:</span>
+                                    <span class="stat-value error" id="errorComponents">0</span>
+                                </span>
+                            </div>
+                        </div>
+                        <div class="header-right">
+                            <div class="view-controls">
+                                <button class="view-btn active" data-view="grid" title="网格视图">
+                                    <i class="fas fa-th"></i>
+                                </button>
+                                <button class="view-btn" data-view="list" title="列表视图">
+                                    <i class="fas fa-list"></i>
+                                </button>
+                            </div>
+                            <button class="btn btn-primary" id="addComponentBtn">
+                                <i class="fas fa-plus"></i>
+                                添加组件
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 组件过滤器和工具栏 -->
+                    <div class="component-filters">
+                        <div class="filter-left">
+                            <div class="filter-group">
+                                <label>状态:</label>
+                                <select id="statusFilter">
+                                    <option value="">全部状态</option>
+                                    <option value="running">运行中</option>
+                                    <option value="stopped">已停止</option>
+                                    <option value="error">异常</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>类型:</label>
+                                <select id="typeFilter">
+                                    <option value="">全部类型</option>
+                                    <option value="web">Web服务</option>
+                                    <option value="api">API服务</option>
+                                    <option value="database">数据库</option>
+                                    <option value="cache">缓存</option>
+                                    <option value="queue">消息队列</option>
+                                    <option value="microservice">微服务</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label>环境:</label>
+                                <select id="envFilter">
+                                    <option value="">全部环境</option>
+                                    <option value="prod">生产环境</option>
+                                    <option value="test">测试环境</option>
+                                    <option value="dev">开发环境</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="filter-right">
+                            <div class="batch-actions">
+                                <button class="btn btn-sm" id="selectAllBtn">
+                                    <i class="fas fa-check-square"></i>
+                                    全选
+                                </button>
+                                <button class="btn btn-sm" id="batchStartBtn" disabled>
+                                    <i class="fas fa-play"></i>
+                                    批量启动
+                                </button>
+                                <button class="btn btn-sm" id="batchStopBtn" disabled>
+                                    <i class="fas fa-stop"></i>
+                                    批量停止
+                                </button>
+                                <button class="btn btn-sm" id="exportBtn">
+                                    <i class="fas fa-download"></i>
+                                    导出
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 组件列表 -->
+                    <div class="component-container">
+                        <div class="component-grid" id="componentGrid">
+                            <!-- 组件卡片将通过JavaScript动态生成 -->
+                        </div>
+                        
+                        <!-- 空状态 -->
+                        <div class="empty-state" id="emptyState" style="display: none;">
+                            <div class="empty-icon">
+                                <i class="fas fa-cube"></i>
+                            </div>
+                            <div class="empty-text">
+                                <h4>暂无业务组件</h4>
+                                <p>点击"添加组件"按钮创建第一个业务组件</p>
+                            </div>
+                            <button class="btn btn-primary" onclick="document.getElementById('addComponentBtn').click()">
+                                <i class="fas fa-plus"></i>
+                                添加组件
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 添加组件模态框 -->
+    <div class="modal" id="addComponentModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>添加业务组件</h3>
+                <button class="modal-close" onclick="closeModal('addComponentModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="componentForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>组件名称 *</label>
+                            <input type="text" id="componentName" required placeholder="请输入组件名称">
+                        </div>
+                        <div class="form-group">
+                            <label>组件类型 *</label>
+                            <select id="componentType" required>
+                                <option value="">请选择类型</option>
+                                <option value="web">Web服务</option>
+                                <option value="api">API服务</option>
+                                <option value="database">数据库</option>
+                                <option value="cache">缓存</option>
+                                <option value="queue">消息队列</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>部署环境 *</label>
+                            <select id="componentEnv" required>
+                                <option value="">请选择环境</option>
+                                <option value="prod">生产环境</option>
+                                <option value="test">测试环境</option>
+                                <option value="dev">开发环境</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>服务端口</label>
+                            <input type="number" id="componentPort" placeholder="8080">
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>服务地址</label>
+                        <input type="text" id="componentUrl" placeholder="http://localhost:8080">
+                    </div>
+                    <div class="form-group">
+                        <label>组件描述</label>
+                        <textarea id="componentDescription" rows="3" placeholder="请输入组件描述"></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('addComponentModal')">取消</button>
+                <button class="btn btn-primary" onclick="saveComponent()">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 组件详情模态框 -->
+    <div class="modal" id="componentDetailModal">
+        <div class="modal-content large">
+            <div class="modal-header">
+                <h3 id="componentDetailTitle">组件详情</h3>
+                <button class="modal-close" onclick="closeModal('componentDetailModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="detail-tabs">
+                    <div class="tab-nav">
+                        <button class="tab-btn active" data-tab="overview">概览</button>
+                        <button class="tab-btn" data-tab="monitoring">监控</button>
+                        <button class="tab-btn" data-tab="logs">日志</button>
+                        <button class="tab-btn" data-tab="config">配置</button>
+                    </div>
+
+                    <div class="tab-content">
+                        <!-- 概览标签页 -->
+                        <div class="tab-panel active" id="overviewTab">
+                            <div class="overview-grid">
+                                <div class="overview-card">
+                                    <h4>基本信息</h4>
+                                    <div class="info-list" id="basicInfo">
+                                        <!-- 动态填充 -->
+                                    </div>
+                                </div>
+                                <div class="overview-card">
+                                    <h4>运行状态</h4>
+                                    <div class="status-indicators" id="statusIndicators">
+                                        <!-- 动态填充 -->
+                                    </div>
+                                </div>
+                                <div class="overview-card">
+                                    <h4>性能指标</h4>
+                                    <div class="metrics-grid" id="performanceMetrics">
+                                        <!-- 动态填充 -->
+                                    </div>
+                                </div>
+                                <div class="overview-card">
+                                    <h4>依赖关系</h4>
+                                    <div class="dependency-list" id="dependencyList">
+                                        <!-- 动态填充 -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 监控标签页 -->
+                        <div class="tab-panel" id="monitoringTab">
+                            <div class="monitoring-dashboard">
+                                <div class="chart-container">
+                                    <h4>CPU使用率</h4>
+                                    <canvas id="cpuChart" width="400" height="200"></canvas>
+                                </div>
+                                <div class="chart-container">
+                                    <h4>内存使用率</h4>
+                                    <canvas id="memoryChart" width="400" height="200"></canvas>
+                                </div>
+                                <div class="chart-container">
+                                    <h4>网络流量</h4>
+                                    <canvas id="networkChart" width="400" height="200"></canvas>
+                                </div>
+                                <div class="chart-container">
+                                    <h4>响应时间</h4>
+                                    <canvas id="responseChart" width="400" height="200"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 日志标签页 -->
+                        <div class="tab-panel" id="logsTab">
+                            <div class="logs-container">
+                                <div class="logs-toolbar">
+                                    <div class="log-filters">
+                                        <select id="logLevel">
+                                            <option value="">全部级别</option>
+                                            <option value="error">错误</option>
+                                            <option value="warn">警告</option>
+                                            <option value="info">信息</option>
+                                            <option value="debug">调试</option>
+                                        </select>
+                                        <input type="text" id="logSearch" placeholder="搜索日志...">
+                                        <button class="btn btn-sm" id="refreshLogs">
+                                            <i class="fas fa-sync-alt"></i>
+                                            刷新
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="logs-content" id="logsContent">
+                                    <!-- 动态填充日志 -->
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 配置标签页 -->
+                        <div class="tab-panel" id="configTab">
+                            <div class="config-editor">
+                                <div class="config-toolbar">
+                                    <button class="btn btn-sm" id="saveConfig">
+                                        <i class="fas fa-save"></i>
+                                        保存配置
+                                    </button>
+                                    <button class="btn btn-sm" id="resetConfig">
+                                        <i class="fas fa-undo"></i>
+                                        重置
+                                    </button>
+                                </div>
+                                <textarea id="configContent" class="config-textarea" rows="20"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 批量操作确认模态框 -->
+    <div class="modal" id="batchConfirmModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="batchConfirmTitle">批量操作确认</h3>
+                <button class="modal-close" onclick="closeModal('batchConfirmModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p id="batchConfirmMessage"></p>
+                <div class="selected-components" id="selectedComponentsList">
+                    <!-- 动态填充选中的组件 -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('batchConfirmModal')">取消</button>
+                <button class="btn btn-primary" id="confirmBatchAction">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="业务管理.js"></script>
+</body>
+</html>

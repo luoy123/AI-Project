@@ -1,0 +1,608 @@
+/* 基础样式重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    background-color: #f5f7fa;
+    color: #333;
+    width: 100%;
+    overflow-x: hidden;
+}
+
+/* 应用容器 */
+.app-container {
+    display: flex;
+    height: 100vh;
+    overflow: hidden;
+    width: 100%;
+}
+
+/* 侧边栏样式 */
+.sidebar {
+    width: 200px;
+    background-color: #000000;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow-y: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+}
+
+.sidebar-header {
+    padding: 20px 15px;
+    text-align: center;
+    border-bottom: 1px solid #334155;
+}
+
+.sidebar-header h2 {
+    font-size: 16px;
+    margin: 0;
+    font-weight: bold;
+}
+
+.sidebar-group-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #64748b;
+    padding: 10px 15px;
+    letter-spacing: 1px;
+}
+
+.sidebar-item {
+    width: 85%;
+    padding: 12px 15px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.sidebar-item:hover {
+    background-color: #334155;
+}
+
+.sidebar-item.active {
+    background-color: #1e293b;
+    font-weight: bold;
+}
+
+.sidebar-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background-color: #3b82f6;
+}
+
+.sidebar-item i {
+    font-size: 16px;
+    margin-right: 12px;
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar-item span {
+    font-size: 14px;
+}
+
+.sidebar-divider {
+    height: 1px;
+    background-color: #334155;
+    margin: 10px 0;
+}
+
+/* 主内容区 */
+.main-content {
+    margin-left: 200px;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    min-height: 100vh;
+    width: calc(100% - 200px);
+    flex: 1;
+}
+
+/* 顶部导航栏 */
+.top-header {
+    background: white;
+    padding: 0 30px;
+    height: 60px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid #e9ecef;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+}
+
+.breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 16px;
+    font-weight: 500;
+    color: #2c3e50;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.search-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.search-box i {
+    position: absolute;
+    left: 12px;
+    color: #6c757d;
+    font-size: 14px;
+}
+
+.search-box input {
+    padding: 8px 12px 8px 35px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    width: 250px;
+    font-size: 14px;
+    background-color: #f8f9fa;
+    transition: all 0.3s ease;
+}
+
+.search-box input:focus {
+    outline: none;
+    border-color: #3498db;
+    background-color: white;
+    box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+}
+
+.user-menu {
+    display: flex;
+    align-items: center;
+}
+
+.user-avatar {
+    width: 36px;
+    height: 36px;
+    background: linear-gradient(135deg, #3498db, #2980b9);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    overflow: hidden;
+}
+
+.user-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.user-avatar:hover {
+    transform: scale(1.05);
+}
+
+/* 页面内容 */
+.page-content {
+    flex: 1;
+    padding: 20px;
+    overflow-y: auto;
+    overflow-x: hidden;
+    background-color: #f8f9fa;
+    width: 100%;
+    max-width: 100%;
+}
+
+/* 工单状态标签页 */
+.ticket-tabs {
+    display: flex;
+    gap: 2px;
+    margin-bottom: 20px;
+    background: white;
+    border-radius: 8px;
+    padding: 4px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.tab-item {
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    color: #6c757d;
+}
+
+.tab-item.active {
+    background: #007bff;
+    color: white;
+}
+
+.tab-item:hover:not(.active) {
+    background: #f8f9fa;
+    color: #495057;
+}
+
+/* 内容网格布局 */
+.content-grid {
+    display: grid;
+    grid-template-columns: 1fr 300px;
+    gap: 20px;
+    min-height: 100%;
+    width: 100%;
+}
+
+/* 主视图区域 */
+.main-view {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 100%;
+}
+
+/* 工单状态统计行 */
+.ticket-stats-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 20px;
+}
+
+/* 统计卡片 */
+.stat-card {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+}
+
+.stat-header {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.stat-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.stat-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+/* 仪表盘样式 */
+.gauge-container {
+    position: relative;
+    width: 120px;
+    height: 120px;
+}
+
+.gauge-value {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+}
+
+.gauge-value .value {
+    font-size: 24px;
+    font-weight: 700;
+    color: #007bff;
+    display: block;
+}
+
+.gauge-value .unit {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+/* 类型列表 */
+.type-list,
+.source-list {
+    width: 100%;
+}
+
+.type-item,
+.source-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.type-item:last-child,
+.source-item:last-child {
+    border-bottom: none;
+}
+
+.type-label,
+.source-label {
+    font-size: 14px;
+    color: #495057;
+}
+
+.type-value,
+.source-value {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+/* 工单趋势图 */
+.ticket-trend-chart {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+    min-height: 400px;
+}
+
+.chart-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.chart-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.chart-legend {
+    display: flex;
+    gap: 20px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 2px;
+}
+
+.legend-color.blue {
+    background: #007bff;
+}
+
+.legend-color.orange {
+    background: #fd7e14;
+}
+
+.legend-color.green {
+    background: #28a745;
+}
+
+.legend-text {
+    font-size: 12px;
+    color: #6c757d;
+}
+
+.chart-content {
+    min-height: 320px;
+    position: relative;
+}
+
+/* 右侧信息面板 */
+.info-panel {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    min-height: 100%;
+}
+
+/* 优先级分析 */
+.priority-analysis {
+    background: white;
+    border-radius: 8px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    border: 1px solid #e9ecef;
+    min-height: 300px;
+}
+
+.analysis-header {
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #f1f3f4;
+}
+
+.analysis-header h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #2c3e50;
+    margin: 0;
+}
+
+.analysis-content {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 200px;
+}
+
+/* 响应式设计 */
+@media (max-width: 1200px) {
+    .content-grid {
+        grid-template-columns: 1fr;
+        grid-template-rows: 1fr auto;
+    }
+
+    .info-panel {
+        flex-direction: row;
+        height: auto;
+    }
+
+    .ticket-stats-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 60px;
+    }
+
+    .sidebar-item span {
+        display: none;
+    }
+
+    .main-content {
+        margin-left: 60px;
+        width: calc(100% - 60px);
+    }
+
+    .page-content {
+        padding: 15px;
+    }
+
+    .content-grid {
+        gap: 15px;
+    }
+
+    .info-panel {
+        flex-direction: column;
+    }
+
+    .search-box input {
+        width: 180px;
+    }
+
+    .ticket-tabs {
+        flex-wrap: wrap;
+        gap: 5px;
+    }
+
+    .tab-item {
+        padding: 8px 15px;
+        font-size: 12px;
+    }
+
+    .chart-legend {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .top-header {
+        padding: 0 15px;
+        flex-direction: column;
+        height: auto;
+        gap: 10px;
+        padding: 15px;
+    }
+
+    .header-right {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .search-box input {
+        width: 150px;
+    }
+
+    .ticket-stats-row {
+        grid-template-columns: 1fr;
+    }
+
+    .stat-card {
+        padding: 15px;
+    }
+
+    .gauge-container {
+        width: 100px;
+        height: 100px;
+    }
+
+    .gauge-value .value {
+        font-size: 20px;
+    }
+}
+
+/* 加载动画 */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #007bff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* 工具提示 */
+.tooltip {
+    position: relative;
+    cursor: help;
+}
+
+.tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: #333;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+    z-index: 1000;
+}
+
+.tooltip:hover::after {
+    opacity: 1;
+}

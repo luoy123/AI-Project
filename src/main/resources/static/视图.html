@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视图 - 人工智能运维平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="视图.css">
+    <style>
+        /* 新视图所需的基础样式 */
+        .map-container, .visio-container, .room-layout, .line-chart-container {
+            position: relative;
+            margin-bottom: 20px;
+        }
+
+        .route-stats, .visio-controls, .line-overview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            margin-top: 15px;
+        }
+
+        .stat-item, .line-item {
+            flex: 1;
+            min-width: 150px;
+            padding: 10px;
+            background-color: #f8fafc;
+            border-radius: 6px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .stat-label, .line-traffic, .line-latency {
+            font-size: 12px;
+            color: #64748b;
+        }
+
+        .stat-value {
+            font-size: 18px;
+            font-weight: bold;
+        }
+
+        .visio-image {
+            max-width: 100%;
+            height: auto;
+            border: 1px solid #e2e8f0;
+            border-radius: 6px;
+        }
+
+        .btn-small {
+            padding: 5px 10px;
+            font-size: 12px;
+            border-radius: 4px;
+            background-color: #e2e8f0;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+
+        .btn-small:hover {
+            background-color: #cbd5e1;
+        }
+
+        .line-item {
+            text-align: center;
+        }
+
+        .line-item h4 {
+            margin-top: 0;
+            margin-bottom: 10px;
+        }
+
+        .line-status {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-bottom: 8px;
+        }
+    </style>
+    <style>
+        /* 共享样式 */
+        .dashboard-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 侧边栏样式 */
+    .sidebar {
+    width: 200px;
+    background-color: #000000;
+    color: white;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    overflow-y: auto;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 100;
+}
+
+.sidebar-header {
+    padding: 20px 15px;
+    text-align: center;
+    border-bottom: 1px solid #334155;
+}
+
+.sidebar-header h2 {
+    font-size: 16px;
+    margin: 0;
+    font-weight: bold;
+}
+
+.sidebar-group-title {
+    font-size: 12px;
+    text-transform: uppercase;
+    color: #64748b;
+    padding: 10px 15px;
+    letter-spacing: 1px;
+}
+
+.sidebar-item {
+    width: 69%;
+    padding: 12px 15px;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.3s;
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.sidebar-item:hover {
+    background-color: #334155;
+}
+
+.sidebar-item.active {
+    background-color: #1e293b;
+    font-weight: bold;
+}
+
+.sidebar-item.active::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 6px;
+    background-color: #3b82f6;
+}
+
+.sidebar-item i {
+    font-size: 16px;
+    margin-right: 12px;
+    width: 20px;
+    text-align: center;
+}
+
+.sidebar-item span {
+    font-size: 14px;
+}
+
+.sidebar-divider {
+    height: 1px;
+    background-color: #334155;
+    margin: 10px 0;
+}
+
+
+        /* 主内容区域基础样式 */
+        .main-content {
+            flex: 1;
+            margin-left: 200px;
+            background-color: #f5f7fa;
+            padding: 20px;
+            overflow-y: auto;
+            height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+        }
+
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>人工智能运维平台</h2>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>总览</span>
+            </div>
+            <div class="sidebar-item nav-view active">
+                <i class="fas fa-eye"></i>
+                <span>视图</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-bell"></i>
+                <span>告警中心</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-server"></i>
+                <span>设备管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-network-wired"></i>
+                <span>网络拓扑</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-chart-line"></i>
+                <span>统计报表</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-tools"></i>
+                <span>运维工具</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">拓展中心</div>
+            <div class="sidebar-item">
+                <i class="fas fa-layer-group"></i>
+                <span>业务管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-globe"></i>
+                <span>网络管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-video"></i>
+                <span>视频管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-building"></i>
+                <span>机房管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-cubes"></i>
+                <span>资产管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-user-cog"></i>
+                <span>运维管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-database"></i>
+                <span>CMDB</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-file-alt"></i>
+                <span>日志管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-chart-pie"></i>
+                <span>智能预测管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-cloud"></i>
+                <span>云平台</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">设置中心</div>
+            <div class="sidebar-item">
+                <i class="fas fa-cog"></i>
+                <span>设置</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-plug"></i>
+                <span>对接配置</span>
+            </div>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <div class="header">
+                <h1>视图</h1>
+                <div class="user-info">
+                    <span>管理员</span>
+                    <img src="1.png" alt="用户头像">
+                </div>
+            </div>
+
+            <!-- 视图控制面板 -->
+            <div class="view-controls">
+                <div class="view-tabs">
+                    <button class="tab-btn active" data-view="dashboard">仪表盘视图</button>
+                    <button class="tab-btn" data-view="route">链路航线图</button>
+                    <button class="tab-btn" data-view="visio">Visio视图</button>
+                    <button class="tab-btn" data-view="room">机房仪表盘</button>
+                    <button class="tab-btn" data-view="line">专线大屏</button>
+                </div>
+                <div class="view-actions">
+                    <button class="action-btn"><i class="fas fa-save"></i> 保存视图</button>
+                    <button class="action-btn"><i class="fas fa-share-alt"></i> 共享视图</button>
+                    <button class="action-btn"><i class="fas fa-cog"></i> 视图设置</button>
+                </div>
+            </div>
+
+            <!-- 视图内容区域 -->
+            <div class="view-content">
+                <!-- 仪表盘视图 -->
+                <div class="view-panel active" id="dashboard-view">
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-chart-pie"></i> 系统概览</h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="systemOverviewChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-chart-bar"></i> 资源使用情况</h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="resourceUsageChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-server"></i> 活跃设备</h3>
+                            </div>
+                            <div class="card-body">
+                                <ul class="device-list">
+                                    <li class="device-item"><i class="fas fa-server"></i> 服务器-1 <span class="status online"></span></li>
+                                    <li class="device-item"><i class="fas fa-network-wired"></i> 交换机-1 <span class="status online"></span></li>
+                                    <li class="device-item"><i class="fas fa-wifi"></i> 路由器-1 <span class="status online"></span></li>
+                                    <li class="device-item"><i class="fas fa-fire-alt"></i> 防火墙-1 <span class="status online"></span></li>
+                                    <li class="device-item"><i class="fas fa-database"></i> 数据库-1 <span class="status warning"></span></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-bell"></i> 最近告警</h3>
+                            </div>
+                            <div class="card-body">
+                                <ul class="alert-list">
+                                    <li class="alert-item critical"><i class="fas fa-exclamation-circle"></i> 服务器CPU使用率过高</li>
+                                    <li class="alert-item warning"><i class="fas fa-exclamation-triangle"></i> 磁盘空间不足</li>
+                                    <li class="alert-item info"><i class="fas fa-info-circle"></i> 网络流量异常</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 链路航线图视图 -->
+                <div class="view-panel" id="route-view">
+                    <div class="dashboard-card full-width">
+                        <div class="card-header">
+                            <h3><i class="fas fa-route"></i> 链路航线图</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="map-container">
+                                <svg id="routeMap" width="100%" height="500"></svg>
+                            </div>
+                            <div class="route-stats">
+                                <div class="stat-item"><span class="stat-label">总链路数:</span> <span class="stat-value">24</span></div>
+                                <div class="stat-item"><span class="stat-label">正常运行:</span> <span class="stat-value online">20</span></div>
+                                <div class="stat-item"><span class="stat-label">性能下降:</span> <span class="stat-value warning">3</span></div>
+                                <div class="stat-item"><span class="stat-label">故障链路:</span> <span class="stat-value critical">1</span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Visio视图 -->
+                <div class="view-panel" id="visio-view">
+                    <div class="dashboard-card full-width">
+                        <div class="card-header">
+                            <h3><i class="fas fa-project-diagram"></i> Visio网络拓扑图</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="visio-view-container">
+                                <div class="visio-canvas">
+                                    <img src="0.png" alt="网络拓扑图" class="visio-image">
+                                </div>
+                            </div>
+                            <div class="visio-controls">
+                                <button class="btn-small"><i class="fas fa-search-plus"></i> 放大</button>
+                                <button class="btn-small"><i class="fas fa-search-minus"></i> 缩小</button>
+                                <button class="btn-small"><i class="fas fa-arrows-alt"></i> 平移</button>
+                                <button class="btn-small"><i class="fas fa-home"></i> 重置视图</button>
+                                <button class="btn-small"><i class="fas fa-download"></i> 导出</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 机房仪表盘视图 -->
+                <div class="view-panel" id="room-view">
+                    <div class="dashboard-grid">
+                        <div class="dashboard-card full-width">
+                            <div class="card-header">
+                                <h3><i class="fas fa-building"></i> 机房状态总览</h3>
+                            </div>
+                            <div class="card-body">
+                                <div class="room-layout">
+                                    <svg id="roomLayout" width="100%" height="300"></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-temperature-high"></i> 温度监控</h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="temperatureChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-tint"></i> 湿度监控</h3>
+                            </div>
+                            <div class="card-body">
+                                <canvas id="humidityChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-bolt"></i> 电力状态</h3>
+                            </div>
+                            <div class="card-body">
+                                <ul class="power-list">
+                                    <li class="power-item"><i class="fas fa-plug"></i> 主电源 <span class="status online"></span></li>
+                                    <li class="power-item"><i class="fas fa-battery-full"></i> UPS A <span class="status online"></span></li>
+                                    <li class="power-item"><i class="fas fa-battery-three-quarters"></i> UPS B <span class="status online"></span></li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="dashboard-card">
+                            <div class="card-header">
+                                <h3><i class="fas fa-wind"></i> 空调状态</h3>
+                            </div>
+                            <div class="card-body">
+                                <ul class="ac-list">
+                                    <li class="ac-item"><i class="fas fa-snowflake"></i> 空调1 <span class="status online"></span> 23°C</li>
+                                    <li class="ac-item"><i class="fas fa-snowflake"></i> 空调2 <span class="status online"></span> 24°C</li>
+                                    <li class="ac-item"><i class="fas fa-snowflake"></i> 空调3 <span class="status warning"></span> 26°C</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 专线大屏视图 -->
+                <div class="view-panel" id="line-view">
+                    <div class="dashboard-card full-width">
+                        <div class="card-header">
+                            <h3><i class="fas fa-network-wired"></i> 专线状态监控大屏</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="line-overview">
+                                <div class="line-item">
+                                    <h4>北京-上海</h4>
+                                    <div class="line-status online"></div>
+                                    <div class="line-traffic">流量: 456 Mbps</div>
+                                    <div class="line-latency">延迟: 23 ms</div>
+                                </div>
+                                <div class="line-item">
+                                    <h4>上海-广州</h4>
+                                    <div class="line-status online"></div>
+                                    <div class="line-traffic">流量: 320 Mbps</div>
+                                    <div class="line-latency">延迟: 31 ms</div>
+                                </div>
+                                <div class="line-item">
+                                    <h4>广州-深圳</h4>
+                                    <div class="line-status warning"></div>
+                                    <div class="line-traffic">流量: 780 Mbps</div>
+                                    <div class="line-latency">延迟: 18 ms</div>
+                                </div>
+                                <div class="line-item">
+                                    <h4>北京-成都</h4>
+                                    <div class="line-status online"></div>
+                                    <div class="line-traffic">流量: 210 Mbps</div>
+                                    <div class="line-latency">延迟: 45 ms</div>
+                                </div>
+                                <div class="line-item">
+                                    <h4>上海-成都</h4>
+                                    <div class="line-status critical"></div>
+                                    <div class="line-traffic">流量: 0 Mbps</div>
+                                    <div class="line-latency">延迟: 0 ms</div>
+                                </div>
+                            </div>
+                            <div class="line-chart-container">
+                                <canvas id="lineTrafficChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入Chart.js -->
+    <script src="chart.js"></script>
+    <script src="视图.js"></script>
+</body>
+</html>

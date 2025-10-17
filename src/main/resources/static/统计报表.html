@@ -1,0 +1,1026 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>统计报表 - 人工智能运维平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="统计报表.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>人工智能运维平台</h2>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>总览</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-eye"></i>
+                <span>视图</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-bell"></i>
+                <span>告警中心</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-server"></i>
+                <span>设备管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-network-wired"></i>
+                <span>网络拓扑</span>
+            </div>
+            <div class="sidebar-item active">
+                <i class="fas fa-chart-line"></i>
+                <span>统计报表</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-tools"></i>
+                <span>运维工具</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">拓展中心</div>
+            <div class="sidebar-item">
+                <i class="fas fa-layer-group"></i>
+                <span>业务管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-globe"></i>
+                <span>网络管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-video"></i>
+                <span>视频管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-building"></i>
+                <span>机房管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-cubes"></i>
+                <span>资产管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-user-cog"></i>
+                <span>运维管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-database"></i>
+                <span>CMDB</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-file-alt"></i>
+                <span>日志管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-chart-pie"></i>
+                <span>智能预测管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-cloud"></i>
+                <span>云平台</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">设置中心</div>
+            <div class="sidebar-item">
+                <i class="fas fa-cog"></i>
+                <span>设置</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-plug"></i>
+                <span>对接配置</span>
+            </div>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="main-content">
+
+
+            <!-- 报表内容区域 -->
+            <div class="report-content">
+                <!-- 主列表页面 -->
+                <div class="report-list-page" id="reportListPage">
+                    <!-- 页面标题 -->
+                    <div class="page-header">
+                        <div class="header-content">
+                            <h1>统计报表</h1>
+                            <p class="header-subtitle">查看和管理系统各类统计报表</p>
+                        </div>
+                        <div class="header-actions">
+                            <button class="btn btn-primary" id="createNewReport">
+                                <i class="fas fa-plus"></i> 新建报表
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 报表分类列表 -->
+                    <div class="report-categories">
+                        <div class="category-grid">
+                            <div class="category-card" data-category="performance">
+                                <div class="category-icon">
+                                    <i class="fas fa-chart-line"></i>
+                                </div>
+                                <div class="category-content">
+                                    <h3>性能报表</h3>
+                                    <p>系统性能监控与分析报表</p>
+                                    <div class="category-stats">
+                                        <span class="stat-item">
+                                            <i class="fas fa-file-alt"></i>
+                                            <span>12 个报表</span>
+                                        </span>
+                                        <span class="stat-item">
+                                            <i class="fas fa-clock"></i>
+                                            <span>最近更新: 2小时前</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="category-arrow">
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                            </div>
+
+                            <div class="category-card" data-category="availability">
+                                <div class="category-icon">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="category-content">
+                                    <h3>可用性报表</h3>
+                                    <p>系统可用性统计与分析报表</p>
+                                    <div class="category-stats">
+                                        <span class="stat-item">
+                                            <i class="fas fa-file-alt"></i>
+                                            <span>8 个报表</span>
+                                        </span>
+                                        <span class="stat-item">
+                                            <i class="fas fa-clock"></i>
+                                            <span>最近更新: 1小时前</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="category-arrow">
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                            </div>
+
+                            <div class="category-card" data-category="capacity">
+                                <div class="category-icon">
+                                    <i class="fas fa-database"></i>
+                                </div>
+                                <div class="category-content">
+                                    <h3>容量报表</h3>
+                                    <p>存储容量使用情况分析报表</p>
+                                    <div class="category-stats">
+                                        <span class="stat-item">
+                                            <i class="fas fa-file-alt"></i>
+                                            <span>6 个报表</span>
+                                        </span>
+                                        <span class="stat-item">
+                                            <i class="fas fa-clock"></i>
+                                            <span>最近更新: 30分钟前</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="category-arrow">
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                            </div>
+
+                            <div class="category-card" data-category="alarm">
+                                <div class="category-icon">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="category-content">
+                                    <h3>告警报表</h3>
+                                    <p>系统告警统计与趋势分析报表</p>
+                                    <div class="category-stats">
+                                        <span class="stat-item">
+                                            <i class="fas fa-file-alt"></i>
+                                            <span>15 个报表</span>
+                                        </span>
+                                        <span class="stat-item">
+                                            <i class="fas fa-clock"></i>
+                                            <span>最近更新: 15分钟前</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="category-arrow">
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                            </div>
+
+                            <div class="category-card" data-category="network">
+                                <div class="category-icon">
+                                    <i class="fas fa-network-wired"></i>
+                                </div>
+                                <div class="category-content">
+                                    <h3>网络报表</h3>
+                                    <p>网络流量与连接状态分析报表</p>
+                                    <div class="category-stats">
+                                        <span class="stat-item">
+                                            <i class="fas fa-file-alt"></i>
+                                            <span>9 个报表</span>
+                                        </span>
+                                        <span class="stat-item">
+                                            <i class="fas fa-clock"></i>
+                                            <span>最近更新: 5分钟前</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="category-arrow">
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                            </div>
+
+                            <div class="category-card" data-category="security">
+                                <div class="category-icon">
+                                    <i class="fas fa-lock"></i>
+                                </div>
+                                <div class="category-content">
+                                    <h3>安全报表</h3>
+                                    <p>安全事件与威胁分析报表</p>
+                                    <div class="category-stats">
+                                        <span class="stat-item">
+                                            <i class="fas fa-file-alt"></i>
+                                            <span>7 个报表</span>
+                                        </span>
+                                        <span class="stat-item">
+                                            <i class="fas fa-clock"></i>
+                                            <span>最近更新: 1小时前</span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="category-arrow">
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 快速统计 -->
+                    <div class="quick-stats">
+                        <div class="stats-card">
+                            <div class="stats-icon">
+                                <i class="fas fa-chart-bar"></i>
+                            </div>
+                            <div class="stats-content">
+                                <div class="stats-value">57</div>
+                                <div class="stats-label">总报表数</div>
+                            </div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="stats-icon">
+                                <i class="fas fa-sync-alt"></i>
+                            </div>
+                            <div class="stats-content">
+                                <div class="stats-value">23</div>
+                                <div class="stats-label">自动报表</div>
+                            </div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="stats-icon">
+                                <i class="fas fa-download"></i>
+                            </div>
+                            <div class="stats-content">
+                                <div class="stats-value">156</div>
+                                <div class="stats-label">本月下载</div>
+                            </div>
+                        </div>
+                        <div class="stats-card">
+                            <div class="stats-icon">
+                                <i class="fas fa-users"></i>
+                            </div>
+                            <div class="stats-content">
+                                <div class="stats-value">12</div>
+                                <div class="stats-label">订阅用户</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 报表详情页面 -->
+                <div class="report-detail-page" id="reportDetailPage" style="display: none;">
+                    <div class="detail-header">
+                        <button class="back-btn" id="backToList">
+                            <i class="fas fa-arrow-left"></i>
+                            <span>返回列表</span>
+                        </button>
+                        <h2 id="detailTitle">性能报表</h2>
+                    </div>
+
+                    <!-- 报表表单 -->
+                    <div class="report-form-container">
+                        <form class="report-form" id="reportForm">
+                            <div class="form-section">
+                                <h3>基本信息</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="reportName">报表名称</label>
+                                        <input type="text" id="reportName" name="reportName" placeholder="请输入报表名称" required>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="reportType">报表类型</label>
+                                        <select id="reportType" name="reportType" required>
+                                            <option value="">请选择报表类型</option>
+                                            <option value="performance">性能报表</option>
+                                            <option value="availability">可用性报表</option>
+                                            <option value="capacity">容量报表</option>
+                                            <option value="alarm">告警报表</option>
+                                            <option value="network">网络报表</option>
+                                            <option value="security">安全报表</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="reportDescription">报表描述</label>
+                                        <textarea id="reportDescription" name="reportDescription" placeholder="请输入报表描述" rows="3"></textarea>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3>时间设置</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="timeRange">时间范围</label>
+                                        <select id="timeRange" name="timeRange" required>
+                                            <option value="today">今天</option>
+                                            <option value="week">本周</option>
+                                            <option value="month" selected>本月</option>
+                                            <option value="quarter">本季度</option>
+                                            <option value="year">本年</option>
+                                            <option value="custom">自定义</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="updateFrequency">更新频率</label>
+                                        <select id="updateFrequency" name="updateFrequency">
+                                            <option value="realtime">实时</option>
+                                            <option value="hourly">每小时</option>
+                                            <option value="daily" selected>每日</option>
+                                            <option value="weekly">每周</option>
+                                            <option value="monthly">每月</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="form-row" id="customTimeRange" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="startDate">开始日期</label>
+                                        <input type="date" id="startDate" name="startDate">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="endDate">结束日期</label>
+                                        <input type="date" id="endDate" name="endDate">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3>数据源设置</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="deviceType">设备类型</label>
+                                        <select id="deviceType" name="deviceType" multiple>
+                                            <option value="server">服务器</option>
+                                            <option value="network">网络设备</option>
+                                            <option value="storage">存储设备</option>
+                                            <option value="security">安全设备</option>
+                                            <option value="database">数据库</option>
+                                            <option value="application">应用服务</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="dataMetrics">数据指标</label>
+                                        <div class="checkbox-group">
+                                            <label class="checkbox-item">
+                                                <input type="checkbox" name="metrics" value="cpu" checked>
+                                                <span>CPU使用率</span>
+                                            </label>
+                                            <label class="checkbox-item">
+                                                <input type="checkbox" name="metrics" value="memory" checked>
+                                                <span>内存使用率</span>
+                                            </label>
+                                            <label class="checkbox-item">
+                                                <input type="checkbox" name="metrics" value="disk">
+                                                <span>磁盘使用率</span>
+                                            </label>
+                                            <label class="checkbox-item">
+                                                <input type="checkbox" name="metrics" value="network">
+                                                <span>网络流量</span>
+                                            </label>
+                                            <label class="checkbox-item">
+                                                <input type="checkbox" name="metrics" value="response">
+                                                <span>响应时间</span>
+                                            </label>
+                                            <label class="checkbox-item">
+                                                <input type="checkbox" name="metrics" value="availability">
+                                                <span>可用性</span>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-section">
+                                <h3>输出设置</h3>
+                                <div class="form-row">
+                                    <div class="form-group">
+                                        <label for="outputFormat">输出格式</label>
+                                        <select id="outputFormat" name="outputFormat">
+                                            <option value="pdf">PDF</option>
+                                            <option value="excel">Excel</option>
+                                            <option value="html">HTML</option>
+                                            <option value="csv">CSV</option>
+                                        </select>
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="emailNotification">邮件通知</label>
+                                        <div class="toggle-switch">
+                                            <input type="checkbox" id="emailNotification" name="emailNotification">
+                                            <label for="emailNotification" class="toggle-label"></label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-row" id="emailSettings" style="display: none;">
+                                    <div class="form-group">
+                                        <label for="emailRecipients">收件人邮箱</label>
+                                        <input type="email" id="emailRecipients" name="emailRecipients" placeholder="多个邮箱用逗号分隔">
+                                    </div>
+                                    <div class="form-group">
+                                        <label for="emailSubject">邮件主题</label>
+                                        <input type="text" id="emailSubject" name="emailSubject" placeholder="报表邮件主题">
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-actions">
+                                <button type="button" class="btn btn-secondary" id="previewReport">
+                                    <i class="fas fa-eye"></i> 预览报表
+                                </button>
+                                <button type="button" class="btn btn-info" id="saveTemplate">
+                                    <i class="fas fa-bookmark"></i> 保存模板
+                                </button>
+                                <button type="button" class="btn btn-primary" id="saveReport">
+                                    <i class="fas fa-save"></i> 保存报表
+                                </button>
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-play"></i> 生成报表
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- 报表预览页面 -->
+                <div class="report-preview-page" id="reportPreviewPage" style="display: none;">
+                    <div class="preview-header">
+                        <button class="back-btn" id="backToForm">
+                            <i class="fas fa-arrow-left"></i>
+                            <span>返回编辑</span>
+                        </button>
+                        <h2 id="previewTitle">报表预览</h2>
+                        <div class="preview-actions">
+                            <button class="btn btn-secondary" id="refreshPreview">
+                                <i class="fas fa-sync-alt"></i> 刷新
+                            </button>
+                            <button class="btn btn-primary" id="exportPreview">
+                                <i class="fas fa-download"></i> 导出
+                            </button>
+                            <button class="btn btn-info" id="shareReport">
+                                <i class="fas fa-share-alt"></i> 分享
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 预览内容 -->
+                    <div class="preview-content">
+                        <!-- 报表信息卡片 -->
+                        <div class="report-info-card">
+                            <div class="report-meta">
+                                <h3 id="previewReportName">性能监控报表</h3>
+                                <div class="report-details">
+                                    <span class="detail-item">
+                                        <i class="fas fa-calendar"></i>
+                                        <span id="previewTimeRange">本月</span>
+                                    </span>
+                                    <span class="detail-item">
+                                        <i class="fas fa-clock"></i>
+                                        <span id="previewUpdateTime">2024-01-15 14:30:25</span>
+                                    </span>
+                                    <span class="detail-item">
+                                        <i class="fas fa-server"></i>
+                                        <span id="previewDeviceCount">156 台设备</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="report-status">
+                                <span class="status-badge success">已生成</span>
+                            </div>
+                        </div>
+
+                        <!-- 数据概览 -->
+                        <div class="data-overview">
+                            <div class="overview-grid">
+                                <div class="overview-item">
+                                    <div class="overview-icon">
+                                        <i class="fas fa-microchip"></i>
+                                    </div>
+                                    <div class="overview-content">
+                                        <div class="overview-value" id="avgCpuUsage">67.5%</div>
+                                        <div class="overview-label">平均CPU使用率</div>
+                                        <div class="overview-trend up">
+                                            <i class="fas fa-arrow-up"></i>
+                                            <span>+2.3%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="overview-item">
+                                    <div class="overview-icon">
+                                        <i class="fas fa-memory"></i>
+                                    </div>
+                                    <div class="overview-content">
+                                        <div class="overview-value" id="avgMemoryUsage">78.2%</div>
+                                        <div class="overview-label">平均内存使用率</div>
+                                        <div class="overview-trend down">
+                                            <i class="fas fa-arrow-down"></i>
+                                            <span>-1.5%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="overview-item">
+                                    <div class="overview-icon">
+                                        <i class="fas fa-hdd"></i>
+                                    </div>
+                                    <div class="overview-content">
+                                        <div class="overview-value" id="avgDiskUsage">45.8%</div>
+                                        <div class="overview-label">平均磁盘使用率</div>
+                                        <div class="overview-trend up">
+                                            <i class="fas fa-arrow-up"></i>
+                                            <span>+0.8%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="overview-item">
+                                    <div class="overview-icon">
+                                        <i class="fas fa-wifi"></i>
+                                    </div>
+                                    <div class="overview-content">
+                                        <div class="overview-value" id="avgNetworkUsage">234 MB/s</div>
+                                        <div class="overview-label">平均网络流量</div>
+                                        <div class="overview-trend up">
+                                            <i class="fas fa-arrow-up"></i>
+                                            <span>+5.2%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 图表区域 -->
+                        <div class="charts-section">
+                            <div class="chart-container">
+                                <div class="chart-header">
+                                    <h4>性能趋势图</h4>
+                                    <div class="chart-controls">
+                                        <select id="chartTimeRange" class="chart-select">
+                                            <option value="24h">最近24小时</option>
+                                            <option value="7d" selected>最近7天</option>
+                                            <option value="30d">最近30天</option>
+                                        </select>
+                                        <button class="chart-btn" title="全屏">
+                                            <i class="fas fa-expand"></i>
+                                        </button>
+                                        <button class="chart-btn" title="下载图表">
+                                            <i class="fas fa-download"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <div class="chart-content">
+                                    <canvas id="previewChart" width="800" height="400"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 数据表格 -->
+                        <div class="data-table-section">
+                            <div class="table-header">
+                                <h4>详细数据</h4>
+                                <div class="table-controls">
+                                    <div class="search-box">
+                                        <input type="text" id="tableSearch" placeholder="搜索设备..." class="search-input">
+                                        <i class="fas fa-search"></i>
+                                    </div>
+                                    <select id="tableFilter" class="table-select">
+                                        <option value="all">全部设备</option>
+                                        <option value="server">服务器</option>
+                                        <option value="network">网络设备</option>
+                                        <option value="storage">存储设备</option>
+                                    </select>
+                                    <button class="btn btn-sm btn-secondary" id="exportTableData">
+                                        <i class="fas fa-file-excel"></i> 导出数据
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="table-wrapper">
+                                <table class="preview-table" id="previewTable">
+                                    <thead>
+                                        <tr>
+                                            <th>设备名称</th>
+                                            <th>设备类型</th>
+                                            <th>IP地址</th>
+                                            <th>CPU使用率</th>
+                                            <th>内存使用率</th>
+                                            <th>磁盘使用率</th>
+                                            <th>网络流量</th>
+                                            <th>状态</th>
+                                            <th>最后更新</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- 数据将通过JavaScript动态加载 -->
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="table-pagination">
+                                <div class="pagination-info">
+                                    显示 <span id="pageStart">1</span>-<span id="pageEnd">10</span> 条，共 <span id="totalRecords">156</span> 条记录
+                                </div>
+                                <div class="pagination-controls">
+                                    <button class="page-btn" id="prevPage" disabled>
+                                        <i class="fas fa-chevron-left"></i>
+                                    </button>
+                                    <div class="page-numbers" id="pageNumbers">
+                                        <button class="page-btn active">1</button>
+                                        <button class="page-btn">2</button>
+                                        <button class="page-btn">3</button>
+                                        <span class="page-ellipsis">...</span>
+                                        <button class="page-btn">16</button>
+                                    </div>
+                                    <button class="page-btn" id="nextPage">
+                                        <i class="fas fa-chevron-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 报表配置模态框 -->
+    <div class="modal" id="reportConfigModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>报表配置</h3>
+                <button class="modal-close" id="closeModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="config-form">
+                    <div class="form-group">
+                        <label>报表名称:</label>
+                        <input type="text" placeholder="请输入报表名称">
+                    </div>
+                    <div class="form-group">
+                        <label>生成频率:</label>
+                        <select>
+                            <option>每日</option>
+                            <option>每周</option>
+                            <option>每月</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>邮件接收人:</label>
+                        <input type="email" placeholder="请输入邮箱地址">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelConfig">取消</button>
+                <button class="btn btn-primary" id="saveConfig">保存</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 报表模板模态框 -->
+    <div class="modal" id="templateModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>报表模板管理</h3>
+                <button class="modal-close" id="closeTemplateModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="template-tabs">
+                    <div class="tab-nav">
+                        <button class="tab-btn active" data-tab="save">保存模板</button>
+                        <button class="tab-btn" data-tab="load">加载模板</button>
+                        <button class="tab-btn" data-tab="manage">管理模板</button>
+                    </div>
+                    <div class="tab-content">
+                        <!-- 保存模板 -->
+                        <div class="tab-panel active" id="saveTab">
+                            <div class="form-group">
+                                <label>模板名称</label>
+                                <input type="text" id="templateName" placeholder="请输入模板名称">
+                            </div>
+                            <div class="form-group">
+                                <label>模板描述</label>
+                                <textarea id="templateDescription" placeholder="请输入模板描述" rows="3"></textarea>
+                            </div>
+                            <div class="form-group">
+                                <label>模板分类</label>
+                                <select id="templateCategory">
+                                    <option value="performance">性能监控</option>
+                                    <option value="availability">可用性分析</option>
+                                    <option value="capacity">容量规划</option>
+                                    <option value="security">安全审计</option>
+                                    <option value="custom">自定义</option>
+                                </select>
+                            </div>
+                            <div class="form-actions">
+                                <button class="btn btn-primary" id="saveTemplateBtn">
+                                    <i class="fas fa-save"></i> 保存模板
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 加载模板 -->
+                        <div class="tab-panel" id="loadTab">
+                            <div class="template-list" id="templateList">
+                                <!-- 模板列表将通过JavaScript动态加载 -->
+                            </div>
+                        </div>
+
+                        <!-- 管理模板 -->
+                        <div class="tab-panel" id="manageTab">
+                            <div class="template-management">
+                                <div class="management-actions">
+                                    <button class="btn btn-secondary" id="exportTemplates">
+                                        <i class="fas fa-download"></i> 导出模板
+                                    </button>
+                                    <button class="btn btn-secondary" id="importTemplates">
+                                        <i class="fas fa-upload"></i> 导入模板
+                                    </button>
+                                </div>
+                                <div class="template-grid" id="templateGrid">
+                                    <!-- 模板网格将通过JavaScript动态加载 -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 分享报表模态框 -->
+    <div class="modal" id="shareModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>分享报表</h3>
+                <button class="modal-close" id="closeShareModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="share-options">
+                    <div class="share-method">
+                        <h4>分享方式</h4>
+                        <div class="method-grid">
+                            <div class="method-item" data-method="link">
+                                <i class="fas fa-link"></i>
+                                <span>链接分享</span>
+                            </div>
+                            <div class="method-item" data-method="email">
+                                <i class="fas fa-envelope"></i>
+                                <span>邮件发送</span>
+                            </div>
+                            <div class="method-item" data-method="download">
+                                <i class="fas fa-download"></i>
+                                <span>下载文件</span>
+                            </div>
+                            <div class="method-item" data-method="print">
+                                <i class="fas fa-print"></i>
+                                <span>打印报表</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="share-settings" id="shareSettings">
+                        <!-- 链接分享设置 -->
+                        <div class="setting-panel" id="linkSettings">
+                            <div class="form-group">
+                                <label>分享链接</label>
+                                <div class="link-input-group">
+                                    <input type="text" id="shareLink" readonly value="https://example.com/report/abc123">
+                                    <button class="btn btn-secondary" id="copyLink">
+                                        <i class="fas fa-copy"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>访问权限</label>
+                                <select id="linkPermission">
+                                    <option value="view">仅查看</option>
+                                    <option value="download">查看和下载</option>
+                                    <option value="edit">查看和编辑</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>有效期</label>
+                                <select id="linkExpiry">
+                                    <option value="1d">1天</option>
+                                    <option value="7d" selected>7天</option>
+                                    <option value="30d">30天</option>
+                                    <option value="never">永不过期</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- 邮件发送设置 -->
+                        <div class="setting-panel" id="emailSettings" style="display: none;">
+                            <div class="form-group">
+                                <label>收件人</label>
+                                <input type="email" id="emailRecipients" placeholder="多个邮箱用逗号分隔">
+                            </div>
+                            <div class="form-group">
+                                <label>邮件主题</label>
+                                <input type="text" id="emailSubject" value="统计报表分享">
+                            </div>
+                            <div class="form-group">
+                                <label>邮件内容</label>
+                                <textarea id="emailContent" rows="4" placeholder="请输入邮件内容..."></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelShare">取消</button>
+                <button class="btn btn-primary" id="confirmShare">确认分享</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 定时任务模态框 -->
+    <div class="modal" id="scheduleModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>定时报表设置</h3>
+                <button class="modal-close" id="closeScheduleModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="schedule-form">
+                    <div class="form-group">
+                        <label>任务名称</label>
+                        <input type="text" id="scheduleName" placeholder="请输入任务名称">
+                    </div>
+                    <div class="form-group">
+                        <label>执行频率</label>
+                        <select id="scheduleFrequency">
+                            <option value="daily">每日</option>
+                            <option value="weekly">每周</option>
+                            <option value="monthly">每月</option>
+                            <option value="custom">自定义</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>执行时间</label>
+                        <input type="time" id="scheduleTime" value="09:00">
+                    </div>
+                    <div class="form-group">
+                        <label>通知方式</label>
+                        <div class="checkbox-group">
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="notification" value="email" checked>
+                                <span>邮件通知</span>
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="notification" value="sms">
+                                <span>短信通知</span>
+                            </label>
+                            <label class="checkbox-item">
+                                <input type="checkbox" name="notification" value="webhook">
+                                <span>Webhook</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label>接收人</label>
+                        <input type="text" id="scheduleRecipients" placeholder="请输入接收人邮箱或手机号">
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelSchedule">取消</button>
+                <button class="btn btn-primary" id="saveSchedule">保存任务</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 高级筛选模态框 -->
+    <div class="modal" id="filterModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>高级筛选</h3>
+                <button class="modal-close" id="closeFilterModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="filter-form">
+                    <div class="filter-section">
+                        <h4>设备筛选</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>设备名称</label>
+                                <input type="text" id="filterDeviceName" placeholder="支持通配符 *">
+                            </div>
+                            <div class="form-group">
+                                <label>IP地址范围</label>
+                                <input type="text" id="filterIpRange" placeholder="例: 192.168.1.0/24">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>设备标签</label>
+                                <input type="text" id="filterTags" placeholder="多个标签用逗号分隔">
+                            </div>
+                            <div class="form-group">
+                                <label>所属区域</label>
+                                <select id="filterZone">
+                                    <option value="">全部区域</option>
+                                    <option value="datacenter1">数据中心1</option>
+                                    <option value="datacenter2">数据中心2</option>
+                                    <option value="office">办公区</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <h4>性能筛选</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>CPU使用率</label>
+                                <div class="range-input">
+                                    <input type="number" id="cpuMin" placeholder="最小值" min="0" max="100">
+                                    <span>-</span>
+                                    <input type="number" id="cpuMax" placeholder="最大值" min="0" max="100">
+                                    <span>%</span>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label>内存使用率</label>
+                                <div class="range-input">
+                                    <input type="number" id="memoryMin" placeholder="最小值" min="0" max="100">
+                                    <span>-</span>
+                                    <input type="number" id="memoryMax" placeholder="最大值" min="0" max="100">
+                                    <span>%</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="filter-section">
+                        <h4>时间筛选</h4>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>数据时间段</label>
+                                <select id="filterTimeRange">
+                                    <option value="1h">最近1小时</option>
+                                    <option value="24h">最近24小时</option>
+                                    <option value="7d">最近7天</option>
+                                    <option value="30d">最近30天</option>
+                                    <option value="custom">自定义</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="resetFilter">重置</button>
+                <button class="btn btn-secondary" id="cancelFilter">取消</button>
+                <button class="btn btn-primary" id="applyFilter">应用筛选</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 隐藏的文件输入 -->
+    <input type="file" id="templateFileInput" accept=".json" style="display: none;">
+
+    <script src="chart.js"></script>
+    <script src="统计报表.js"></script>
+</body>
+</html>

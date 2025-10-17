@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>运维管理 - 人工智能运维平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="运维管理.css">
+    <script src="chart.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>人工智能运维平台</h2>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>总览</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-eye"></i>
+                <span>视图</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-bell"></i>
+                <span>告警中心</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-server"></i>
+                <span>设备管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-network-wired"></i>
+                <span>网络拓扑</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-chart-line"></i>
+                <span>统计报表</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-tools"></i>
+                <span>运维工具</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">拓展中心</div>
+            <div class="sidebar-item">
+                <i class="fas fa-layer-group"></i>
+                <span>业务管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-globe"></i>
+                <span>网络管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-video"></i>
+                <span>视频管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-building"></i>
+                <span>机房管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-cubes"></i>
+                <span>资产管理</span>
+            </div>
+            <div class="sidebar-item active">
+                <i class="fas fa-user-cog"></i>
+                <span>运维管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-database"></i>
+                <span>CMDB</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-file-alt"></i>
+                <span>日志管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-chart-pie"></i>
+                <span>智能预测管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-cloud"></i>
+                <span>云平台</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">设置中心</div>
+            <div class="sidebar-item">
+                <i class="fas fa-cog"></i>
+                <span>设置</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-plug"></i>
+                <span>对接配置</span>
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 顶部导航栏 -->
+            <header class="top-header">
+                <div class="header-left">
+                    <div class="breadcrumb">
+                        <span class="breadcrumb-item">运维管理</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="搜索工单..." id="searchInput">
+                    </div>
+                    <div class="user-menu">
+                        <div class="user-avatar">
+                            <img src="1.png" alt="用户头像">
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 页面内容 -->
+            <div class="page-content">
+                <!-- 工单状态标签页 -->
+                <div class="ticket-tabs">
+                    <div class="tab-item active">配置工单</div>
+                    <div class="tab-item">工单</div>
+                    <div class="tab-item">文档</div>
+                    <div class="tab-item">上传</div>
+                    <div class="tab-item">归档</div>
+                </div>
+
+                <!-- 主要内容区域 -->
+                <div class="content-grid">
+                    <!-- 左侧主要内容区域 -->
+                    <div class="main-view">
+                        <!-- 工单状态统计 -->
+                        <div class="ticket-stats-row">
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <h3>工单状态统计</h3>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="gauge-container">
+                                        <canvas id="ticketStatusGauge"></canvas>
+                                        <div class="gauge-value">
+                                            <span class="value">0</span>
+                                            <span class="unit">总计</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <h3>工单类型统计</h3>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="type-list">
+                                        <div class="type-item">
+                                            <span class="type-label">故障</span>
+                                            <span class="type-value">0</span>
+                                        </div>
+                                        <div class="type-item">
+                                            <span class="type-label">变更</span>
+                                            <span class="type-value">0</span>
+                                        </div>
+                                        <div class="type-item">
+                                            <span class="type-label">需求</span>
+                                            <span class="type-value">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="stat-card">
+                                <div class="stat-header">
+                                    <h3>工单来源分布</h3>
+                                </div>
+                                <div class="stat-content">
+                                    <div class="source-list">
+                                        <div class="source-item">
+                                            <span class="source-label">自动创建</span>
+                                            <span class="source-value">0</span>
+                                        </div>
+                                        <div class="source-item">
+                                            <span class="source-label">手动创建</span>
+                                            <span class="source-value">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 工单趋势图 -->
+                        <div class="ticket-trend-chart">
+                            <div class="chart-header">
+                                <h3>工单趋势</h3>
+                                <div class="chart-legend">
+                                    <span class="legend-item">
+                                        <span class="legend-color blue"></span>
+                                        <span class="legend-text">新建</span>
+                                    </span>
+                                    <span class="legend-item">
+                                        <span class="legend-color orange"></span>
+                                        <span class="legend-text">处理中</span>
+                                    </span>
+                                    <span class="legend-item">
+                                        <span class="legend-color green"></span>
+                                        <span class="legend-text">已完成</span>
+                                    </span>
+                                </div>
+                            </div>
+                            <div class="chart-content">
+                                <canvas id="trendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右侧信息面板 -->
+                    <div class="info-panel">
+                        <!-- 优先级分析 -->
+                        <div class="priority-analysis">
+                            <div class="analysis-header">
+                                <h3>优先级分析</h3>
+                            </div>
+                            <div class="analysis-content">
+                                <div class="gauge-container">
+                                    <canvas id="priorityGauge"></canvas>
+                                    <div class="gauge-value">
+                                        <span class="value">0</span>
+                                        <span class="unit">总计</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="运维管理.js"></script>
+</body>
+</html>

@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>机房管理 - 人工智能运维平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="机房管理.css">
+    <script src="chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>人工智能运维平台</h2>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>总览</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-eye"></i>
+                <span>视图</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-bell"></i>
+                <span>告警中心</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-server"></i>
+                <span>设备管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-network-wired"></i>
+                <span>网络拓扑</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-chart-line"></i>
+                <span>统计报表</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-tools"></i>
+                <span>运维工具</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">拓展中心</div>
+            <div class="sidebar-item">
+                <i class="fas fa-layer-group"></i>
+                <span>业务管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-globe"></i>
+                <span>网络管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-video"></i>
+                <span>视频管理</span>
+            </div>
+            <div class="sidebar-item active">
+                <i class="fas fa-building"></i>
+                <span>机房管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-cubes"></i>
+                <span>资产管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-user-cog"></i>
+                <span>运维管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-database"></i>
+                <span>CMDB</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-file-alt"></i>
+                <span>日志管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-chart-pie"></i>
+                <span>智能预测管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-cloud"></i>
+                <span>云平台</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">设置中心</div>
+            <div class="sidebar-item">
+                <i class="fas fa-cog"></i>
+                <span>设置</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-plug"></i>
+                <span>对接配置</span>
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 顶部导航栏 -->
+            <header class="top-header">
+                <div class="header-left">
+                    <div class="breadcrumb">
+                        <span class="breadcrumb-item">机房管理</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="搜索机房设备..." id="searchInput">
+                    </div>
+                    <div class="user-menu">
+                        <div class="user-avatar">
+                            <img src="1.png" alt="用户头像">
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 页面内容 -->
+            <div class="page-content">
+                <!-- 主要内容区域 -->
+                <div class="content-grid">
+                    <!-- 左侧3D视图区域 -->
+                    <div class="main-view">
+                        <!-- 机房选择器 -->
+                        <div class="room-selector">
+                            <div class="selector-item active">
+                                <i class="fas fa-building"></i>
+                                <span>数据中心A1机房</span>
+                            </div>
+                        </div>
+
+                        <!-- 3D机房视图 -->
+                        <div class="room-3d-container">
+                            <div class="view-controls">
+                                <button class="control-btn" id="fullscreenBtn" title="全屏">
+                                    <i class="fas fa-expand"></i>
+                                </button>
+                                <button class="control-btn" id="resetViewBtn" title="重置视图">
+                                    <i class="fas fa-home"></i>
+                                </button>
+                            </div>
+                            <div id="room3D" class="room-3d-view">
+                                <!-- 3D场景将在这里渲染 -->
+                                <div class="room-placeholder">
+                                    <div class="room-floor"></div>
+                                    <div class="room-rack rack-1">
+                                        <div class="rack-label">机柜A1</div>
+                                    </div>
+                                    <div class="room-rack rack-2">
+                                        <div class="rack-label">机柜A2</div>
+                                    </div>
+                                    <div class="room-info-popup" id="rackInfo">
+                                        <div class="popup-title">机柜A1</div>
+                                        <div class="popup-content">
+                                            <p>状态: 正常运行</p>
+                                            <p>温度: 24°C</p>
+                                            <p>湿度: 45%</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 告警统计图表 -->
+                        <div class="alert-chart-container">
+                            <div class="chart-header">
+                                <h3>告警统计(0)</h3>
+                                <div class="chart-controls">
+                                    <button class="chart-btn active">最近</button>
+                                </div>
+                            </div>
+                            <div class="chart-content">
+                                <canvas id="alertChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 右侧信息面板 -->
+                    <div class="info-panel">
+                        <!-- 设备统计 -->
+                        <div class="device-stats">
+                            <div class="stats-header">
+                                <h3>设备统计</h3>
+                            </div>
+                            <div class="stats-content">
+                                <div class="stat-item">
+                                    <div class="stat-icon green">
+                                        <i class="fas fa-server"></i>
+                                    </div>
+                                    <div class="stat-info">
+                                        <div class="stat-number">2</div>
+                                        <div class="stat-label">台</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 机房监控 -->
+                        <div class="room-monitoring">
+                            <div class="monitoring-header">
+                                <h3>机房监控</h3>
+                            </div>
+                            <div class="monitoring-content">
+                                <!-- 温度监控 -->
+                                <div class="monitor-gauge">
+                                    <div class="gauge-container">
+                                        <canvas id="temperatureGauge"></canvas>
+                                        <div class="gauge-value">
+                                            <span class="value">32</span>
+                                            <span class="unit">°C</span>
+                                        </div>
+                                    </div>
+                                    <div class="gauge-label">温度</div>
+                                </div>
+
+                                <!-- 监控指标 -->
+                                <div class="monitor-metrics">
+                                    <div class="metric-item">
+                                        <div class="metric-icon">
+                                            <i class="fas fa-thermometer-half"></i>
+                                        </div>
+                                        <div class="metric-info">
+                                            <div class="metric-label">三相电压</div>
+                                            <div class="metric-value">1</div>
+                                        </div>
+                                    </div>
+                                    <div class="metric-item">
+                                        <div class="metric-icon">
+                                            <i class="fas fa-bolt"></i>
+                                        </div>
+                                        <div class="metric-info">
+                                            <div class="metric-label">三相电流</div>
+                                            <div class="metric-value">1</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="机房管理.js"></script>
+</body>
+</html>

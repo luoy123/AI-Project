@@ -1,0 +1,983 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>运维工具 - 人工智能运维平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="运维工具.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>人工智能运维平台</h2>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>总览</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-eye"></i>
+                <span>视图</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-bell"></i>
+                <span>告警中心</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-server"></i>
+                <span>设备管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-network-wired"></i>
+                <span>网络拓扑</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-chart-line"></i>
+                <span>统计报表</span>
+            </div>
+            <div class="sidebar-item active">
+                <i class="fas fa-tools"></i>
+                <span>运维工具</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">拓展中心</div>
+            <div class="sidebar-item">
+                <i class="fas fa-layer-group"></i>
+                <span>业务管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-globe"></i>
+                <span>网络管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-video"></i>
+                <span>视频管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-building"></i>
+                <span>机房管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-cubes"></i>
+                <span>资产管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-user-cog"></i>
+                <span>运维管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-database"></i>
+                <span>CMDB</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-file-alt"></i>
+                <span>日志管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-chart-pie"></i>
+                <span>智能预测管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-cloud"></i>
+                <span>云平台</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">设置中心</div>
+            <div class="sidebar-item">
+                <i class="fas fa-cog"></i>
+                <span>设置</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-plug"></i>
+                <span>对接配置</span>
+            </div>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <!-- 工具栏 -->
+            <div class="toolbar">
+                <div class="toolbar-left">
+                    <div class="breadcrumb">
+                        <span class="breadcrumb-item">运维工具</span>
+                        <i class="fas fa-chevron-right"></i>
+                        <span class="breadcrumb-item active" id="currentPath">文件管理器</span>
+                    </div>
+                </div>
+                <div class="toolbar-right">
+                    <div class="view-controls">
+                        <button class="view-btn active" data-view="list" title="列表视图">
+                            <i class="fas fa-list"></i>
+                        </button>
+                        <button class="view-btn" data-view="grid" title="网格视图">
+                            <i class="fas fa-th"></i>
+                        </button>
+                    </div>
+                    <div class="search-box">
+                        <input type="text" id="searchInput" placeholder="搜索文件..." class="search-input">
+                        <i class="fas fa-search search-icon"></i>
+                    </div>
+                    <button class="btn btn-primary" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        刷新
+                    </button>
+                </div>
+            </div>
+
+            <!-- 工具导航 -->
+            <div class="tool-navigation">
+                <div class="tool-tabs">
+                    <button class="tool-tab active" data-tool="filemanager">
+                        <i class="fas fa-folder"></i>
+                        <span>文件管理器</span>
+                    </button>
+                    <button class="tool-tab" data-tool="terminal">
+                        <i class="fas fa-terminal"></i>
+                        <span>终端工具</span>
+                    </button>
+                    <button class="tool-tab" data-tool="systeminfo">
+                        <i class="fas fa-info-circle"></i>
+                        <span>系统信息</span>
+                    </button>
+                    <button class="tool-tab" data-tool="processmanager">
+                        <i class="fas fa-tasks"></i>
+                        <span>进程管理</span>
+                    </button>
+                    <button class="tool-tab" data-tool="logviewer">
+                        <i class="fas fa-file-alt"></i>
+                        <span>日志查看</span>
+                    </button>
+                    <button class="tool-tab" data-tool="backup">
+                        <i class="fas fa-archive"></i>
+                        <span>备份恢复</span>
+                    </button>
+                    <button class="tool-tab" data-tool="network">
+                        <i class="fas fa-network-wired"></i>
+                        <span>网络工具</span>
+                    </button>
+                    <button class="tool-tab" data-tool="performance">
+                        <i class="fas fa-chart-line"></i>
+                        <span>性能监控</span>
+                    </button>
+                    <button class="tool-tab" data-tool="security">
+                        <i class="fas fa-shield-alt"></i>
+                        <span>安全工具</span>
+                    </button>
+                    <button class="tool-tab" data-tool="database">
+                        <i class="fas fa-database"></i>
+                        <span>数据库工具</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- 工具内容区域 -->
+            <div class="tool-content">
+                <!-- 文件管理器 -->
+                <div class="tool-panel active" id="filemanager">
+                    <div class="file-manager">
+                        <div class="file-manager-header">
+                            <div class="path-navigation">
+                                <button class="nav-btn" id="backBtn" title="返回上级">
+                                    <i class="fas fa-arrow-left"></i>
+                                </button>
+                                <button class="nav-btn" id="forwardBtn" title="前进">
+                                    <i class="fas fa-arrow-right"></i>
+                                </button>
+                                <button class="nav-btn" id="upBtn" title="上级目录">
+                                    <i class="fas fa-arrow-up"></i>
+                                </button>
+                                <div class="path-bar">
+                                    <input type="text" id="pathInput" value="/home/admin" class="path-input">
+                                    <button class="path-go-btn" id="pathGoBtn">
+                                        <i class="fas fa-arrow-right"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            <div class="file-actions">
+                                <button class="action-btn" id="newFolderBtn" title="新建文件夹">
+                                    <i class="fas fa-folder-plus"></i>
+                                </button>
+                                <button class="action-btn" id="uploadBtn" title="上传文件">
+                                    <i class="fas fa-upload"></i>
+                                </button>
+                                <button class="action-btn" id="downloadBtn" title="下载" disabled>
+                                    <i class="fas fa-download"></i>
+                                </button>
+                                <button class="action-btn" id="deleteBtn" title="删除" disabled>
+                                    <i class="fas fa-trash"></i>
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <div class="file-manager-content">
+                            <div class="file-sidebar">
+                                <div class="sidebar-section">
+                                    <h4>快速访问</h4>
+                                    <ul class="quick-access">
+                                        <li class="quick-item" data-path="/home/admin">
+                                            <i class="fas fa-home"></i>
+                                            <span>主目录</span>
+                                        </li>
+                                        <li class="quick-item" data-path="/var/log">
+                                            <i class="fas fa-file-alt"></i>
+                                            <span>日志目录</span>
+                                        </li>
+                                        <li class="quick-item" data-path="/etc">
+                                            <i class="fas fa-cog"></i>
+                                            <span>配置目录</span>
+                                        </li>
+                                        <li class="quick-item" data-path="/tmp">
+                                            <i class="fas fa-folder-open"></i>
+                                            <span>临时目录</span>
+                                        </li>
+                                    </ul>
+                                </div>
+                                
+                                <div class="sidebar-section">
+                                    <h4>磁盘使用情况</h4>
+                                    <div class="disk-usage">
+                                        <div class="disk-item">
+                                            <div class="disk-info">
+                                                <span class="disk-name">/dev/sda1</span>
+                                                <span class="disk-size">500GB</span>
+                                            </div>
+                                            <div class="disk-bar">
+                                                <div class="disk-used" style="width: 65%"></div>
+                                            </div>
+                                            <span class="disk-percent">65% 已使用</span>
+                                        </div>
+                                        <div class="disk-item">
+                                            <div class="disk-info">
+                                                <span class="disk-name">/dev/sda2</span>
+                                                <span class="disk-size">1TB</span>
+                                            </div>
+                                            <div class="disk-bar">
+                                                <div class="disk-used" style="width: 45%"></div>
+                                            </div>
+                                            <span class="disk-percent">45% 已使用</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="file-main">
+                                <div class="file-list-header">
+                                    <div class="file-header-item name">名称</div>
+                                    <div class="file-header-item size">大小</div>
+                                    <div class="file-header-item type">类型</div>
+                                    <div class="file-header-item modified">修改时间</div>
+                                    <div class="file-header-item permissions">权限</div>
+                                </div>
+                                <div class="file-list" id="fileList">
+                                    <!-- 文件列表将通过JavaScript动态生成 -->
+                                    <!-- 如果JavaScript未加载，显示静态内容 -->
+                                    <div class="file-item" data-filename="Documents" data-type="directory">
+                                        <div class="file-name">
+                                            <i class="fas fa-folder file-icon"></i>
+                                            Documents
+                                        </div>
+                                        <div class="file-size">-</div>
+                                        <div class="file-type">文件夹</div>
+                                        <div class="file-modified">2024-01-15 10:30</div>
+                                        <div class="file-permissions">drwxr-xr-x</div>
+                                    </div>
+                                    <div class="file-item" data-filename="config.txt" data-type="file">
+                                        <div class="file-name">
+                                            <i class="fas fa-file-alt file-icon"></i>
+                                            config.txt
+                                        </div>
+                                        <div class="file-size">2.5 KB</div>
+                                        <div class="file-type">文本文件</div>
+                                        <div class="file-modified">2024-01-15 14:22</div>
+                                        <div class="file-permissions">-rw-r--r--</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 进程管理 -->
+                <div class="tool-panel" id="processmanager">
+                    <div class="process-manager">
+                        <div class="process-header">
+                            <div class="process-controls">
+                                <button class="btn btn-primary" id="refreshProcesses">
+                                    <i class="fas fa-sync-alt"></i>
+                                    刷新进程
+                                </button>
+                                <button class="btn btn-danger" id="killProcess" disabled>
+                                    <i class="fas fa-times"></i>
+                                    结束进程
+                                </button>
+                            </div>
+                            <div class="process-search">
+                                <input type="text" id="processSearch" placeholder="搜索进程...">
+                            </div>
+                        </div>
+
+                        <div class="process-list-container">
+                            <div class="process-list-header">
+                                <div class="process-header-item">PID</div>
+                                <div class="process-header-item">进程名</div>
+                                <div class="process-header-item">用户</div>
+                                <div class="process-header-item">CPU%</div>
+                                <div class="process-header-item">内存%</div>
+                                <div class="process-header-item">状态</div>
+                            </div>
+                            <div class="process-list" id="processList">
+                                <!-- 进程列表将通过JavaScript动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 日志查看器 -->
+                <div class="tool-panel" id="logviewer">
+                    <div class="log-viewer">
+                        <div class="log-header">
+                            <div class="log-controls">
+                                <select id="logFile">
+                                    <option value="syslog">系统日志 (/var/log/syslog)</option>
+                                    <option value="auth">认证日志 (/var/log/auth.log)</option>
+                                    <option value="nginx">Nginx日志 (/var/log/nginx/access.log)</option>
+                                    <option value="mysql">MySQL日志 (/var/log/mysql/error.log)</option>
+                                </select>
+                                <button class="btn btn-primary" id="refreshLogs">
+                                    <i class="fas fa-sync-alt"></i>
+                                    刷新
+                                </button>
+                                <button class="btn btn-secondary" id="clearLogs">
+                                    <i class="fas fa-eraser"></i>
+                                    清空
+                                </button>
+                            </div>
+                            <div class="log-filters">
+                                <select id="logLevel">
+                                    <option value="all">所有级别</option>
+                                    <option value="error">错误</option>
+                                    <option value="warn">警告</option>
+                                    <option value="info">信息</option>
+                                    <option value="debug">调试</option>
+                                </select>
+                                <input type="text" id="logSearch" placeholder="搜索日志...">
+                            </div>
+                        </div>
+
+                        <div class="log-content" id="logContent">
+                            <!-- 日志内容将通过JavaScript动态生成 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 备份恢复 -->
+                <div class="tool-panel" id="backup">
+                    <div class="backup-manager">
+                        <div class="backup-header">
+                            <div class="backup-stats">
+                                <div class="stat-item">
+                                    <span class="stat-label">总备份数:</span>
+                                    <span class="stat-value" id="totalBackups">15</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">总大小:</span>
+                                    <span class="stat-value" id="totalSize">8.7 GB</span>
+                                </div>
+                                <div class="stat-item">
+                                    <span class="stat-label">最近备份:</span>
+                                    <span class="stat-value" id="lastBackup">2024-01-15 13:30</span>
+                                </div>
+                            </div>
+                            <div class="backup-controls">
+                                <button class="btn btn-primary" id="createBackup">
+                                    <i class="fas fa-plus"></i>
+                                    创建备份
+                                </button>
+                                <button class="btn btn-success" id="restoreBackup" disabled>
+                                    <i class="fas fa-undo"></i>
+                                    恢复备份
+                                </button>
+                                <button class="btn btn-danger" id="deleteBackup" disabled>
+                                    <i class="fas fa-trash"></i>
+                                    删除备份
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="backup-list-container">
+                            <div class="backup-list-header">
+                                <div class="backup-header-item">备份名称</div>
+                                <div class="backup-header-item">创建时间</div>
+                                <div class="backup-header-item">大小</div>
+                                <div class="backup-header-item">类型</div>
+                                <div class="backup-header-item">状态</div>
+                            </div>
+                            <div class="backup-list" id="backupList">
+                                <!-- 备份列表将通过JavaScript动态生成 -->
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 终端工具 -->
+                <div class="tool-panel" id="terminal">
+                    <div class="terminal-container">
+                        <div class="terminal-header">
+                            <div class="terminal-tabs">
+                                <div class="terminal-tab active">
+                                    <span>终端 1</span>
+                                    <button class="tab-close">×</button>
+                                </div>
+                                <button class="new-terminal-btn" id="newTerminalBtn">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                            </div>
+                            <div class="terminal-actions">
+                                <button class="terminal-btn" id="clearTerminalBtn" title="清屏">
+                                    <i class="fas fa-broom"></i>
+                                </button>
+                                <button class="terminal-btn" id="fullscreenTerminalBtn" title="全屏">
+                                    <i class="fas fa-expand"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="terminal-content">
+                            <div class="terminal-output" id="terminalOutput">
+                                <div class="terminal-line">
+                                    <span class="terminal-prompt">admin@server:~$</span>
+                                    <span class="terminal-text">欢迎使用运维工具终端</span>
+                                </div>
+                            </div>
+                            <div class="terminal-input-line">
+                                <span class="terminal-prompt">admin@server:~$</span>
+                                <input type="text" class="terminal-input" id="terminalInput" placeholder="输入命令...">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 系统信息 -->
+                <div class="tool-panel" id="systeminfo">
+                    <div class="system-info-container">
+                        <div class="info-grid">
+                            <div class="info-card">
+                                <div class="info-header">
+                                    <h3>系统概览</h3>
+                                    <i class="fas fa-desktop"></i>
+                                </div>
+                                <div class="info-content">
+                                    <div class="info-item">
+                                        <span class="info-label">操作系统:</span>
+                                        <span class="info-value">Ubuntu 20.04 LTS</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">内核版本:</span>
+                                        <span class="info-value">5.4.0-74-generic</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">运行时间:</span>
+                                        <span class="info-value">15天 8小时 32分钟</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">主机名:</span>
+                                        <span class="info-value">ops-server-01</span>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="info-card">
+                                <div class="info-header">
+                                    <h3>硬件信息</h3>
+                                    <i class="fas fa-microchip"></i>
+                                </div>
+                                <div class="info-content">
+                                    <div class="info-item">
+                                        <span class="info-label">CPU:</span>
+                                        <span class="info-value">Intel Xeon E5-2680 v4</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">核心数:</span>
+                                        <span class="info-value">14核心 28线程</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">内存:</span>
+                                        <span class="info-value">64GB DDR4</span>
+                                    </div>
+                                    <div class="info-item">
+                                        <span class="info-label">存储:</span>
+                                        <span class="info-value">2TB SSD + 4TB HDD</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 网络工具 -->
+                <div class="tool-panel" id="network">
+                    <div class="network-tools-container">
+                        <div class="tools-grid">
+                            <div class="tool-card">
+                                <div class="tool-header">
+                                    <h3>网络连通性测试</h3>
+                                    <i class="fas fa-wifi"></i>
+                                </div>
+                                <div class="tool-content">
+                                    <div class="input-group">
+                                        <label>目标地址:</label>
+                                        <input type="text" id="pingTarget" placeholder="输入IP地址或域名" value="8.8.8.8">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>测试次数:</label>
+                                        <input type="number" id="pingCount" value="4" min="1" max="100">
+                                    </div>
+                                    <button class="btn btn-primary" id="startPing">
+                                        <i class="fas fa-play"></i> 开始Ping测试
+                                    </button>
+                                    <div class="ping-results" id="pingResults"></div>
+                                </div>
+                            </div>
+
+                            <div class="tool-card">
+                                <div class="tool-header">
+                                    <h3>端口扫描</h3>
+                                    <i class="fas fa-search"></i>
+                                </div>
+                                <div class="tool-content">
+                                    <div class="input-group">
+                                        <label>目标主机:</label>
+                                        <input type="text" id="scanTarget" placeholder="输入IP地址" value="127.0.0.1">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>端口范围:</label>
+                                        <div class="port-range">
+                                            <input type="number" id="portStart" value="1" min="1" max="65535">
+                                            <span>-</span>
+                                            <input type="number" id="portEnd" value="1000" min="1" max="65535">
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary" id="startScan">
+                                        <i class="fas fa-search"></i> 开始扫描
+                                    </button>
+                                    <div class="scan-results" id="scanResults"></div>
+                                </div>
+                            </div>
+
+                            <div class="tool-card">
+                                <div class="tool-header">
+                                    <h3>网络接口信息</h3>
+                                    <i class="fas fa-ethernet"></i>
+                                </div>
+                                <div class="tool-content">
+                                    <button class="btn btn-primary" id="getNetworkInfo">
+                                        <i class="fas fa-sync-alt"></i> 获取网络信息
+                                    </button>
+                                    <div class="network-info" id="networkInfo">
+                                        <div class="interface-item">
+                                            <div class="interface-name">eth0</div>
+                                            <div class="interface-details">
+                                                <span>IP: 192.168.1.100</span>
+                                                <span>状态: UP</span>
+                                                <span>速度: 1000 Mbps</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="tool-card">
+                                <div class="tool-header">
+                                    <h3>DNS查询</h3>
+                                    <i class="fas fa-globe"></i>
+                                </div>
+                                <div class="tool-content">
+                                    <div class="input-group">
+                                        <label>域名:</label>
+                                        <input type="text" id="dnsQuery" placeholder="输入域名" value="google.com">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>记录类型:</label>
+                                        <select id="dnsType">
+                                            <option value="A">A记录</option>
+                                            <option value="AAAA">AAAA记录</option>
+                                            <option value="MX">MX记录</option>
+                                            <option value="NS">NS记录</option>
+                                            <option value="TXT">TXT记录</option>
+                                        </select>
+                                    </div>
+                                    <button class="btn btn-primary" id="startDnsQuery">
+                                        <i class="fas fa-search"></i> 查询DNS
+                                    </button>
+                                    <div class="dns-results" id="dnsResults"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 性能监控 -->
+                <div class="tool-panel" id="performance">
+                    <div class="performance-monitor">
+                        <div class="monitor-header">
+                            <h3>实时性能监控</h3>
+                            <div class="monitor-controls">
+                                <button class="btn btn-primary" id="startMonitor">
+                                    <i class="fas fa-play"></i> 开始监控
+                                </button>
+                                <button class="btn btn-secondary" id="stopMonitor">
+                                    <i class="fas fa-stop"></i> 停止监控
+                                </button>
+                                <button class="btn btn-info" id="exportMonitorData">
+                                    <i class="fas fa-download"></i> 导出数据
+                                </button>
+                            </div>
+                        </div>
+
+                        <div class="performance-grid">
+                            <div class="performance-card">
+                                <div class="card-header">
+                                    <h4>CPU使用率</h4>
+                                    <span class="current-value" id="cpuValue">0%</span>
+                                </div>
+                                <div class="chart-container">
+                                    <canvas id="cpuChart" width="300" height="150"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="performance-card">
+                                <div class="card-header">
+                                    <h4>内存使用率</h4>
+                                    <span class="current-value" id="memoryValue">0%</span>
+                                </div>
+                                <div class="chart-container">
+                                    <canvas id="memoryChart" width="300" height="150"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="performance-card">
+                                <div class="card-header">
+                                    <h4>磁盘I/O</h4>
+                                    <span class="current-value" id="diskValue">0 MB/s</span>
+                                </div>
+                                <div class="chart-container">
+                                    <canvas id="diskChart" width="300" height="150"></canvas>
+                                </div>
+                            </div>
+
+                            <div class="performance-card">
+                                <div class="card-header">
+                                    <h4>网络流量</h4>
+                                    <span class="current-value" id="networkValue">0 KB/s</span>
+                                </div>
+                                <div class="chart-container">
+                                    <canvas id="networkChart" width="300" height="150"></canvas>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="performance-details">
+                            <div class="details-section">
+                                <h4>系统负载</h4>
+                                <div class="load-info">
+                                    <div class="load-item">
+                                        <span class="load-label">1分钟:</span>
+                                        <span class="load-value" id="load1">0.15</span>
+                                    </div>
+                                    <div class="load-item">
+                                        <span class="load-label">5分钟:</span>
+                                        <span class="load-value" id="load5">0.25</span>
+                                    </div>
+                                    <div class="load-item">
+                                        <span class="load-label">15分钟:</span>
+                                        <span class="load-value" id="load15">0.18</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="details-section">
+                                <h4>进程统计</h4>
+                                <div class="process-stats">
+                                    <div class="stat-item">
+                                        <span class="stat-label">总进程:</span>
+                                        <span class="stat-value" id="totalProcesses">156</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">运行中:</span>
+                                        <span class="stat-value" id="runningProcesses">89</span>
+                                    </div>
+                                    <div class="stat-item">
+                                        <span class="stat-label">休眠:</span>
+                                        <span class="stat-value" id="sleepingProcesses">67</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 安全工具 -->
+                <div class="tool-panel" id="security">
+                    <div class="security-tools">
+                        <div class="security-grid">
+                            <div class="security-card">
+                                <div class="card-header">
+                                    <h3>防火墙状态</h3>
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="card-content">
+                                    <div class="status-indicator">
+                                        <span class="status-dot active"></span>
+                                        <span class="status-text">防火墙已启用</span>
+                                    </div>
+                                    <div class="firewall-rules">
+                                        <h4>活动规则</h4>
+                                        <div class="rule-list">
+                                            <div class="rule-item">
+                                                <span class="rule-action allow">ALLOW</span>
+                                                <span class="rule-port">22/tcp</span>
+                                                <span class="rule-source">anywhere</span>
+                                            </div>
+                                            <div class="rule-item">
+                                                <span class="rule-action allow">ALLOW</span>
+                                                <span class="rule-port">80/tcp</span>
+                                                <span class="rule-source">anywhere</span>
+                                            </div>
+                                            <div class="rule-item">
+                                                <span class="rule-action deny">DENY</span>
+                                                <span class="rule-port">*</span>
+                                                <span class="rule-source">192.168.1.100</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary" id="manageFirewall">
+                                        <i class="fas fa-cog"></i> 管理规则
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="security-card">
+                                <div class="card-header">
+                                    <h3>SSL证书检查</h3>
+                                    <i class="fas fa-certificate"></i>
+                                </div>
+                                <div class="card-content">
+                                    <div class="input-group">
+                                        <label>域名:</label>
+                                        <input type="text" id="sslDomain" placeholder="输入域名" value="google.com">
+                                    </div>
+                                    <button class="btn btn-primary" id="checkSSL">
+                                        <i class="fas fa-search"></i> 检查证书
+                                    </button>
+                                    <div class="ssl-results" id="sslResults"></div>
+                                </div>
+                            </div>
+
+                            <div class="security-card">
+                                <div class="card-header">
+                                    <h3>安全扫描</h3>
+                                    <i class="fas fa-bug"></i>
+                                </div>
+                                <div class="card-content">
+                                    <div class="scan-options">
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" checked> 端口扫描
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox" checked> 漏洞检测
+                                        </label>
+                                        <label class="checkbox-label">
+                                            <input type="checkbox"> 恶意软件扫描
+                                        </label>
+                                    </div>
+                                    <button class="btn btn-primary" id="startSecurityScan">
+                                        <i class="fas fa-search"></i> 开始扫描
+                                    </button>
+                                    <div class="scan-progress" id="securityScanProgress" style="display: none;">
+                                        <div class="progress-bar">
+                                            <div class="progress-fill"></div>
+                                        </div>
+                                        <span class="progress-text">扫描中... 0%</span>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="security-card">
+                                <div class="card-header">
+                                    <h3>登录日志分析</h3>
+                                    <i class="fas fa-user-shield"></i>
+                                </div>
+                                <div class="card-content">
+                                    <div class="login-stats">
+                                        <div class="stat-item">
+                                            <span class="stat-label">今日登录:</span>
+                                            <span class="stat-value">23</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">失败尝试:</span>
+                                            <span class="stat-value warning">5</span>
+                                        </div>
+                                        <div class="stat-item">
+                                            <span class="stat-label">异常IP:</span>
+                                            <span class="stat-value danger">2</span>
+                                        </div>
+                                    </div>
+                                    <button class="btn btn-primary" id="analyzeLogins">
+                                        <i class="fas fa-chart-bar"></i> 详细分析
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 数据库工具 -->
+                <div class="tool-panel" id="database">
+                    <div class="database-tools">
+                        <div class="db-connection-panel">
+                            <h3>数据库连接</h3>
+                            <div class="connection-form">
+                                <div class="form-row">
+                                    <div class="input-group">
+                                        <label>数据库类型:</label>
+                                        <select id="dbType">
+                                            <option value="mysql">MySQL</option>
+                                            <option value="postgresql">PostgreSQL</option>
+                                            <option value="mongodb">MongoDB</option>
+                                            <option value="redis">Redis</option>
+                                        </select>
+                                    </div>
+                                    <div class="input-group">
+                                        <label>主机地址:</label>
+                                        <input type="text" id="dbHost" value="localhost">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="input-group">
+                                        <label>端口:</label>
+                                        <input type="number" id="dbPort" value="3306">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>数据库名:</label>
+                                        <input type="text" id="dbName" placeholder="数据库名称">
+                                    </div>
+                                </div>
+                                <div class="form-row">
+                                    <div class="input-group">
+                                        <label>用户名:</label>
+                                        <input type="text" id="dbUser" placeholder="用户名">
+                                    </div>
+                                    <div class="input-group">
+                                        <label>密码:</label>
+                                        <input type="password" id="dbPassword" placeholder="密码">
+                                    </div>
+                                </div>
+                                <div class="connection-actions">
+                                    <button class="btn btn-primary" id="testConnection">
+                                        <i class="fas fa-plug"></i> 测试连接
+                                    </button>
+                                    <button class="btn btn-success" id="connectDB">
+                                        <i class="fas fa-link"></i> 连接
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="db-operations-panel">
+                            <div class="db-tabs">
+                                <button class="db-tab active" data-tab="query">SQL查询</button>
+                                <button class="db-tab" data-tab="backup">备份</button>
+                                <button class="db-tab" data-tab="monitor">监控</button>
+                            </div>
+
+                            <div class="db-tab-content">
+                                <div class="db-panel active" id="queryPanel">
+                                    <div class="query-editor">
+                                        <textarea id="sqlQuery" placeholder="输入SQL查询语句...">SELECT * FROM users LIMIT 10;</textarea>
+                                        <div class="query-actions">
+                                            <button class="btn btn-primary" id="executeQuery">
+                                                <i class="fas fa-play"></i> 执行查询
+                                            </button>
+                                            <button class="btn btn-secondary" id="clearQuery">
+                                                <i class="fas fa-eraser"></i> 清空
+                                            </button>
+                                            <button class="btn btn-info" id="formatQuery">
+                                                <i class="fas fa-code"></i> 格式化
+                                            </button>
+                                        </div>
+                                    </div>
+                                    <div class="query-results" id="queryResults">
+                                        <div class="results-header">
+                                            <span>查询结果</span>
+                                            <button class="btn btn-sm btn-secondary" id="exportResults">
+                                                <i class="fas fa-download"></i> 导出
+                                            </button>
+                                        </div>
+                                        <div class="results-table" id="resultsTable">
+                                            <!-- 查询结果将在这里显示 -->
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="db-panel" id="backupPanel">
+                                    <div class="backup-options">
+                                        <h4>备份选项</h4>
+                                        <div class="backup-form">
+                                            <div class="input-group">
+                                                <label>备份类型:</label>
+                                                <select id="backupType">
+                                                    <option value="full">完整备份</option>
+                                                    <option value="schema">仅结构</option>
+                                                    <option value="data">仅数据</option>
+                                                </select>
+                                            </div>
+                                            <div class="input-group">
+                                                <label>备份文件名:</label>
+                                                <input type="text" id="backupFileName" placeholder="backup_20240115.sql">
+                                            </div>
+                                            <button class="btn btn-primary" id="startBackup">
+                                                <i class="fas fa-archive"></i> 开始备份
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="db-panel" id="monitorPanel">
+                                    <div class="db-monitor">
+                                        <div class="monitor-stats">
+                                            <div class="stat-card">
+                                                <h4>连接数</h4>
+                                                <span class="stat-value">45</span>
+                                            </div>
+                                            <div class="stat-card">
+                                                <h4>查询/秒</h4>
+                                                <span class="stat-value">128</span>
+                                            </div>
+                                            <div class="stat-card">
+                                                <h4>缓存命中率</h4>
+                                                <span class="stat-value">95.2%</span>
+                                            </div>
+                                            <div class="stat-card">
+                                                <h4>慢查询</h4>
+                                                <span class="stat-value warning">3</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 隐藏的文件上传输入 -->
+    <input type="file" id="fileUploadInput" multiple style="display: none;">
+
+    <script src="chart.js"></script>
+    <script src="运维工具.js"></script>
+</body>
+</html>

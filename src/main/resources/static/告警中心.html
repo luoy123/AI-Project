@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>告警中心 - 人工智能运维平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="告警中心.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>人工智能运维平台</h2>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>总览</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-eye"></i>
+                <span>视图</span>
+            </div>
+            <div class="sidebar-item active">
+                <i class="fas fa-bell"></i>
+                <span>告警中心</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-server"></i>
+                <span>设备管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-network-wired"></i>
+                <span>网络拓扑</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-chart-line"></i>
+                <span>统计报表</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-tools"></i>
+                <span>运维工具</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">拓展中心</div>
+            <div class="sidebar-item">
+                <i class="fas fa-layer-group"></i>
+                <span>业务管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-globe"></i>
+                <span>网络管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-video"></i>
+                <span>视频管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-building"></i>
+                <span>机房管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-cubes"></i>
+                <span>资产管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-user-cog"></i>
+                <span>运维管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-database"></i>
+                <span>CMDB</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-file-alt"></i>
+                <span>日志管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-chart-pie"></i>
+                <span>智能预测管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-cloud"></i>
+                <span>云平台</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">设置中心</div>
+            <div class="sidebar-item">
+                <i class="fas fa-cog"></i>
+                <span>设置</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-plug"></i>
+                <span>对接配置</span>
+            </div>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <div class="header">
+                <h1>告警中心</h1>
+                <div class="user-info">
+                    <span>管理员</span>
+                    <img src="1.png" alt="用户头像">
+                </div>
+            </div>
+
+            <!-- 告警统计概览 -->
+            <div class="alert-overview">
+                <div class="overview-header">
+                    <h3>告警统计概览</h3>
+                    <div class="overview-time">
+                        <i class="fas fa-clock"></i>
+                        <span id="lastUpdateTime">最后更新: 刚刚</span>
+                    </div>
+                </div>
+
+                <div class="stats-container">
+                    <!-- 快速筛选区域 -->
+                    <div class="quick-filters-section">
+                        <div class="filter-title">
+                            <i class="fas fa-filter"></i>
+                            <span>快速筛选</span>
+                        </div>
+
+                        <div class="filters-horizontal">
+                            <!-- 按告警级别筛选 -->
+                            <div class="filter-group">
+                                <div class="filter-group-title">按告警级别</div>
+                                <div class="filter-options">
+                                    <div class="filter-option critical" data-filter="severity" data-value="critical">
+                                        <div class="filter-checkbox">
+                                            <input type="checkbox" id="filter-critical">
+                                            <label for="filter-critical"></label>
+                                        </div>
+                                        <div class="filter-icon">
+                                            <i class="fas fa-exclamation-triangle"></i>
+                                        </div>
+                                        <div class="filter-content">
+                                            <span class="filter-label">严重告警</span>
+                                            <span class="filter-count" id="criticalCount">0</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="filter-option warning" data-filter="severity" data-value="warning">
+                                        <div class="filter-checkbox">
+                                            <input type="checkbox" id="filter-warning">
+                                            <label for="filter-warning"></label>
+                                        </div>
+                                        <div class="filter-icon">
+                                            <i class="fas fa-exclamation-circle"></i>
+                                        </div>
+                                        <div class="filter-content">
+                                            <span class="filter-label">警告告警</span>
+                                            <span class="filter-count" id="warningCount">0</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="filter-option info" data-filter="severity" data-value="info">
+                                        <div class="filter-checkbox">
+                                            <input type="checkbox" id="filter-info">
+                                            <label for="filter-info"></label>
+                                        </div>
+                                        <div class="filter-icon">
+                                            <i class="fas fa-info-circle"></i>
+                                        </div>
+                                        <div class="filter-content">
+                                            <span class="filter-label">信息告警</span>
+                                            <span class="filter-count" id="infoCount">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 按状态筛选 -->
+                            <div class="filter-group">
+                                <div class="filter-group-title">按状态</div>
+                                <div class="filter-options">
+                                    <div class="filter-option active" data-filter="status" data-value="active">
+                                        <div class="filter-checkbox">
+                                            <input type="checkbox" id="filter-active">
+                                            <label for="filter-active"></label>
+                                        </div>
+                                        <div class="filter-icon">
+                                            <i class="fas fa-circle"></i>
+                                        </div>
+                                        <div class="filter-content">
+                                            <span class="filter-label">活跃告警</span>
+                                            <span class="filter-count" id="activeCount">0</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="filter-option acknowledged" data-filter="status" data-value="acknowledged">
+                                        <div class="filter-checkbox">
+                                            <input type="checkbox" id="filter-acknowledged">
+                                            <label for="filter-acknowledged"></label>
+                                        </div>
+                                        <div class="filter-icon">
+                                            <i class="fas fa-clock"></i>
+                                        </div>
+                                        <div class="filter-content">
+                                            <span class="filter-label">已确认</span>
+                                            <span class="filter-count" id="acknowledgedCount">0</span>
+                                        </div>
+                                    </div>
+
+                                    <div class="filter-option resolved" data-filter="status" data-value="resolved">
+                                        <div class="filter-checkbox">
+                                            <input type="checkbox" id="filter-resolved">
+                                            <label for="filter-resolved"></label>
+                                        </div>
+                                        <div class="filter-icon">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                        <div class="filter-content">
+                                            <span class="filter-label">已解决</span>
+                                            <span class="filter-count" id="resolvedCount">0</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="filter-actions">
+                            <button class="filter-clear-btn" id="clearFilters">
+                                <i class="fas fa-times"></i>
+                                清除筛选
+                            </button>
+                            <button class="filter-apply-btn" id="applyFilters">
+                                <i class="fas fa-check"></i>
+                                应用筛选
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 告警分布图表 -->
+                    <div class="stats-chart">
+                        <div class="chart-header">
+                            <h4>告警分布</h4>
+                            <div class="total-count">
+                                总计: <span id="totalAlerts">0</span>
+                            </div>
+                        </div>
+                        <div class="donut-chart">
+                            <canvas id="alertDistributionChart" width="200" height="200"></canvas>
+                            <div class="chart-center">
+                                <div class="center-number" id="centerTotal">0</div>
+                                <div class="center-label">告警总数</div>
+                            </div>
+                        </div>
+                        <div class="chart-legend">
+                            <div class="legend-item critical">
+                                <div class="legend-color"></div>
+                                <span>严重</span>
+                            </div>
+                            <div class="legend-item warning">
+                                <div class="legend-color"></div>
+                                <span>警告</span>
+                            </div>
+                            <div class="legend-item info">
+                                <div class="legend-color"></div>
+                                <span>信息</span>
+                            </div>
+                            <div class="legend-item resolved">
+                                <div class="legend-color"></div>
+                                <span>已解决</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 告警过滤和搜索 -->
+            <div class="alert-controls">
+                <div class="filter-section">
+                    <div class="filter-group">
+                        <label>告警级别:</label>
+                        <select id="severityFilter">
+                            <option value="">全部</option>
+                            <option value="critical">严重</option>
+                            <option value="warning">警告</option>
+                            <option value="info">信息</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>状态:</label>
+                        <select id="statusFilter">
+                            <option value="">全部</option>
+                            <option value="active">活跃</option>
+                            <option value="resolved">已解决</option>
+                            <option value="acknowledged">已确认</option>
+                        </select>
+                    </div>
+                    <div class="filter-group">
+                        <label>设备类型:</label>
+                        <select id="deviceTypeFilter">
+                            <option value="">全部</option>
+                            <option value="server">服务器</option>
+                            <option value="network">网络设备</option>
+                            <option value="storage">存储设备</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="search-section">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" id="searchInput" placeholder="搜索告警信息...">
+                    </div>
+                    <button class="refresh-btn" id="refreshBtn">
+                        <i class="fas fa-sync-alt"></i>
+                        刷新
+                    </button>
+                </div>
+            </div>
+
+            <!-- 告警列表 -->
+            <div class="alert-table-container">
+                <div class="alert-table-header">
+                    <h3>告警列表</h3>
+                    <div class="table-actions">
+                        <button class="btn btn-primary" id="acknowledgeAllBtn">
+                            <i class="fas fa-check"></i>
+                            批量确认
+                        </button>
+                        <button class="btn btn-secondary" id="exportBtn">
+                            <i class="fas fa-download"></i>
+                            导出
+                        </button>
+                    </div>
+                </div>
+                <div class="alert-table-wrapper">
+                    <table class="alert-table" id="alertTable">
+                        <thead>
+                            <tr>
+                                <th><input type="checkbox" id="selectAll"></th>
+                                <th>级别</th>
+                                <th>告警信息</th>
+                                <th>设备</th>
+                                <th>时间</th>
+                                <th>状态</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="alertTableBody">
+                            <!-- 告警数据将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
+                <div class="pagination" id="pagination">
+                    <!-- 分页控件将通过JavaScript动态生成 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 告警详情模态框 -->
+    <div class="modal" id="alertDetailModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>告警详情</h3>
+                <span class="close" id="closeModal">&times;</span>
+            </div>
+            <div class="modal-body" id="alertDetailContent">
+                <!-- 告警详情内容将通过JavaScript动态加载 -->
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="acknowledgeBtn">确认告警</button>
+                <button class="btn btn-primary" id="resolveBtn">解决告警</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="告警中心.js"></script>
+</body>
+</html>

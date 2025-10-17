@@ -1,0 +1,330 @@
+:root {
+    --primary-color: #00b42a;
+    --secondary-color: #666666;
+    --light-gray: #f5f5f5;
+    --white: #ffffff;
+    --border-color: #dddddd;
+    --text-color: #333333;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Arial', sans-serif;
+}
+
+body {
+    background-color: #f9f9f9;
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.login-container {
+    display: flex;
+    width: 900px;
+    height: 550px;
+    background-color: var(--white);
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+.login-left {
+    flex: 1;
+    background-color: var(--light-gray);
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    overflow: hidden;
+}
+
+.carousel-container {
+    width: 100%;
+    height: 100%;
+    position: relative;
+}
+
+.carousel-slide {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-size: cover;
+    background-position: center;
+    opacity: 0;
+    transition: opacity 1s ease;
+}
+
+.carousel-slide.active {
+    opacity: 1;
+}
+
+.carousel-navigation {
+    position: absolute;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 10px;
+    z-index: 10;
+}
+
+.carousel-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background-color: rgba(255, 255, 255, 0.6);
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+
+.carousel-dot.active {
+    background-color: var(--primary-color);
+}
+
+.carousel-caption {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: white;
+    padding: 20px;
+    z-index: 5;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+    max-width: 80%;
+}
+
+.login-promo h1 {
+    color: var(--text-color);
+    font-size: 24px;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.login-promo p {
+    color: var(--secondary-color);
+    font-size: 14px;
+    line-height: 1.6;
+    text-align: center;
+    margin-bottom: 40px;
+}
+
+.server-illustration {
+    width: 280px;
+    height: 220px;
+    position: relative;
+}
+
+/* 服务器插图样式 */
+.server-illustration::before {
+    content: '';
+    position: absolute;
+    width: 120px;
+    height: 160px;
+    background-color: #2b8fff;
+    border-radius: 8px;
+    left: 30px;
+    top: 20px;
+}
+
+.server-illustration::after {
+    content: '';
+    position: absolute;
+    width: 80px;
+    height: 180px;
+    background-color: #e8f3ff;
+    border-radius: 4px;
+    right: 40px;
+    top: 10px;
+    box-shadow: 0 0 0 10px #d5e8ff, 0 0 0 20px #bdd8ff;
+}
+
+/* 服务器上的小方块 */
+.server-illustration span {
+    position: absolute;
+    width: 15px;
+    height: 15px;
+    background-color: #ffffff;
+    border-radius: 3px;
+}
+
+.server-illustration span:nth-child(1) { top: 40px; left: 50px; }
+.server-illustration span:nth-child(2) { top: 70px; left: 50px; }
+.server-illustration span:nth-child(3) { top: 100px; left: 50px; }
+.server-illustration span:nth-child(4) { top: 130px; left: 50px; }
+
+/* 底部装饰点 */
+.login-left .decorative-dots {
+    position: absolute;
+    bottom: 30px;
+    display: flex;
+    gap: 10px;
+}
+
+.login-left .decorative-dots span {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background-color: #cccccc;
+}
+
+.login-left .decorative-dots span.active {
+    background-color: var(--primary-color);
+}
+
+.login-right {
+    flex: 0 0 350px;
+    padding: 40px 30px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.login-logo {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 40px;
+}
+
+.logo-icon {
+    width: 60px;
+    height: 60px;
+    background-color: var(--primary-color);
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.logo-icon i {
+    color: white;
+    font-size: 24px;
+}
+
+.login-logo h2 {
+    color: var(--text-color);
+    font-size: 22px;
+    font-weight: 500;
+}
+
+#login-form {
+    width: 100%;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--secondary-color);
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+}
+
+.form-group label i {
+    color: var(--primary-color);
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.form-group input {
+    width: 100%;
+    height: 40px;
+    padding: 0 12px;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+    font-size: 14px;
+    outline: none;
+    transition: border-color 0.3s;
+}
+
+.form-group input:focus {
+    border-color: var(--primary-color);
+}
+
+.captcha-container {
+    display: flex;
+    gap: 10px;
+}
+
+.captcha-container input {
+    flex: 1;
+}
+
+.captcha-image {
+    width: 100px;
+    height: 40px;
+    background-color: #e8e8e8;
+    border-radius: 4px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 18px;
+    color: #666;
+    letter-spacing: 2px;
+    cursor: pointer;
+}
+
+.login-btn {
+    width: 100%;
+    height: 44px;
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    margin-bottom: 15px;
+}
+
+.login-btn:hover {
+    background-color: #00a025;
+}
+
+.login-links {
+    text-align: center;
+}
+
+.activate-link {
+    color: var(--primary-color);
+    font-size: 14px;
+    text-decoration: none;
+}
+
+.activate-link:hover {
+    text-decoration: underline;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .login-container {
+        flex-direction: column;
+        width: 90%;
+        height: auto;
+    }
+
+    .login-left {
+        padding: 30px;
+        min-height: 300px;
+    }
+
+    .login-right {
+        flex: none;
+        width: 100%;
+    }
+}

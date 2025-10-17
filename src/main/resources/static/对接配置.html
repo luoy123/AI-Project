@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>对接配置 - 人工智能运维平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="对接配置.css">
+</head>
+<body>
+    <div class="app-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>人工智能运维平台</h2>
+            </div>
+            <div class="sidebar-item nav-overview">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>总览</span>
+            </div>
+            <div class="sidebar-item nav-view">
+                <i class="fas fa-eye"></i>
+                <span>视图</span>
+            </div>
+            <div class="sidebar-item nav-alert">
+                <i class="fas fa-bell"></i>
+                <span>告警中心</span>
+            </div>
+            <div class="sidebar-item nav-device">
+                <i class="fas fa-server"></i>
+                <span>设备管理</span>
+            </div>
+            <div class="sidebar-item nav-network">
+                <i class="fas fa-network-wired"></i>
+                <span>网络拓扑</span>
+            </div>
+            <div class="sidebar-item nav-report">
+                <i class="fas fa-chart-line"></i>
+                <span>统计报表</span>
+            </div>
+            <div class="sidebar-item nav-tools">
+                <i class="fas fa-tools"></i>
+                <span>运维工具</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">拓展中心</div>
+            <div class="sidebar-item nav-business">
+                <i class="fas fa-layer-group"></i>
+                <span>业务管理</span>
+            </div>
+            <div class="sidebar-item nav-network-mgmt">
+                <i class="fas fa-globe"></i>
+                <span>网络管理</span>
+            </div>
+            <div class="sidebar-item nav-video">
+                <i class="fas fa-video"></i>
+                <span>视频管理</span>
+            </div>
+            <div class="sidebar-item nav-room">
+                <i class="fas fa-building"></i>
+                <span>机房管理</span>
+            </div>
+            <div class="sidebar-item nav-asset">
+                <i class="fas fa-cubes"></i>
+                <span>资产管理</span>
+            </div>
+            <div class="sidebar-item nav-operation">
+                <i class="fas fa-user-cog"></i>
+                <span>运维管理</span>
+            </div>
+            <div class="sidebar-item nav-cmdb">
+                <i class="fas fa-database"></i>
+                <span>CMDB</span>
+            </div>
+            <div class="sidebar-item nav-log">
+                <i class="fas fa-file-alt"></i>
+                <span>日志管理</span>
+            </div>
+            <div class="sidebar-item nav-prediction">
+                <i class="fas fa-chart-pie"></i>
+                <span>智能预测管理</span>
+            </div>
+            <div class="sidebar-item nav-cloud">
+                <i class="fas fa-cloud"></i>
+                <span>云平台</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">设置中心</div>
+            <div class="sidebar-item nav-settings">
+                <i class="fas fa-cog"></i>
+                <span>设置</span>
+            </div>
+            <div class="sidebar-item nav-docking active">
+                <i class="fas fa-plug"></i>
+                <span>对接配置</span>
+            </div>
+        </div>
+
+        <!-- 主内容区 -->
+        <div class="main-content">
+            <!-- 顶部导航栏 -->
+            <header class="top-header">
+                <div class="header-left">
+                    <div class="breadcrumb">
+                        <span class="breadcrumb-item">对接配置</span>
+                    </div>
+                </div>
+                <div class="header-right">
+                    <div class="search-box">
+                        <i class="fas fa-search"></i>
+                        <input type="text" placeholder="搜索对接配置..." id="searchInput">
+                    </div>
+                    <div class="user-menu">
+                        <div class="user-avatar">
+                            <img src="1.png" alt="用户头像">
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- 页面内容 -->
+            <div class="page-content">
+                <!-- 对接配置内容区域 -->
+                <div class="docking-container">
+                    <!-- 工具栏 -->
+                    <div class="toolbar">
+                        <div class="toolbar-left">
+                            <div class="nav-tabs">
+                                <button class="nav-tab active" data-tab="docking">对接配置</button>
+                            </div>
+                        </div>
+                        <div class="toolbar-right">
+                            <div class="search-container">
+                                <input type="text" class="search-input" placeholder="输入关键字搜索对接配置信息" id="dockingSearchInput">
+                                <button class="search-btn">
+                                    <i class="fas fa-search"></i>
+                                </button>
+                                <button class="refresh-btn">
+                                    <i class="fas fa-sync"></i>
+                                </button>
+                                <button class="add-btn">
+                                    <i class="fas fa-plus"></i>
+                                    新增对接配置
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 对接配置内容 -->
+                    <div class="docking-content">
+                        <!-- 对接配置管理表格 -->
+                        <div class="docking-management">
+                            <div class="table-container">
+                                <table class="data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>对接</th>
+                                            <th>对接</th>
+                                            <th>对接配置</th>
+                                            <th>对接配置</th>
+                                            <th>对接工具</th>
+                                            <th>对接配置</th>
+                                            <th>配置</th>
+                                            <th>配置时间</th>
+                                            <th>操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <!-- 空状态 -->
+                                    </tbody>
+                                </table>
+                                
+                                <!-- 空状态显示 -->
+                                <div class="empty-state">
+                                    <div class="empty-icon">
+                                        <i class="fas fa-plug"></i>
+                                    </div>
+                                    <div class="empty-text">暂无数据的对接配置</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 新增对接配置模态框 -->
+        <div class="modal" id="addDockingModal" style="display: none;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>新增对接配置</h3>
+                    <button class="close-btn" onclick="closeModal()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <form class="docking-form" id="dockingForm">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="dockingName">对接名称</label>
+                                <input type="text" id="dockingName" name="dockingName" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="dockingType">对接类型</label>
+                                <select id="dockingType" name="dockingType" required>
+                                    <option value="">请选择对接类型</option>
+                                    <option value="api">API对接</option>
+                                    <option value="database">数据库对接</option>
+                                    <option value="file">文件对接</option>
+                                    <option value="message">消息队列对接</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="dockingUrl">对接地址</label>
+                                <input type="url" id="dockingUrl" name="dockingUrl" required>
+                            </div>
+                            <div class="form-group">
+                                <label for="dockingPort">端口</label>
+                                <input type="number" id="dockingPort" name="dockingPort" min="1" max="65535">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="username">用户名</label>
+                                <input type="text" id="username" name="username">
+                            </div>
+                            <div class="form-group">
+                                <label for="password">密码</label>
+                                <input type="password" id="password" name="password">
+                            </div>
+                        </div>
+                        <div class="form-group full-width">
+                            <label for="description">描述</label>
+                            <textarea id="description" name="description" rows="3" placeholder="请输入对接配置描述"></textarea>
+                        </div>
+                        <div class="form-group full-width">
+                            <label>
+                                <input type="checkbox" id="enableSsl" name="enableSsl">
+                                启用SSL加密
+                            </label>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">取消</button>
+                    <button type="button" class="btn-primary" onclick="saveDockingConfig()">保存</button>
+                    <button type="button" class="btn-test" onclick="testConnection()">测试连接</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- 模态框背景 -->
+        <div class="modal-backdrop" id="modalBackdrop" style="display: none;" onclick="closeModal()"></div>
+    </div>
+
+    <script src="对接配置.js"></script>
+</body>
+</html>

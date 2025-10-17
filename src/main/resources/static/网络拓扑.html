@@ -1,0 +1,991 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网络拓扑 - 人工智能运维平台</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="网络拓扑.css">
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>人工智能运维平台</h2>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>总览</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-eye"></i>
+                <span>视图</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-bell"></i>
+                <span>告警中心</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-server"></i>
+                <span>设备管理</span>
+            </div>
+            <div class="sidebar-item active">
+                <i class="fas fa-network-wired"></i>
+                <span>网络拓扑</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-chart-line"></i>
+                <span>统计报表</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-tools"></i>
+                <span>运维工具</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">拓展中心</div>
+            <div class="sidebar-item">
+                <i class="fas fa-layer-group"></i>
+                <span>业务管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-globe"></i>
+                <span>网络管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-video"></i>
+                <span>视频管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-building"></i>
+                <span>机房管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-cubes"></i>
+                <span>资产管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-user-cog"></i>
+                <span>运维管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-database"></i>
+                <span>CMDB</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-file-alt"></i>
+                <span>日志管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-chart-pie"></i>
+                <span>智能预测管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-cloud"></i>
+                <span>云平台</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">设置中心</div>
+            <div class="sidebar-item">
+                <i class="fas fa-cog"></i>
+                <span>设置</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-plug"></i>
+                <span>对接配置</span>
+            </div>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <div class="header">
+                <h1>网络拓扑</h1>
+                <div class="user-info">
+                    <span>管理员</span>
+                    <img src="1.png" alt="用户头像">
+                </div>
+            </div>
+
+            <div class="topology-container">
+                <!-- 左侧设备面板 -->
+                <div class="device-panel">
+                    <div class="panel-header">
+                        <h3>网络设备</h3>
+                        <div class="panel-actions">
+                            <button class="btn-icon" id="refreshDevices" title="刷新设备列表">
+                                <i class="fas fa-sync-alt"></i>
+                            </button>
+                            <button class="btn-icon" id="expandAll" title="展开全部">
+                                <i class="fas fa-expand-arrows-alt"></i>
+                            </button>
+                            <button class="btn-icon" id="collapseAll" title="收起全部">
+                                <i class="fas fa-compress-arrows-alt"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- 设备搜索 -->
+                    <div class="device-search">
+                        <div class="search-input-container">
+                            <input type="text" id="deviceSearch" placeholder="搜索设备..." class="search-input">
+                            <i class="fas fa-search search-icon"></i>
+                        </div>
+                        <div class="search-filters">
+                            <select id="deviceFilter" class="filter-select">
+                                <option value="all">全部设备</option>
+                                <option value="router">路由器</option>
+                                <option value="switch">交换机</option>
+                                <option value="firewall">防火墙</option>
+                                <option value="server">服务器</option>
+                                <option value="wireless">无线设备</option>
+                                <option value="security">安全设备</option>
+                                <option value="storage">存储设备</option>
+                            </select>
+                            <select id="statusFilter" class="filter-select">
+                                <option value="all">全部状态</option>
+                                <option value="online">在线</option>
+                                <option value="offline">离线</option>
+                                <option value="warning">告警</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="device-tree">
+                        <div class="tree-node">
+                            <div class="tree-node-content">
+                                <div class="tree-node-toggle">
+                                    <i class="fas fa-chevron-right"></i>
+                                </div>
+                                <div class="tree-node-icon">
+                                    <i class="fas fa-network-wired"></i>
+                                </div>
+                                <div class="tree-node-label">网络设备</div>
+                            </div>
+                            <div class="tree-node-children">
+                                <!-- 路由器类别 -->
+                                <div class="tree-node">
+                                    <div class="tree-node-content">
+                                        <div class="tree-node-toggle">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </div>
+                                        <div class="tree-node-icon">
+                                            <i class="fas fa-route"></i>
+                                        </div>
+                                        <div class="tree-node-label">路由器</div>
+                                    </div>
+                                    <div class="tree-node-children">
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="router" data-device-id="router-001">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-route"></i>
+                                                </div>
+                                                <div class="tree-node-label">核心路由器-01 (192.168.1.1)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="router" data-device-id="router-002">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-route"></i>
+                                                </div>
+                                                <div class="tree-node-label">核心路由器-02 (192.168.1.2)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="router" data-device-id="router-003">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-route"></i>
+                                                </div>
+                                                <div class="tree-node-label">边界路由器 (192.168.1.254)</div>
+                                                <div class="device-status warning"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 交换机类别 -->
+                                <div class="tree-node">
+                                    <div class="tree-node-content">
+                                        <div class="tree-node-toggle">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </div>
+                                        <div class="tree-node-icon">
+                                            <i class="fas fa-project-diagram"></i>
+                                        </div>
+                                        <div class="tree-node-label">交换机</div>
+                                    </div>
+                                    <div class="tree-node-children">
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="switch" data-device-id="switch-001">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-project-diagram"></i>
+                                                </div>
+                                                <div class="tree-node-label">核心交换机-01 (192.168.2.1)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="switch" data-device-id="switch-002">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-project-diagram"></i>
+                                                </div>
+                                                <div class="tree-node-label">核心交换机-02 (192.168.2.2)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="switch" data-device-id="switch-003">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-project-diagram"></i>
+                                                </div>
+                                                <div class="tree-node-label">汇聚交换机-A (192.168.2.10)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="switch" data-device-id="switch-004">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-project-diagram"></i>
+                                                </div>
+                                                <div class="tree-node-label">汇聚交换机-B (192.168.2.11)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="switch" data-device-id="switch-005">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-project-diagram"></i>
+                                                </div>
+                                                <div class="tree-node-label">接入交换机-01 (192.168.2.20)</div>
+                                                <div class="device-status offline"></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="switch" data-device-id="switch-006">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-project-diagram"></i>
+                                                </div>
+                                                <div class="tree-node-label">接入交换机-02 (192.168.2.21)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 防火墙类别 -->
+                                <div class="tree-node">
+                                    <div class="tree-node-content">
+                                        <div class="tree-node-toggle">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </div>
+                                        <div class="tree-node-icon">
+                                            <i class="fas fa-shield-alt"></i>
+                                        </div>
+                                        <div class="tree-node-label">防火墙</div>
+                                    </div>
+                                    <div class="tree-node-children">
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="firewall" data-device-id="firewall-001">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-shield-alt"></i>
+                                                </div>
+                                                <div class="tree-node-label">边界防火墙 (192.168.3.1)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="firewall" data-device-id="firewall-002">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-shield-alt"></i>
+                                                </div>
+                                                <div class="tree-node-label">内网防火墙 (192.168.3.2)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="firewall" data-device-id="firewall-003">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-shield-alt"></i>
+                                                </div>
+                                                <div class="tree-node-label">DMZ防火墙 (192.168.3.3)</div>
+                                                <div class="device-status warning"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 服务器类别 -->
+                                <div class="tree-node">
+                                    <div class="tree-node-content">
+                                        <div class="tree-node-toggle">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </div>
+                                        <div class="tree-node-icon">
+                                            <i class="fas fa-server"></i>
+                                        </div>
+                                        <div class="tree-node-label">服务器</div>
+                                    </div>
+                                    <div class="tree-node-children">
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="server" data-device-id="server-001">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-server"></i>
+                                                </div>
+                                                <div class="tree-node-label">Web服务器-01 (192.168.4.10)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="server" data-device-id="server-002">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-server"></i>
+                                                </div>
+                                                <div class="tree-node-label">Web服务器-02 (192.168.4.11)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="server" data-device-id="server-003">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-database"></i>
+                                                </div>
+                                                <div class="tree-node-label">数据库服务器 (192.168.4.20)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="server" data-device-id="server-004">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-envelope"></i>
+                                                </div>
+                                                <div class="tree-node-label">邮件服务器 (192.168.4.30)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="server" data-device-id="server-005">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-file-alt"></i>
+                                                </div>
+                                                <div class="tree-node-label">文件服务器 (192.168.4.40)</div>
+                                                <div class="device-status warning"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 无线设备类别 -->
+                                <div class="tree-node">
+                                    <div class="tree-node-content">
+                                        <div class="tree-node-toggle">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </div>
+                                        <div class="tree-node-icon">
+                                            <i class="fas fa-wifi"></i>
+                                        </div>
+                                        <div class="tree-node-label">无线设备</div>
+                                    </div>
+                                    <div class="tree-node-children">
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="wireless" data-device-id="ap-001" data-device-name="无线控制器">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-wifi"></i>
+                                                </div>
+                                                <div class="tree-node-label">无线控制器 (192.168.5.1)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="wireless" data-device-id="ap-002" data-device-name="无线接入点">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-wifi"></i>
+                                                </div>
+                                                <div class="tree-node-label">AP-办公区-01 (192.168.5.10)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="wireless" data-device-id="ap-003" data-device-name="无线接入点">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-wifi"></i>
+                                                </div>
+                                                <div class="tree-node-label">AP-办公区-02 (192.168.5.11)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="wireless" data-device-id="ap-004" data-device-name="无线接入点">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-wifi"></i>
+                                                </div>
+                                                <div class="tree-node-label">AP-会议室 (192.168.5.20)</div>
+                                                <div class="device-status offline"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 安全设备类别 -->
+                                <div class="tree-node">
+                                    <div class="tree-node-content">
+                                        <div class="tree-node-toggle">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </div>
+                                        <div class="tree-node-icon">
+                                            <i class="fas fa-lock"></i>
+                                        </div>
+                                        <div class="tree-node-label">安全设备</div>
+                                    </div>
+                                    <div class="tree-node-children">
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="security" data-device-id="ids-001" data-device-name="入侵检测系统">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-eye"></i>
+                                                </div>
+                                                <div class="tree-node-label">入侵检测系统 (192.168.6.1)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="security" data-device-id="vpn-001" data-device-name="VPN网关">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-key"></i>
+                                                </div>
+                                                <div class="tree-node-label">VPN网关 (192.168.6.2)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="security" data-device-id="proxy-001" data-device-name="上网行为管理">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-filter"></i>
+                                                </div>
+                                                <div class="tree-node-label">上网行为管理 (192.168.6.3)</div>
+                                                <div class="device-status warning"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 存储设备类别 -->
+                                <div class="tree-node">
+                                    <div class="tree-node-content">
+                                        <div class="tree-node-toggle">
+                                            <i class="fas fa-chevron-right"></i>
+                                        </div>
+                                        <div class="tree-node-icon">
+                                            <i class="fas fa-hdd"></i>
+                                        </div>
+                                        <div class="tree-node-label">存储设备</div>
+                                    </div>
+                                    <div class="tree-node-children">
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="storage" data-device-id="nas-001" data-device-name="NAS存储">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-hdd"></i>
+                                                </div>
+                                                <div class="tree-node-label">NAS存储-01 (192.168.7.10)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="storage" data-device-id="san-001" data-device-name="SAN存储阵列">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-database"></i>
+                                                </div>
+                                                <div class="tree-node-label">SAN存储阵列 (192.168.7.20)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                        <div class="tree-node">
+                                            <div class="tree-node-content device-item" data-device-type="storage" data-device-id="backup-001" data-device-name="备份服务器">
+                                                <div class="tree-node-spacer"></div>
+                                                <div class="tree-node-icon">
+                                                    <i class="fas fa-save"></i>
+                                                </div>
+                                                <div class="tree-node-label">备份服务器 (192.168.7.30)</div>
+                                                <div class="device-status online"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧拓扑图区域 -->
+                <div class="topology-main">
+                    <!-- 工具栏 -->
+                    <div class="topology-toolbar">
+                        <div class="toolbar-left">
+                            <div class="tool-group">
+                                <button class="tool-btn active" id="selectTool" title="选择工具 (V)">
+                                    <i class="fas fa-mouse-pointer"></i>
+                                </button>
+                                <button class="tool-btn" id="panTool" title="平移工具 (H)">
+                                    <i class="fas fa-hand-paper"></i>
+                                </button>
+                                <button class="tool-btn" id="zoomTool" title="缩放工具 (Z)">
+                                    <i class="fas fa-search-plus"></i>
+                                </button>
+                            </div>
+                            <div class="toolbar-divider"></div>
+                            <div class="tool-group">
+                                <button class="tool-btn" id="linkTool" title="连线工具 (L)">
+                                    <i class="fas fa-link"></i>
+                                </button>
+                                <button class="tool-btn" id="textTool" title="文本工具 (T)">
+                                    <i class="fas fa-font"></i>
+                                </button>
+                            </div>
+                            <div class="toolbar-divider"></div>
+                            <div class="tool-group">
+                                <button class="tool-btn" id="undoBtn" title="撤销 (Ctrl+Z)">
+                                    <i class="fas fa-undo"></i>
+                                </button>
+                                <button class="tool-btn" id="redoBtn" title="重做 (Ctrl+Y)">
+                                    <i class="fas fa-redo"></i>
+                                </button>
+                            </div>
+                            <div class="toolbar-divider"></div>
+                            <div class="tool-group">
+                                <button class="tool-btn" id="alignLeft" title="左对齐">
+                                    <i class="fas fa-align-left"></i>
+                                </button>
+                                <button class="tool-btn" id="alignCenter" title="居中对齐">
+                                    <i class="fas fa-align-center"></i>
+                                </button>
+                                <button class="tool-btn" id="alignRight" title="右对齐">
+                                    <i class="fas fa-align-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="toolbar-center">
+                            <div class="view-controls">
+                                <button class="tool-btn" id="showGrid" title="显示网格 (G)">
+                                    <i class="fas fa-th"></i>
+                                </button>
+                                <button class="tool-btn" id="snapToGrid" title="对齐网格">
+                                    <i class="fas fa-magnet"></i>
+                                </button>
+                                <button class="tool-btn" id="showLabels" title="显示标签">
+                                    <i class="fas fa-tags"></i>
+                                </button>
+                                <button class="tool-btn" id="showConnections" title="显示连接">
+                                    <i class="fas fa-project-diagram"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="toolbar-right">
+                            <div class="zoom-controls">
+                                <button class="tool-btn" id="fitToScreen" title="适应屏幕 (F)">
+                                    <i class="fas fa-expand"></i>
+                                </button>
+                                <button class="tool-btn" id="zoomIn" title="放大 (+)">
+                                    <i class="fas fa-plus"></i>
+                                </button>
+                                <button class="tool-btn" id="zoomOut" title="缩小 (-)">
+                                    <i class="fas fa-minus"></i>
+                                </button>
+                                <span class="zoom-level">100%</span>
+                            </div>
+                            <div class="toolbar-divider"></div>
+                            <div class="file-controls">
+                                <button class="tool-btn" id="newTopology" title="新建拓扑 (Ctrl+N)">
+                                    <i class="fas fa-file"></i>
+                                </button>
+                                <button class="tool-btn" id="openTopology" title="打开拓扑 (Ctrl+O)">
+                                    <i class="fas fa-folder-open"></i>
+                                </button>
+                                <button class="tool-btn" id="saveTopology" title="保存拓扑 (Ctrl+S)">
+                                    <i class="fas fa-save"></i>
+                                </button>
+                                <button class="tool-btn" id="exportTopology" title="导出图片">
+                                    <i class="fas fa-download"></i>
+                                </button>
+                            </div>
+                            <div class="toolbar-divider"></div>
+                            <div class="display-controls">
+                                <button class="tool-btn" id="fullscreen" title="全屏 (F11)">
+                                    <i class="fas fa-expand-arrows-alt"></i>
+                                </button>
+                                <button class="tool-btn" id="settingsBtn" title="设置">
+                                    <i class="fas fa-cog"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 拓扑画布 -->
+                    <div class="topology-canvas-container">
+                        <canvas id="topologyCanvas" class="topology-canvas"></canvas>
+                        <div class="canvas-overlay">
+                            <!-- 操作提示 -->
+                            <div class="operation-hints">
+                                <div class="hint-item">
+                                    <i class="fas fa-mouse-pointer"></i>
+                                    <span>选择工具：单击拖动，双击编辑</span>
+                                </div>
+                                <div class="hint-item">
+                                    <i class="fas fa-hand-paper"></i>
+                                    <span>平移工具：拖拽移动画布视图</span>
+                                </div>
+                                <div class="hint-item">
+                                    <i class="fas fa-search-plus"></i>
+                                    <span>缩放工具：左键放大，右键缩小</span>
+                                </div>
+                                <div class="hint-item">
+                                    <i class="fas fa-link"></i>
+                                    <span>连线工具：点击两个设备连接</span>
+                                </div>
+                                <div class="hint-item">
+                                    <i class="fas fa-font"></i>
+                                    <span>文本工具：点击添加，直接编辑</span>
+                                </div>
+                                <div class="hint-item">
+                                    <i class="fas fa-keyboard"></i>
+                                    <span>Delete删除选中对象，ESC取消</span>
+                                </div>
+                            </div>
+
+                            <!-- 右下角小地图 -->
+                            <div class="minimap">
+                                <canvas id="minimapCanvas" class="minimap-canvas"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设备属性面板 -->
+    <div class="property-panel" id="propertyPanel">
+        <div class="property-header">
+            <h4 id="propertyTitle">设备属性</h4>
+            <button class="close-btn" id="closePropPanel">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="property-content">
+            <!-- 基本信息 -->
+            <div class="property-section">
+                <h5>基本信息</h5>
+                <div class="property-group">
+                    <label>设备名称</label>
+                    <input type="text" id="deviceName" placeholder="输入设备名称">
+                </div>
+                <div class="property-group">
+                    <label>IP地址</label>
+                    <input type="text" id="deviceIP" placeholder="输入IP地址" pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$">
+                </div>
+                <div class="property-group">
+                    <label>MAC地址</label>
+                    <input type="text" id="deviceMAC" placeholder="输入MAC地址">
+                </div>
+                <div class="property-group">
+                    <label>设备类型</label>
+                    <select id="deviceType">
+                        <option value="router">路由器</option>
+                        <option value="switch">交换机</option>
+                        <option value="firewall">防火墙</option>
+                        <option value="server">服务器</option>
+                        <option value="wireless">无线设备</option>
+                        <option value="security">安全设备</option>
+                        <option value="storage">存储设备</option>
+                        <option value="workstation">工作站</option>
+                        <option value="printer">打印机</option>
+                    </select>
+                </div>
+                <div class="property-group">
+                    <label>状态</label>
+                    <select id="deviceStatus">
+                        <option value="online">在线</option>
+                        <option value="offline">离线</option>
+                        <option value="warning">告警</option>
+                        <option value="maintenance">维护中</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- 位置信息 -->
+            <div class="property-section">
+                <h5>位置信息</h5>
+                <div class="property-row">
+                    <div class="property-group">
+                        <label>X坐标</label>
+                        <input type="number" id="deviceX" placeholder="X坐标">
+                    </div>
+                    <div class="property-group">
+                        <label>Y坐标</label>
+                        <input type="number" id="deviceY" placeholder="Y坐标">
+                    </div>
+                </div>
+                <div class="property-group">
+                    <label>所属区域</label>
+                    <input type="text" id="deviceZone" placeholder="输入所属区域">
+                </div>
+            </div>
+
+            <!-- 设备详情 -->
+            <div class="property-section">
+                <h5>设备详情</h5>
+                <div class="property-group">
+                    <label>厂商</label>
+                    <input type="text" id="deviceVendor" placeholder="输入设备厂商">
+                </div>
+                <div class="property-group">
+                    <label>型号</label>
+                    <input type="text" id="deviceModel" placeholder="输入设备型号">
+                </div>
+                <div class="property-group">
+                    <label>序列号</label>
+                    <input type="text" id="deviceSerial" placeholder="输入序列号">
+                </div>
+                <div class="property-group">
+                    <label>描述</label>
+                    <textarea id="deviceDescription" placeholder="输入设备描述" rows="3"></textarea>
+                </div>
+            </div>
+
+            <!-- 监控信息 -->
+            <div class="property-section" id="monitoringSection">
+                <h5>监控信息</h5>
+                <div class="monitoring-stats">
+                    <div class="stat-item">
+                        <span class="stat-label">CPU使用率</span>
+                        <span class="stat-value" id="cpuUsage">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">内存使用率</span>
+                        <span class="stat-value" id="memoryUsage">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">网络流量</span>
+                        <span class="stat-value" id="networkTraffic">--</span>
+                    </div>
+                    <div class="stat-item">
+                        <span class="stat-label">响应时间</span>
+                        <span class="stat-value" id="responseTime">--</span>
+                    </div>
+                </div>
+                <button class="btn btn-info" id="refreshMonitoring">
+                    <i class="fas fa-sync-alt"></i> 刷新监控数据
+                </button>
+            </div>
+
+            <div class="property-actions">
+                <button class="btn btn-primary" id="applyProperties">
+                    <i class="fas fa-check"></i> 应用
+                </button>
+                <button class="btn btn-secondary" id="resetProperties">
+                    <i class="fas fa-undo"></i> 重置
+                </button>
+                <button class="btn btn-danger" id="deleteDevice">
+                    <i class="fas fa-trash"></i> 删除
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 导出模态框 -->
+    <div class="modal" id="exportModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>导出拓扑图</h3>
+                <button class="modal-close" id="closeExportModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="export-options">
+                    <div class="option-group">
+                        <label>导出格式</label>
+                        <div class="radio-group">
+                            <label class="radio-item">
+                                <input type="radio" name="exportFormat" value="png" checked>
+                                <span>PNG图片</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="exportFormat" value="jpg">
+                                <span>JPG图片</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="exportFormat" value="svg">
+                                <span>SVG矢量图</span>
+                            </label>
+                            <label class="radio-item">
+                                <input type="radio" name="exportFormat" value="json">
+                                <span>JSON数据</span>
+                            </label>
+                        </div>
+                    </div>
+                    <div class="option-group">
+                        <label>图片质量</label>
+                        <select id="exportQuality">
+                            <option value="1">高质量</option>
+                            <option value="0.8" selected>标准质量</option>
+                            <option value="0.6">压缩质量</option>
+                        </select>
+                    </div>
+                    <div class="option-group">
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="includeBackground" checked>
+                            <span>包含背景</span>
+                        </label>
+                        <label class="checkbox-item">
+                            <input type="checkbox" id="includeGrid">
+                            <span>包含网格</span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="cancelExport">取消</button>
+                <button class="btn btn-primary" id="confirmExport">导出</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 设置模态框 -->
+    <div class="modal" id="settingsModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>拓扑图设置</h3>
+                <button class="modal-close" id="closeSettingsModal">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <div class="settings-tabs">
+                    <div class="tab-nav">
+                        <button class="tab-btn active" data-tab="general">常规</button>
+                        <button class="tab-btn" data-tab="appearance">外观</button>
+                        <button class="tab-btn" data-tab="behavior">行为</button>
+                    </div>
+                    <div class="tab-content">
+                        <div class="tab-panel active" id="generalTab">
+                            <div class="setting-group">
+                                <label>网格大小</label>
+                                <input type="range" id="gridSize" min="10" max="50" value="20">
+                                <span id="gridSizeValue">20px</span>
+                            </div>
+                            <div class="setting-group">
+                                <label>自动保存间隔</label>
+                                <select id="autoSaveInterval">
+                                    <option value="0">关闭</option>
+                                    <option value="60">1分钟</option>
+                                    <option value="300" selected>5分钟</option>
+                                    <option value="600">10分钟</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="tab-panel" id="appearanceTab">
+                            <div class="setting-group">
+                                <label>主题</label>
+                                <select id="theme">
+                                    <option value="light" selected>浅色主题</option>
+                                    <option value="dark">深色主题</option>
+                                    <option value="auto">跟随系统</option>
+                                </select>
+                            </div>
+                            <div class="setting-group">
+                                <label>设备图标大小</label>
+                                <input type="range" id="deviceIconSize" min="20" max="80" value="40">
+                                <span id="deviceIconSizeValue">40px</span>
+                            </div>
+                        </div>
+                        <div class="tab-panel" id="behaviorTab">
+                            <div class="setting-group">
+                                <label class="checkbox-item">
+                                    <input type="checkbox" id="enableSnapping" checked>
+                                    <span>启用对象吸附</span>
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" id="enableAnimation" checked>
+                                    <span>启用动画效果</span>
+                                </label>
+                                <label class="checkbox-item">
+                                    <input type="checkbox" id="showTooltips" checked>
+                                    <span>显示工具提示</span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" id="resetSettings">重置默认</button>
+                <button class="btn btn-primary" id="saveSettings">保存设置</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 状态栏 -->
+    <div class="status-bar">
+        <div class="status-left">
+            <span class="status-item">
+                <i class="fas fa-mouse-pointer"></i>
+                <span id="currentToolName">选择工具</span>
+            </span>
+            <span class="status-item">
+                <i class="fas fa-crosshairs"></i>
+                <span id="mousePosition">0, 0</span>
+            </span>
+        </div>
+        <div class="status-center">
+            <span class="status-item">
+                <i class="fas fa-server"></i>
+                <span id="deviceCount">设备: 0</span>
+            </span>
+            <span class="status-item">
+                <i class="fas fa-link"></i>
+                <span id="connectionCount">连接: 0</span>
+            </span>
+        </div>
+        <div class="status-right">
+            <span class="status-item">
+                <i class="fas fa-clock"></i>
+                <span id="lastSaved">未保存</span>
+            </span>
+            <span class="status-item" id="networkStatus">
+                <i class="fas fa-wifi"></i>
+                <span>已连接</span>
+            </span>
+        </div>
+    </div>
+
+    <!-- 隐藏的文件输入 -->
+    <input type="file" id="fileInput" accept=".json,.xml" style="display: none;">
+
+    <script src="网络拓扑.js"></script>
+</body>
+</html>
