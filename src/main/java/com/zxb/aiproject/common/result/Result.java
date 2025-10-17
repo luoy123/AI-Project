@@ -1,7 +1,11 @@
 package com.zxb.aiproject.common.result;
 
+import com.zxb.aiproject.common.constant.ResultCode;
+import lombok.Data;
+
 import java.io.Serializable;
 
+@Data
 public class Result <T> implements Serializable{
 
     private static final long serialVersionUID = 1L;
