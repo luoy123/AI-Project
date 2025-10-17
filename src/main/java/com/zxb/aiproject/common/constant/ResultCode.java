@@ -25,9 +25,12 @@ public enum ResultCode {
     CAPTCHA_ERROR(1002,"验证码错误"),
 
 
+
     TOKEN_EXPIRED(1003,"登录过期"),
 
     TOKEN_INVALID(1004,"无效的token"),
+
+    PASSWORD_ERROR(1005,"密码错误" ),
 
     USER_EXIST(2001,"用户已经存在"),
 
@@ -35,7 +38,8 @@ public enum ResultCode {
 
     DEVICE_NOT_EXIST(3001,"设备不存在"),
 
-    DEVICE_IP_EXIST(3002,"设备IP已经存在");
+    DEVICE_IP_EXIST(3002,"设备IP已经存在"),
+    ;
 
 
 

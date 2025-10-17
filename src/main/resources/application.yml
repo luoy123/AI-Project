@@ -44,6 +44,9 @@ spring:
   web:
     resources:
       static-locations: classpath:/static/,classpath:/public/
+  mvc:
+    pathmatch:
+      matching-strategy: ant_path_matcher
 
 # MyBatis-Plus配置
 mybatis-plus:
