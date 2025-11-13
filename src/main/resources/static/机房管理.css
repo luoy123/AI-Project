@@ -57,7 +57,7 @@ body {
 }
 
 .sidebar-item {
-    width: 85%;
+    width: 100%;
     padding: 12px 15px;
     text-align: left;
     cursor: pointer;

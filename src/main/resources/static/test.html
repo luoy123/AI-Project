@@ -1,0 +1,219 @@
+﻿<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<style>
+/* 立即隐藏CMDB菜单项 - 防止闪烁 */
+.nav-cmdb { display: none !important; }
+.sidebar-item[data-page="CMDB"] { display: none !important; }
+</style>
+<script>
+// 立即执行：尽早隐藏CMDB，防止闪烁
+(function() {
+    function hideCMDB() {
+        var items = document.querySelectorAll('.sidebar-item');
+        items.forEach(function(item) {
+            var span = item.querySelector('span');
+            if (span && span.textContent.trim() === 'CMDB') {
+                item.style.display = 'none';
+                item.setAttribute('data-hidden', 'true');
+            }
+        });
+    }
+    
+    // 立即执行
+    hideCMDB();
+    
+    // DOM Ready时再执行一次
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideCMDB);
+    }
+    
+    // 额外保险：延迟执行确保覆盖所有情况
+    setTimeout(hideCMDB, 10);
+    setTimeout(hideCMDB, 100);
+})();
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>拦截器测试页面</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            border-bottom: 2px solid #3b82f6;
+            padding-bottom: 10px;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+        }
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #2563eb;
+        }
+        .result {
+            margin-top: 10px;
+            padding: 10px;
+            background: #e5e7eb;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 12px;
+        }
+        .success {
+            color: #10b981;
+        }
+        .error {
+            color: #ef4444;
+        }
+        .info {
+            padding: 10px;
+            background: #dbeafe;
+            border-left: 4px solid #3b82f6;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+    <h1>JWT拦截器测试页面</h1>
+
+    <div class="info">
+        <strong>当前登录状态：</strong>
+        <span id="loginStatus">检查中...</span>
+    </div>
+
+    <div class="test-section">
+        <h3>测试1：访问不需要认证的接口</h3>
+        <button onclick="testPublicApi()">测试获取验证码（无需token）</button>
+        <div id="result1" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>测试2：访问需要认证的接口（带token）</h3>
+        <button onclick="testProtectedApi()">测试受保护接口（需要token）</button>
+        <div id="result2" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>测试3：访问需要认证的接口（不带token）</h3>
+        <button onclick="testNoToken()">测试无token访问</button>
+        <div id="result3" class="result"></div>
+    </div>
+
+    <div class="test-section">
+        <h3>用户操作</h3>
+        <button onclick="showUserInfo()">显示用户信息</button>
+        <button onclick="logout()" style="background: #ef4444;">退出登录</button>
+        <div id="result4" class="result"></div>
+    </div>
+</div>
+
+<script src="common.js"></script>
+<script>
+    // 检查登录状态
+    window.addEventListener('DOMContentLoaded', function() {
+        const token = localStorage.getItem('token');
+        const statusEl = document.getElementById('loginStatus');
+
+        if (token) {
+            statusEl.innerHTML = '<span class="success">✓ 已登录</span>';
+            const userInfo = getCurrentUser();
+            if (userInfo) {
+                statusEl.innerHTML += ` (用户名: ${userInfo.username})`;
+            }
+        } else {
+            statusEl.innerHTML = '<span class="error">✗ 未登录</span>';
+        }
+    });
+
+    // 测试1：访问公开接口
+    function testPublicApi() {
+        const resultEl = document.getElementById('result1');
+        resultEl.textContent = '请求中...';
+
+        fetch('/api/user/captcha')
+            .then(response => response.json())
+            .then(data => {
+                resultEl.innerHTML = '<span class="success">✓ 成功</span>\n' +
+                    JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                resultEl.innerHTML = '<span class="error">✗ 失败</span>\n' + error.message;
+            });
+    }
+
+    // 测试2：访问受保护接口（带token）
+    function testProtectedApi() {
+        const resultEl = document.getElementById('result2');
+        resultEl.textContent = '请求中...';
+
+        // 使用封装的fetchWithAuth
+        fetchWithAuth('/api/user/info')
+            .then(data => {
+                resultEl.innerHTML = '<span class="success">✓ 成功（拦截器验证通过）</span>\n' +
+                    JSON.stringify(data, null, 2);
+            })
+            .catch(error => {
+                resultEl.innerHTML = '<span class="error">✗ 失败</span>\n' + error.message;
+            });
+    }
+
+    // 测试3：访问受保护接口（不带token）
+    function testNoToken() {
+        const resultEl = document.getElementById('result3');
+        resultEl.textContent = '请求中...';
+
+        // 直接fetch，不带token
+        fetch('/api/user/info')
+            .then(response => {
+                if (response.status === 401) {
+                    return response.json().then(data => {
+                        resultEl.innerHTML = '<span class="success">✓ 拦截器工作正常（返回401）</span>\n' +
+                            JSON.stringify(data, null, 2);
+                    });
+                }
+                return response.json();
+            })
+            .catch(error => {
+                resultEl.innerHTML = '<span class="error">✗ 请求失败</span>\n' + error.message;
+            });
+    }
+
+    // 显示用户信息
+    function showUserInfo() {
+        const resultEl = document.getElementById('result4');
+        const userInfo = getCurrentUser();
+
+        if (userInfo) {
+            resultEl.innerHTML = '<span class="success">✓ 用户信息</span>\n' +
+                JSON.stringify(userInfo, null, 2);
+        } else {
+            resultEl.innerHTML = '<span class="error">✗ 未找到用户信息</span>';
+        }
+    }
+</script>
+</body>
+</html>

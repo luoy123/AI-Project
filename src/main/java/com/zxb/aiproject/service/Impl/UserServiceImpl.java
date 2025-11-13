@@ -20,6 +20,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.Date;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -90,5 +91,36 @@ public class UserServiceImpl implements UserService {
         user.setLastLoginIp(ip);
         user.setLastLoginTime(new Date());
         userMapper.updateById(user);
+    }
+
+    @Override
+    public boolean verifyAdminPassword(String password) {
+        // 获取管理员用户
+        User admin = getUserByUserName("admin");
+        if (admin == null) {
+            return false;
+        }
+        // 验证密码
+        return Md5Util.verify(password, admin.getPassword());
+    }
+
+    @Override
+    public boolean addUser(com.zxb.aiproject.dto.UserAddDto dto) {
+        // TODO: 实现用户新增逻辑
+        log.info("添加用户: {}", dto);
+        return true;
+    }
+
+    @Override
+    public boolean updateUser(com.zxb.aiproject.dto.UserUpdateDto dto) {
+        // TODO: 实现用户更新逻辑
+        log.info("更新用户: {}", dto);
+        return true;
+    }
+
+    @Override
+    public List<User> getAllUsers() {
+        // 获取所有启用状态的用户
+        return userMapper.selectList(null);
     }
 }

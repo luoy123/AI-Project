@@ -1,11 +1,44 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<style>
+/* 立即隐藏CMDB菜单项 - 防止闪烁 */
+.nav-cmdb { display: none !important; }
+.sidebar-item[data-page="CMDB"] { display: none !important; }
+</style>
+<script>
+// 立即执行：尽早隐藏CMDB，防止闪烁
+(function() {
+    function hideCMDB() {
+        var items = document.querySelectorAll('.sidebar-item');
+        items.forEach(function(item) {
+            var span = item.querySelector('span');
+            if (span && span.textContent.trim() === 'CMDB') {
+                item.style.display = 'none';
+                item.setAttribute('data-hidden', 'true');
+            }
+        });
+    }
+    
+    // 立即执行
+    hideCMDB();
+    
+    // DOM Ready时再执行一次
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideCMDB);
+    }
+    
+    // 额外保险：延迟执行确保覆盖所有情况
+    setTimeout(hideCMDB, 10);
+    setTimeout(hideCMDB, 100);
+})();
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>总览 - 人工智能运维平台</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="libs/fontawesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="总览.css">
+    <link rel="stylesheet" href="common-override.css">
     <style>
         /* 总览页面特定样式 */
         .dashboard-container {
@@ -14,22 +47,47 @@
             overflow: hidden;
         }
 
+        /* 可点击图表样式 */
+        .circle-chart.clickable {
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .circle-chart.clickable:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        }
+
+        .circle-chart.clickable:active {
+            transform: scale(0.98);
+        }
+
+        /* 侧边栏可点击项样式 */
+        .sidebar-item {
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+
+        .sidebar-item:hover:not(.active) {
+            background-color: #1e293b;
+        }
+
         /* 侧边栏样式 - 与告警中心完全一致 */
- .sidebar {
-    width: 200px;
-    background-color: #000000;
-    color: white;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    min-height: 100vh;
-    overflow-y: auto;
-    overflow-x: hidden;
-    position: fixed;
-    top: 0;
-    left: 0;
-    z-index: 100;
-}
+        .sidebar {
+            width: 200px;
+            background-color: #000000;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
 
 
         .sidebar-header {
@@ -52,16 +110,16 @@
             letter-spacing: 1px;
         }
 
-.sidebar-item {
-    width: 69%;
-    padding: 12px 15px;
-    text-align: left;
-    cursor: pointer;
-    transition: all 0.3s;
-    display: flex;
-    align-items: center;
-    position: relative;
-}
+        .sidebar-item {
+            width: 69%;
+            padding: 12px 15px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
 
         .sidebar-item:hover {
             background-color: #334155;
@@ -271,6 +329,33 @@
             height: 100%;
             background-color: #00b42a;
             width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        /* 可点击的设备类型样式 */
+        .clickable-device-type {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border-radius: 8px;
+            padding: 8px;
+            margin: 4px 0;
+        }
+
+        .clickable-device-type:hover {
+            background-color: #f8f9fa;
+            transform: translateY(-2px);
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        }
+
+        .clickable-device-type:active {
+            transform: translateY(0);
+        }
+
+        .device-count {
+            font-size: 12px;
+            color: #666;
+            margin-top: 4px;
+            text-align: right;
         }
 
         /* 告警管理卡片 */
@@ -376,210 +461,253 @@
     </style>
 </head>
 <body>
-    <div class="dashboard-container">
-        <!-- 侧边栏 -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h2>人工智能运维平台</h2>
-            </div>
-            <div class="sidebar-item nav-overview active">
-                <i class="fas fa-tachometer-alt"></i>
-                <span>总览</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-eye"></i>
-                <span>视图</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-bell"></i>
-                <span>告警中心</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-server"></i>
-                <span>设备管理</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-network-wired"></i>
-                <span>网络拓扑</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-chart-line"></i>
-                <span>统计报表</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-tools"></i>
-                <span>运维工具</span>
-            </div>
-            <div class="sidebar-divider"></div>
-            <div class="sidebar-group-title">拓展中心</div>
-            <div class="sidebar-item">
-                <i class="fas fa-layer-group"></i>
-                <span>业务管理</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-globe"></i>
-                <span>网络管理</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-video"></i>
-                <span>视频管理</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-building"></i>
-                <span>机房管理</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-cubes"></i>
-                <span>资产管理</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-user-cog"></i>
-                <span>运维管理</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-database"></i>
-                <span>CMDB</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-file-alt"></i>
-                <span>日志管理</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-chart-pie"></i>
-                <span>智能预测管理</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-cloud"></i>
-                <span>云平台</span>
-            </div>
-            <div class="sidebar-divider"></div>
-            <div class="sidebar-group-title">设置中心</div>
-            <div class="sidebar-item">
-                <i class="fas fa-cog"></i>
-                <span>设置</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-plug"></i>
-                <span>对接配置</span>
-            </div>
+<div class="dashboard-container">
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>人工智能运维平台</h2>
         </div>
-
-        <!-- 主内容区域 -->
-        <div class="main-content">
-            <div class="header">
-                <h1>总览</h1>
-                <div class="user-info">
-                    <span>管理员</span>
-                    <img src="1.png" alt="用户头像">
-                </div>
-            </div>
-
-            <!-- 统计卡片 -->
-            <div class="stats-grid">
-                <div class="stat-card">
-                    <div class="circle-chart" id="chart1">
-                        <span class="chart-value">0</span>
-                    </div>
-                    <div class="chart-label">告警总数</div>
-                    <div class="chart-legend">
-                        <div class="legend-item">
-                            <span class="legend-color" style="background-color: #00b42a;"></span>已处理
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background-color: #e6e6e6;"></span>未处理
-                        </div>
-                    </div>
-                </div>
-
-                <div class="stat-card">
-                    <div class="circle-chart" id="chart2">
-                        <span class="chart-value">0</span>
-                    </div>
-                    <div class="chart-label">设备告警</div>
-                    <div class="chart-legend">
-                        <div class="legend-item">
-                            <span class="legend-color" style="background-color: #00b42a;"></span>正常
-                        </div>
-                        <div class="legend-item">
-                            <span class="legend-color" style="background-color: #e6e6e6;"></span>异常
-                        </div>
-                    </div>
-                </div>
-
-                <div class="status-card">
-                    <div class="status-header">
-                        <span class="status-title">设备状态</span>
-                        <span class="status-value">0/0</span>
-                    </div>
-                    <div class="status-grid">
-                        <div class="status-item">
-                            <div class="status-item-title">网络设备</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill"></div>
-                            </div>
-                        </div>
-                        <div class="status-item">
-                            <div class="status-item-title">服务器硬件</div>
-                            <div class="progress-bar">
-                                <div class="progress-fill"></div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="alert-card">
-                    <div class="alert-header">
-                        <span class="alert-title">授权管理</span>
-                    </div>
-                    <div class="alert-list">
-                        <div class="alert-item">
-                            <div class="alert-info">
-                                <span>剩余设备数</span>
-                            </div>
-                            <span class="alert-time">198</span>
-                        </div>
-                        <div class="alert-item">
-                            <div class="alert-info">
-                                <span>剩余天数(天)</span>
-                            </div>
-                            <span class="alert-time">9</span>
-                        </div>
-                        <div class="alert-item">
-                            <div class="alert-info">
-                                <span>授权License</span>
-                            </div>
-                            <span class="alert-time">免费版</span>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- 图表区域 -->
-            <div class="charts-grid">
-                <div class="chart-container">
-                    <div class="chart-title">告警趋势</div>
-                    <canvas id="alertTrendChart"></canvas>
-                </div>
-
-                <div class="chart-container">
-                    <div class="chart-title">网络监控</div>
-                    <canvas id="networkStatusChart"></canvas>
-                </div>
-            </div>
+        <div class="sidebar-item nav-overview active">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>总览</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-eye"></i>
+            <span>视图</span>
+        </div>
+        <div class="sidebar-item" onclick="navigateToAlerts()">
+            <i class="fas fa-bell"></i>
+            <span>告警中心</span>
+        </div>
+        <div class="sidebar-item" onclick="navigateToDevices()">
+            <i class="fas fa-server"></i>
+            <span>设备管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-network-wired"></i>
+            <span>网络拓扑</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-chart-line"></i>
+            <span>统计报表</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-tools"></i>
+            <span>运维工具</span>
+        </div>
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-group-title">拓展中心</div>
+        <div class="sidebar-item">
+            <i class="fas fa-layer-group"></i>
+            <span>业务管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-globe"></i>
+            <span>网络管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-video"></i>
+            <span>视频管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-building"></i>
+            <span>机房管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-cubes"></i>
+            <span>资产管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-user-cog"></i>
+            <span>运维管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-database"></i>
+            <span>CMDB</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-file-alt"></i>
+            <span>日志管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-chart-pie"></i>
+            <span>智能预测管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-cloud"></i>
+            <span>云平台</span>
+        </div>
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-group-title">设置中心</div>
+        <div class="sidebar-item">
+            <i class="fas fa-cog"></i>
+            <span>设置</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-plug"></i>
+            <span>对接配置</span>
         </div>
     </div>
 
-    <!-- 引入Chart.js -->
-    <script src="chart.js"></script>
-    <script src="总览.js"></script>
-    <script>
-        // 页面加载完成后执行
-        document.addEventListener('DOMContentLoaded', function() {
-            // 确保dashboard.js中的初始化函数已执行
-            if (typeof Dashboard !== 'undefined' && typeof Dashboard.init === 'function') {
-                // 已经在dashboard.js中初始化，此处无需重复操作
-            }
-        });
-    </script>
+    <!-- 主内容区域 -->
+    <div class="main-content">
+        <div class="header">
+            <h1>总览</h1>
+            <!-- 用户下拉菜单容器 -->
+            <div id="user-dropdown-container"></div>
+        </div>
+
+        <!-- 统计卡片 -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="circle-chart clickable" id="chart1" onclick="navigateToAlerts()">
+                    <span class="chart-value">0</span>
+                </div>
+                <div class="chart-label">告警总数</div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: #00b42a;"></span>已处理
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: #e6e6e6;"></span>未处理
+                    </div>
+                </div>
+            </div>
+
+            <div class="stat-card">
+                <div class="circle-chart clickable" id="chart2" onclick="navigateToDevices()">
+                    <span class="chart-value">0</span>
+                </div>
+                <div class="chart-label">设备告警</div>
+                <div class="chart-legend">
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: #00b42a;"></span>
+                        <span>正常</span>
+                    </div>
+                    <div class="legend-item">
+                        <span class="legend-color" style="background-color: #e6e6e6;"></span>
+                        <span>异常</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="status-card">
+                <div class="status-header">
+                    <span class="status-title">设备状态</span>
+                    <span class="status-value">0/0</span>
+                </div>
+                <div class="status-grid">
+                    <div class="status-item clickable-device-type" onclick="navigateToDeviceType('network')" title="点击查看网络设备">
+                        <div class="status-item-title">网络设备</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="networkProgress"></div>
+                        </div>
+                        <div class="device-count" id="networkCount">0/0</div>
+                    </div>
+                    <div class="status-item clickable-device-type" onclick="navigateToDeviceType('server')" title="点击查看服务器">
+                        <div class="status-item-title">服务器</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="serverProgress"></div>
+                        </div>
+                        <div class="device-count" id="serverCount">0/0</div>
+                    </div>
+                    <div class="status-item clickable-device-type" onclick="navigateToDeviceType('storage')" title="点击查看存储设备">
+                        <div class="status-item-title">存储设备</div>
+                        <div class="progress-bar">
+                            <div class="progress-fill" id="storageProgress"></div>
+                        </div>
+                        <div class="device-count" id="storageCount">0/0</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="alert-card">
+                <div class="alert-header">
+                    <span class="alert-title">授权管理</span>
+                </div>
+                <div class="alert-list">
+                    <div class="alert-item">
+                        <div class="alert-info">
+                            <span>剩余设备数</span>
+                        </div>
+                        <span class="alert-time" id="remainingDevices">198</span>
+                    </div>
+                    <div class="alert-item">
+                        <div class="alert-info">
+                            <span>剩余天数(天)</span>
+                        </div>
+                        <span class="alert-time" id="remainingDays">1095</span>
+                    </div>
+                    <div class="alert-item">
+                        <div class="alert-info">
+                            <span>授权License</span>
+                        </div>
+                        <span class="alert-time">免费版</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 图表区域 -->
+        <div class="charts-grid">
+            <div class="chart-container">
+                <div class="chart-title">告警趋势</div>
+                <canvas id="alertTrendChart"></canvas>
+            </div>
+
+            <div class="chart-container">
+                <div class="chart-title">网络监控</div>
+                <canvas id="networkStatusChart"></canvas>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 引入头像URL修复工具 -->
+<script src="js/avatar-url-fixer.js"></script>
+<!-- 引入通用工具函数 -->
+<script src="common.js"></script>
+<!-- 引入用户下拉菜单组件 -->
+<script src="js/user-dropdown-loader.js"></script>
+<!-- 引入Chart.js -->
+<script src="chart.js"></script>
+<!-- 引入总览页面脚本 -->
+<script src="总览.js"></script>
+
+<script>
+// 页面跳转函数
+function navigateToAlerts() {
+    // 跳转到告警中心页面
+    window.location.href = '告警中心.html';
+}
+
+function navigateToDevices() {
+    // 跳转到设备管理页面
+    window.location.href = '设备管理.html';
+}
+
+function navigateToDeviceType(deviceType) {
+    // 跳转到设备管理页面并选中对应的设备类型
+    const typeGroupMap = {
+        'network': '2',    // 网络设备父分组ID (更新后的数据库结构)
+        'server': '1',     // 服务器父分组ID  
+        'storage': '3'     // 存储设备父分组ID (更新后的数据库结构)
+    };
+    
+    const groupId = typeGroupMap[deviceType];
+    if (groupId) {
+        // 使用URL参数传递要选中的分组
+        window.location.href = `设备管理.html?selectGroup=${groupId}&groupType=parent`;
+    } else {
+        // 如果没有匹配的分组，直接跳转到设备管理
+        window.location.href = '设备管理.html';
+    }
+}
+
+// 添加提示效果
+document.addEventListener('DOMContentLoaded', function() {
+    // 图表点击功能已启用，不显示悬停提示
+});
+</script>
 </body>
 </html>

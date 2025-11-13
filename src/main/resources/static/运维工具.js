@@ -1702,28 +1702,517 @@ class OperationToolsManager {
 
     // 初始化性能监控
     initPerformanceMonitor() {
+        console.log('🚀 初始化性能监控模块');
+        
+        // 基本控制按钮
         const startBtn = document.getElementById('startMonitor');
-        const stopBtn = document.getElementById('stopMonitor');
+        const pauseBtn = document.getElementById('pauseMonitor');
+        const refreshBtn = document.getElementById('refreshMonitor');
         const exportBtn = document.getElementById('exportMonitorData');
 
         if (startBtn) {
             startBtn.addEventListener('click', () => this.startPerformanceMonitoring());
         }
-        if (stopBtn) {
-            stopBtn.addEventListener('click', () => this.stopPerformanceMonitoring());
+        if (pauseBtn) {
+            pauseBtn.addEventListener('click', () => this.pausePerformanceMonitoring());
+        }
+        if (refreshBtn) {
+            refreshBtn.addEventListener('click', () => this.refreshPerformanceData());
         }
         if (exportBtn) {
             exportBtn.addEventListener('click', () => this.exportPerformanceData());
         }
 
+        // 服务器选择器
+        this.initServerSelector();
+        
+        // 时间范围选择器
+        this.initTimeRangeSelector();
+        
+        // TOP 10进程查看器
+        this.initTopProcessesViewer();
+        
+        // 初始化图表
         this.initPerformanceCharts();
+        
+        // 初始化磁盘空间显示
+        this.initDiskSpace();
+        
+        console.log('✅ 性能监控模块初始化完成');
+    }
+    
+    // 初始化服务器选择器
+    async initServerSelector() {
+        const serverSelect = document.getElementById('serverSelect');
+        if (!serverSelect) return;
+        
+        // 定义多个模拟服务器及其配置
+        this.mockServers = {
+            'server1': {
+                id: 'server1',
+                name: '生产环境-Web服务器-01',
+                ip: '192.168.1.101',
+                status: 'online',
+                performance: {
+                    cpuBase: 35,
+                    cpuVariation: 15,
+                    memoryBase: 65,
+                    memoryVariation: 10,
+                    diskReadBase: 80,
+                    diskWriteBase: 60,
+                    networkUpBase: 500,
+                    networkDownBase: 800
+                },
+                diskPartitions: [
+                    { name: 'C:', used: 50, total: 100, unit: 'GB' },
+                    { name: 'D:', used: 280, total: 500, unit: 'GB' },
+                    { name: 'E:', used: 120, total: 200, unit: 'GB' }
+                ],
+                processes: {
+                    total: 156,
+                    running: 89,
+                    sleeping: 67
+                }
+            },
+            'server2': {
+                id: 'server2',
+                name: '生产环境-数据库服务器-01',
+                ip: '192.168.1.102',
+                status: 'warning',
+                performance: {
+                    cpuBase: 68,
+                    cpuVariation: 12,
+                    memoryBase: 85,
+                    memoryVariation: 8,
+                    diskReadBase: 150,
+                    diskWriteBase: 120,
+                    networkUpBase: 300,
+                    networkDownBase: 600
+                },
+                diskPartitions: [
+                    { name: 'C:', used: 80, total: 100, unit: 'GB' },
+                    { name: 'D:', used: 450, total: 500, unit: 'GB' },
+                    { name: 'E:', used: 180, total: 200, unit: 'GB' },
+                    { name: 'F:', used: 850, total: 1000, unit: 'GB' }
+                ],
+                processes: {
+                    total: 203,
+                    running: 125,
+                    sleeping: 78
+                }
+            },
+            'server3': {
+                id: 'server3',
+                name: '生产环境-应用服务器-01',
+                ip: '192.168.1.103',
+                status: 'online',
+                performance: {
+                    cpuBase: 45,
+                    cpuVariation: 20,
+                    memoryBase: 55,
+                    memoryVariation: 15,
+                    diskReadBase: 60,
+                    diskWriteBase: 40,
+                    networkUpBase: 400,
+                    networkDownBase: 700
+                },
+                diskPartitions: [
+                    { name: 'C:', used: 35, total: 100, unit: 'GB' },
+                    { name: 'D:', used: 180, total: 500, unit: 'GB' }
+                ],
+                processes: {
+                    total: 128,
+                    running: 72,
+                    sleeping: 56
+                }
+            },
+            'server4': {
+                id: 'server4',
+                name: '测试环境-Web服务器-01',
+                ip: '192.168.1.201',
+                status: 'online',
+                performance: {
+                    cpuBase: 25,
+                    cpuVariation: 10,
+                    memoryBase: 40,
+                    memoryVariation: 12,
+                    diskReadBase: 40,
+                    diskWriteBase: 30,
+                    networkUpBase: 200,
+                    networkDownBase: 400
+                },
+                diskPartitions: [
+                    { name: 'C:', used: 30, total: 100, unit: 'GB' },
+                    { name: 'D:', used: 120, total: 500, unit: 'GB' }
+                ],
+                processes: {
+                    total: 98,
+                    running: 52,
+                    sleeping: 46
+                }
+            },
+            'server5': {
+                id: 'server5',
+                name: '备份服务器-01',
+                ip: '192.168.1.150',
+                status: 'maintenance',
+                performance: {
+                    cpuBase: 15,
+                    cpuVariation: 5,
+                    memoryBase: 30,
+                    memoryVariation: 8,
+                    diskReadBase: 200,
+                    diskWriteBase: 180,
+                    networkUpBase: 150,
+                    networkDownBase: 250
+                },
+                diskPartitions: [
+                    { name: 'C:', used: 45, total: 100, unit: 'GB' },
+                    { name: 'D:', used: 3500, total: 4000, unit: 'GB' },
+                    { name: 'E:', used: 2800, total: 4000, unit: 'GB' }
+                ],
+                processes: {
+                    total: 75,
+                    running: 38,
+                    sleeping: 37
+                }
+            }
+        };
+        
+        // 尝试从后端获取真实服务器列表
+        try {
+            const response = await fetch('/api/asset/list?type=server');
+            const result = await response.json();
+            
+            if (result.success || result.code === 200) {
+                const servers = result.data?.records || [];
+                
+                if (servers.length > 0) {
+                    // 如果后端有数据，使用后端数据
+                    let html = '<option value="">请选择服务器</option>';
+                    servers.forEach(server => {
+                        const status = this.getServerStatusIcon(server.assetStatus);
+                        const label = `${status} ${server.name} (${server.ip || '未知IP'})`;
+                        html += `<option value="${server.id}" data-ip="${server.ip}">${label}</option>`;
+                    });
+                    serverSelect.innerHTML = html;
+                    console.log(`✅ 从后端加载了 ${servers.length} 台服务器`);
+                    return;
+                }
+            }
+        } catch (error) {
+            console.warn('后端服务器列表加载失败，使用模拟数据:', error);
+        }
+        
+        // 使用模拟数据
+        let html = '<option value="">请选择服务器</option>';
+        Object.values(this.mockServers).forEach(server => {
+            const status = this.getServerStatusIcon(server.status);
+            const label = `${status} ${server.name} (${server.ip})`;
+            html += `<option value="${server.id}">${label}</option>`;
+        });
+        serverSelect.innerHTML = html;
+        console.log(`✅ 加载了 ${Object.keys(this.mockServers).length} 台模拟服务器`);
+        
+        // 默认选择第一台服务器
+        serverSelect.value = 'server1';
+        this.currentServerId = 'server1';
+        this.currentServerConfig = this.mockServers['server1'];
+        
+        // 监听服务器切换
+        serverSelect.addEventListener('change', (e) => {
+            const serverId = e.target.value;
+            const serverName = e.target.options[e.target.selectedIndex].text;
+            console.log('切换到服务器:', serverName);
+            
+            if (serverId) {
+                this.currentServerId = serverId;
+                this.currentServerConfig = this.mockServers[serverId];
+                
+                // 切换服务器时更新所有数据
+                this.updateServerData();
+                this.showNotification(`已切换到: ${serverName}`, 'success');
+            }
+        });
+        
+        // 初始化第一台服务器的数据
+        this.updateServerData();
+    }
+    
+    // 更新服务器数据（切换服务器时调用）
+    updateServerData() {
+        if (!this.currentServerConfig) return;
+        
+        console.log('🔄 更新服务器数据:', this.currentServerConfig.name);
+        
+        // 更新磁盘空间
+        this.renderDiskPartitions(this.currentServerConfig.diskPartitions);
+        
+        // 更新进程统计
+        const { total, running, sleeping } = this.currentServerConfig.processes;
+        const totalEl = document.getElementById('totalProcesses');
+        const runningEl = document.getElementById('runningProcesses');
+        const sleepingEl = document.getElementById('sleepingProcesses');
+        if (totalEl) totalEl.textContent = total;
+        if (runningEl) runningEl.textContent = running;
+        if (sleepingEl) sleepingEl.textContent = sleeping;
+        
+        // 立即更新性能数据（即使监控未启动）
+        this.updatePerformanceData();
+        
+        // 清空并重置图表为新服务器的数据
+        this.resetChartsForNewServer();
+    }
+    
+    // 重置图表为新服务器的数据
+    resetChartsForNewServer() {
+        if (!this.currentServerConfig) return;
+        
+        const config = this.currentServerConfig.performance;
+        
+        // 为新服务器生成初始图表数据
+        const cpuData = Array.from({length: 20}, () => 
+            config.cpuBase + (Math.random() - 0.5) * config.cpuVariation
+        );
+        const memoryData = Array.from({length: 20}, () => 
+            config.memoryBase + (Math.random() - 0.5) * config.memoryVariation
+        );
+        const diskData = Array.from({length: 20}, () => 
+            (config.diskReadBase + config.diskWriteBase) / 2 + (Math.random() - 0.5) * 30
+        );
+        const networkData = Array.from({length: 20}, () => 
+            (config.networkUpBase + config.networkDownBase) / 20 + (Math.random() - 0.5) * 30
+        );
+        
+        // 更新图表数据
+        if (this.performanceCharts['cpuChart']) {
+            this.performanceCharts['cpuChart'].data.datasets[0].data = cpuData;
+            this.performanceCharts['cpuChart'].update('none');
+        }
+        if (this.performanceCharts['memoryChart']) {
+            this.performanceCharts['memoryChart'].data.datasets[0].data = memoryData;
+            this.performanceCharts['memoryChart'].update('none');
+        }
+        if (this.performanceCharts['diskChart']) {
+            this.performanceCharts['diskChart'].data.datasets[0].data = diskData;
+            this.performanceCharts['diskChart'].update('none');
+        }
+        if (this.performanceCharts['networkChart']) {
+            this.performanceCharts['networkChart'].data.datasets[0].data = networkData;
+            this.performanceCharts['networkChart'].update('none');
+        }
+        
+        console.log('✅ 图表已重置为新服务器数据');
+    }
+    
+    // 获取服务器状态图标
+    getServerStatusIcon(status) {
+        const statusMap = {
+            'online': '🟢',
+            'warning': '🟡',
+            'offline': '🔴',
+            'maintenance': '🟠'
+        };
+        return statusMap[status] || '⚪';
+    }
+    
+    // 初始化时间范围选择器
+    initTimeRangeSelector() {
+        const timeRangeSelect = document.getElementById('timeRangeSelect');
+        if (!timeRangeSelect) return;
+        
+        timeRangeSelect.addEventListener('change', (e) => {
+            const range = e.target.value;
+            console.log('切换时间范围:', range);
+            
+            switch(range) {
+                case 'realtime':
+                    this.startPerformanceMonitoring();
+                    break;
+                case '1h':
+                case '6h':
+                case '24h':
+                    this.loadHistoricalData(range);
+                    break;
+                case 'custom':
+                    this.showCustomTimeRangePicker();
+                    break;
+            }
+        });
+    }
+    
+    // 加载历史数据
+    loadHistoricalData(range) {
+        this.showNotification(`正在加载${range}的历史数据...`, 'info');
+        // TODO: 从后端API加载历史数据
+        console.log('加载历史数据:', range);
+    }
+    
+    // 显示自定义时间范围选择器
+    showCustomTimeRangePicker() {
+        alert('自定义时间范围选择器（待实现）');
+    }
+    
+    // 初始化TOP 10进程查看器
+    initTopProcessesViewer() {
+        const viewBtn = document.getElementById('viewTopProcesses');
+        const modal = document.getElementById('topProcessesModal');
+        const closeBtn = document.getElementById('closeTopProcesses');
+        
+        if (viewBtn) {
+            viewBtn.addEventListener('click', () => {
+                this.showTopProcesses();
+                modal.style.display = 'flex';
+            });
+        }
+        
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => {
+                modal.style.display = 'none';
+            });
+        }
+        
+        // 标签页切换
+        const tabButtons = document.querySelectorAll('.tab-btn');
+        tabButtons.forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                tabButtons.forEach(b => b.classList.remove('active'));
+                e.target.classList.add('active');
+                
+                const tab = e.target.dataset.tab;
+                this.showTopProcesses(tab);
+            });
+        });
+    }
+    
+    // 显示TOP 10进程
+    showTopProcesses(sortBy = 'cpu') {
+        const tableBody = document.getElementById('topProcessesTable');
+        
+        // 模拟数据（实际应从后端获取）
+        const mockProcesses = [
+            { rank: 1, name: 'java.exe', pid: 12345, cpu: 25.5, memory: '2.3GB', status: '运行中' },
+            { rank: 2, name: 'mysql.exe', pid: 23456, cpu: 18.2, memory: '1.8GB', status: '运行中' },
+            { rank: 3, name: 'nginx.exe', pid: 34567, cpu: 12.1, memory: '512MB', status: '运行中' },
+            { rank: 4, name: 'redis-server', pid: 45678, cpu: 8.5, memory: '256MB', status: '运行中' },
+            { rank: 5, name: 'node.exe', pid: 56789, cpu: 6.3, memory: '1.2GB', status: '运行中' },
+            { rank: 6, name: 'python.exe', pid: 67890, cpu: 4.2, memory: '800MB', status: '运行中' },
+            { rank: 7, name: 'docker', pid: 78901, cpu: 3.8, memory: '1.5GB', status: '运行中' },
+            { rank: 8, name: 'chrome.exe', pid: 89012, cpu: 2.5, memory: '3.2GB', status: '运行中' },
+            { rank: 9, name: 'vscode.exe', pid: 90123, cpu: 2.1, memory: '1.1GB', status: '运行中' },
+            { rank: 10, name: 'explorer.exe', pid: 11234, cpu: 1.5, memory: '450MB', status: '运行中' }
+        ];
+        
+        // 根据sortBy排序（实际应在后端排序）
+        const processes = sortBy === 'memory' 
+            ? [...mockProcesses].sort((a, b) => parseFloat(b.memory) - parseFloat(a.memory))
+            : mockProcesses;
+        
+        let html = '';
+        processes.forEach(proc => {
+            html += `
+                <tr>
+                    <td>${proc.rank}</td>
+                    <td><strong>${proc.name}</strong></td>
+                    <td>${proc.pid}</td>
+                    <td><span class="badge ${proc.cpu > 20 ? 'badge-danger' : 'badge-success'}">${proc.cpu}%</span></td>
+                    <td>${proc.memory}</td>
+                    <td><span class="status-running">${proc.status}</span></td>
+                </tr>
+            `;
+        });
+        
+        tableBody.innerHTML = html;
+    }
+    
+    // 初始化磁盘空间
+    initDiskSpace() {
+        // 从当前服务器配置获取磁盘分区数据
+        if (this.currentServerConfig && this.currentServerConfig.diskPartitions) {
+            this.renderDiskPartitions(this.currentServerConfig.diskPartitions);
+        } else {
+            // 默认数据（如果没有配置）
+            const partitions = [
+                { name: 'C:', used: 50, total: 100, unit: 'GB' },
+                { name: 'D:', used: 280, total: 500, unit: 'GB' },
+                { name: 'E:', used: 120, total: 200, unit: 'GB' }
+            ];
+            this.renderDiskPartitions(partitions);
+        }
+    }
+    
+    // 渲染磁盘分区
+    renderDiskPartitions(partitions) {
+        const container = document.getElementById('diskPartitions');
+        if (!container) return;
+        
+        let html = '';
+        partitions.forEach(part => {
+            const percentage = (part.used / part.total * 100).toFixed(1);
+            const color = percentage > 80 ? '#ef4444' : percentage > 60 ? '#f59e0b' : '#10b981';
+            
+            html += `
+                <div class="partition-item">
+                    <div class="partition-info">
+                        <span class="partition-name">${part.name}</span>
+                        <span class="partition-size">${part.used}${part.unit} / ${part.total}${part.unit}</span>
+                    </div>
+                    <div class="partition-progress">
+                        <div class="progress-bar" style="width: ${percentage}%; background-color: ${color};">
+                            <span>${percentage}%</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        });
+        
+        container.innerHTML = html;
+    }
+    
+    // 暂停监控
+    pausePerformanceMonitoring() {
+        if (!this.isMonitoring) return;
+        
+        this.isMonitoring = false;
+        clearInterval(this.monitoringInterval);
+        this.showNotification('监控已暂停', 'warning');
+        
+        document.getElementById('startMonitor').style.display = 'inline-block';
+        document.getElementById('pauseMonitor').style.display = 'none';
+    }
+    
+    // 刷新性能数据
+    refreshPerformanceData() {
+        this.showNotification('正在刷新数据...', 'info');
+        this.updatePerformanceData();
     }
 
     // 初始化性能图表
     initPerformanceCharts() {
-        const chartIds = ['cpuChart', 'memoryChart', 'diskChart', 'networkChart'];
+        const chartConfigs = {
+            'cpuChart': {
+                color: '#3b82f6',
+                maxValue: 100,
+                defaultData: this.generateDefaultCPUData()
+            },
+            'memoryChart': {
+                color: '#10b981',
+                maxValue: 100,
+                defaultData: this.generateDefaultMemoryData()
+            },
+            'diskChart': {
+                color: '#f59e0b',
+                maxValue: 200,
+                defaultData: this.generateDefaultDiskData()
+            },
+            'networkChart': {
+                color: '#8b5cf6',
+                maxValue: 150,
+                defaultData: this.generateDefaultNetworkData()
+            }
+        };
 
-        chartIds.forEach(chartId => {
+        Object.entries(chartConfigs).forEach(([chartId, config]) => {
             const canvas = document.getElementById(chartId);
             if (canvas) {
                 const ctx = canvas.getContext('2d');
@@ -1732,9 +2221,9 @@ class OperationToolsManager {
                     data: {
                         labels: Array.from({length: 20}, (_, i) => ''),
                         datasets: [{
-                            data: Array.from({length: 20}, () => 0),
-                            borderColor: '#3b82f6',
-                            backgroundColor: 'rgba(59, 130, 246, 0.1)',
+                            data: config.defaultData,
+                            borderColor: config.color,
+                            backgroundColor: this.hexToRgba(config.color, 0.1),
                             tension: 0.4,
                             fill: true,
                             pointRadius: 0
@@ -1751,16 +2240,148 @@ class OperationToolsManager {
                             y: {
                                 display: false,
                                 min: 0,
-                                max: 100
+                                max: config.maxValue
                             }
                         },
                         elements: {
                             line: { borderWidth: 2 }
+                        },
+                        animation: {
+                            duration: 0
                         }
                     }
                 });
             }
         });
+
+        // 初始化默认显示值
+        this.updateDefaultDisplayValues();
+    }
+
+    // 生成默认CPU数据
+    generateDefaultCPUData() {
+        const baseValue = 35;
+        return Array.from({length: 20}, (_, i) => {
+            const variation = Math.sin(i * 0.3) * 10 + Math.random() * 8 - 4;
+            return Math.max(5, Math.min(85, baseValue + variation));
+        });
+    }
+
+    // 生成默认内存数据
+    generateDefaultMemoryData() {
+        const baseValue = 65;
+        return Array.from({length: 20}, (_, i) => {
+            const variation = Math.sin(i * 0.2) * 8 + Math.random() * 6 - 3;
+            return Math.max(45, Math.min(85, baseValue + variation));
+        });
+    }
+
+    // 生成默认磁盘数据
+    generateDefaultDiskData() {
+        const baseValue = 80;
+        return Array.from({length: 20}, (_, i) => {
+            const variation = Math.sin(i * 0.4) * 30 + Math.random() * 20 - 10;
+            return Math.max(20, Math.min(180, baseValue + variation));
+        });
+    }
+
+    // 生成默认网络数据
+    generateDefaultNetworkData() {
+        const baseValue = 60;
+        return Array.from({length: 20}, (_, i) => {
+            const variation = Math.sin(i * 0.5) * 25 + Math.random() * 15 - 7;
+            return Math.max(15, Math.min(130, baseValue + variation));
+        });
+    }
+
+    // 更新默认显示值
+    updateDefaultDisplayValues() {
+        // 设置默认的性能指标显示值
+        document.getElementById('cpuValue').textContent = '35.2%';
+        document.getElementById('memoryValue').textContent = '64.8%';
+        document.getElementById('diskValue').textContent = '8.5 MB/s';
+        document.getElementById('networkValue').textContent = '62.3 KB/s';
+
+        // 设置默认的系统负载值
+        document.getElementById('load1').textContent = '0.25';
+        document.getElementById('load5').textContent = '0.32';
+        document.getElementById('load15').textContent = '0.28';
+
+        // 设置默认的进程统计值
+        document.getElementById('totalProcesses').textContent = '156';
+        document.getElementById('runningProcesses').textContent = '89';
+        document.getElementById('sleepingProcesses').textContent = '67';
+    }
+
+    // 将十六进制颜色转换为rgba格式
+    hexToRgba(hex, alpha) {
+        const r = parseInt(hex.slice(1, 3), 16);
+        const g = parseInt(hex.slice(3, 5), 16);
+        const b = parseInt(hex.slice(5, 7), 16);
+        return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+    }
+
+    // 测试性能监控图表的函数
+    testPerformanceCharts() {
+        console.log('=== 测试性能监控图表 ===');
+        
+        const chartIds = ['cpuChart', 'memoryChart', 'diskChart', 'networkChart'];
+        let chartsFound = 0;
+        
+        chartIds.forEach(chartId => {
+            const canvas = document.getElementById(chartId);
+            const chart = this.performanceCharts[chartId];
+            
+            if (canvas && chart) {
+                console.log(`✅ ${chartId}: 画布和图表实例都存在`);
+                console.log(`   数据点数量: ${chart.data.datasets[0].data.length}`);
+                console.log(`   当前数据: [${chart.data.datasets[0].data.slice(0, 5).map(v => v.toFixed(1)).join(', ')}...]`);
+                chartsFound++;
+            } else if (canvas) {
+                console.log(`⚠️ ${chartId}: 画布存在但图表实例缺失`);
+            } else {
+                console.log(`❌ ${chartId}: 画布元素不存在`);
+            }
+        });
+        
+        console.log(`总共找到 ${chartsFound}/4 个正常工作的图表`);
+        
+        // 检查显示值
+        const valueElements = ['cpuValue', 'memoryValue', 'diskValue', 'networkValue'];
+        valueElements.forEach(id => {
+            const element = document.getElementById(id);
+            if (element) {
+                console.log(`${id}: ${element.textContent}`);
+            }
+        });
+        
+        return chartsFound === 4;
+    }
+
+    // 强制刷新性能图表数据
+    forceRefreshPerformanceCharts() {
+        console.log('强制刷新性能图表数据...');
+        
+        // 重新生成数据
+        const chartConfigs = {
+            'cpuChart': this.generateDefaultCPUData(),
+            'memoryChart': this.generateDefaultMemoryData(),
+            'diskChart': this.generateDefaultDiskData(),
+            'networkChart': this.generateDefaultNetworkData()
+        };
+        
+        Object.entries(chartConfigs).forEach(([chartId, newData]) => {
+            const chart = this.performanceCharts[chartId];
+            if (chart) {
+                chart.data.datasets[0].data = newData;
+                chart.update('none');
+                console.log(`已更新 ${chartId} 的数据`);
+            }
+        });
+        
+        // 更新显示值
+        this.updateDefaultDisplayValues();
+        console.log('性能图表数据刷新完成');
     }
 
     // 开始性能监控
@@ -1774,46 +2395,79 @@ class OperationToolsManager {
             this.updatePerformanceData();
         }, 2000);
 
-        document.getElementById('startMonitor').disabled = true;
-        document.getElementById('stopMonitor').disabled = false;
+        // 切换按钮显示状态
+        const startBtn = document.getElementById('startMonitor');
+        const pauseBtn = document.getElementById('pauseMonitor');
+        if (startBtn) startBtn.style.display = 'none';
+        if (pauseBtn) pauseBtn.style.display = 'inline-block';
     }
 
-    // 停止性能监控
+    // 停止性能监控（已由pausePerformanceMonitoring替代）
     stopPerformanceMonitoring() {
-        if (!this.isMonitoring) return;
-
-        this.isMonitoring = false;
-        clearInterval(this.monitoringInterval);
-        this.showNotification('性能监控已停止', 'info');
-
-        document.getElementById('startMonitor').disabled = false;
-        document.getElementById('stopMonitor').disabled = true;
+        this.pausePerformanceMonitoring();
     }
 
     // 更新性能数据
     updatePerformanceData() {
-        // 生成模拟数据
-        const cpuUsage = Math.random() * 40 + 30;
-        const memoryUsage = Math.random() * 30 + 50;
-        const diskIO = Math.random() * 100 + 50;
-        const networkTraffic = Math.random() * 1000 + 500;
+        // 获取当前服务器配置
+        const config = this.currentServerConfig?.performance || {
+            cpuBase: 35,
+            cpuVariation: 15,
+            memoryBase: 65,
+            memoryVariation: 10,
+            diskReadBase: 80,
+            diskWriteBase: 60,
+            networkUpBase: 500,
+            networkDownBase: 800
+        };
+        
+        // 根据服务器配置生成性能数据
+        const cpuUsage = config.cpuBase + (Math.random() - 0.5) * config.cpuVariation;
+        const memoryUsage = config.memoryBase + (Math.random() - 0.5) * config.memoryVariation;
+        
+        // 磁盘I/O分为读取和写入
+        const diskRead = config.diskReadBase + (Math.random() - 0.5) * 30;
+        const diskWrite = config.diskWriteBase + (Math.random() - 0.5) * 20;
+        
+        // 网络流量分为上行和下行
+        const networkUp = config.networkUpBase + (Math.random() - 0.5) * 200;
+        const networkDown = config.networkDownBase + (Math.random() - 0.5) * 300;
 
         // 更新显示值
         document.getElementById('cpuValue').textContent = cpuUsage.toFixed(1) + '%';
         document.getElementById('memoryValue').textContent = memoryUsage.toFixed(1) + '%';
-        document.getElementById('diskValue').textContent = (diskIO / 10).toFixed(1) + ' MB/s';
-        document.getElementById('networkValue').textContent = (networkTraffic / 10).toFixed(1) + ' KB/s';
+        
+        // 更新磁盘I/O显示
+        const diskReadEl = document.getElementById('diskReadValue');
+        const diskWriteEl = document.getElementById('diskWriteValue');
+        if (diskReadEl) diskReadEl.textContent = (diskRead / 10).toFixed(1) + ' MB/s';
+        if (diskWriteEl) diskWriteEl.textContent = (diskWrite / 10).toFixed(1) + ' MB/s';
+        
+        // 更新网络流量显示
+        const networkUpEl = document.getElementById('networkUpValue');
+        const networkDownEl = document.getElementById('networkDownValue');
+        if (networkUpEl) networkUpEl.textContent = (networkUp / 10).toFixed(1) + ' KB/s';
+        if (networkDownEl) networkDownEl.textContent = (networkDown / 10).toFixed(1) + ' KB/s';
 
-        // 更新图表
+        // 更新图表（使用综合值）
         this.updateChart('cpuChart', cpuUsage);
         this.updateChart('memoryChart', memoryUsage);
-        this.updateChart('diskChart', diskIO);
-        this.updateChart('networkChart', networkTraffic / 10);
+        this.updateChart('diskChart', (diskRead + diskWrite) / 2);
+        this.updateChart('networkChart', (networkUp + networkDown) / 20);
 
         // 更新系统负载
         document.getElementById('load1').textContent = (Math.random() * 0.5 + 0.1).toFixed(2);
         document.getElementById('load5').textContent = (Math.random() * 0.5 + 0.2).toFixed(2);
         document.getElementById('load15').textContent = (Math.random() * 0.5 + 0.15).toFixed(2);
+        
+        // 更新进程统计（根据服务器配置，只是轻微波动）
+        const processConfig = this.currentServerConfig?.processes || { total: 156, running: 89, sleeping: 67 };
+        const totalProc = document.getElementById('totalProcesses');
+        const runningProc = document.getElementById('runningProcesses');
+        const sleepingProc = document.getElementById('sleepingProcesses');
+        if (totalProc) totalProc.textContent = Math.floor(processConfig.total + (Math.random() - 0.5) * 10);
+        if (runningProc) runningProc.textContent = Math.floor(processConfig.running + (Math.random() - 0.5) * 8);
+        if (sleepingProc) sleepingProc.textContent = Math.floor(processConfig.sleeping + (Math.random() - 0.5) * 8);
     }
 
     // 更新图表数据
@@ -2870,5 +3524,32 @@ class OperationToolsManager {
 
 // 初始化应用
 document.addEventListener('DOMContentLoaded', () => {
-    new OperationToolsManager();
+    window.operationToolsManager = new OperationToolsManager();
 });
+
+// 暴露测试函数到全局作用域
+window.testPerformanceCharts = () => {
+    if (window.operationToolsManager) {
+        return window.operationToolsManager.testPerformanceCharts();
+    } else {
+        console.error('运维工具管理器未初始化');
+        return false;
+    }
+};
+
+window.forceRefreshPerformanceCharts = () => {
+    if (window.operationToolsManager) {
+        window.operationToolsManager.forceRefreshPerformanceCharts();
+    } else {
+        console.error('运维工具管理器未初始化');
+    }
+};
+
+window.switchToPerformanceMonitor = () => {
+    if (window.operationToolsManager) {
+        window.operationToolsManager.switchTool('performance');
+        console.log('已切换到性能监控页面');
+    } else {
+        console.error('运维工具管理器未初始化');
+    }
+};

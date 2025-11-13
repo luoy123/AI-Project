@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout"
+      layout:decorate="~{layout/base-layout}">
+<head>
+    <title>总览</title>
+    <!-- 页面特定CSS -->
+    <th:block layout:fragment="pageCss">
+        <link rel="stylesheet" href="/static/总览.css">
+    </th:block>
+</head>
+<body>
+<!-- 页面主体内容 -->
+<div layout:fragment="pageContent">
+    <!-- 统计卡片 -->
+    <div class="stats-grid">
+        <div class="stat-card">
+            <div class="circle-chart" id="chart1">
+                <span class="chart-value">0</span>
+            </div>
+            <div class="chart-label">告警总数</div>
+        </div>
+        <!-- 更多内容... -->
+    </div>
+</div>
+
+<!-- 页面特定JS -->
+<th:block layout:fragment="pageScripts">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="/static/总览.js"></script>
+</th:block>
+</body>
+</html>

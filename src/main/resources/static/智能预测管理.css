@@ -820,3 +820,372 @@ body {
     0% { transform: rotate(0deg); }
     100% { transform: rotate(360deg); }
 }
+
+/* 算法模型服务弹窗样式 */
+.model-service-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(5px);
+    z-index: 10000;
+    justify-content: center;
+    align-items: center;
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+.modal-content-model {
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    width: 90%;
+    max-width: 1000px;
+    max-height: 90vh;
+    overflow: hidden;
+    animation: modalSlideIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+.modal-header-model {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 24px 32px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-radius: 16px 16px 0 0;
+}
+
+.modal-header-model h3 {
+    margin: 0;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+.modal-close-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.modal-close-btn:hover {
+    background: rgba(255, 255, 255, 0.3);
+    transform: rotate(90deg);
+}
+
+.modal-body-model {
+    padding: 32px;
+    max-height: 65vh;
+    overflow-y: auto;
+}
+
+/* 步骤样式 */
+.form-step-model {
+    margin-bottom: 32px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.step-header-model {
+    background: #f8fafc;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.step-number-model {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.step-title-model {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #2d3748;
+}
+
+.step-content-model {
+    padding: 24px;
+}
+
+/* 表单组样式 */
+.form-group-model {
+    margin-bottom: 20px;
+}
+
+.form-group-model label {
+    display: block;
+    font-weight: 500;
+    color: #374151;
+    margin-bottom: 8px;
+    font-size: 14px;
+}
+
+.sub-label {
+    font-size: 12px;
+    color: #6b7280;
+    font-weight: 400;
+    margin-bottom: 4px;
+}
+
+.form-row-model {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    align-items: end;
+}
+
+.form-col-model {
+    display: flex;
+    flex-direction: column;
+}
+
+/* 输入框样式 */
+.form-group-model input,
+.form-group-model select,
+.form-group-model textarea {
+    padding: 10px 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 14px;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.form-group-model input:focus,
+.form-group-model select:focus,
+.form-group-model textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+.search-input,
+.metric-input,
+.influence-input {
+    flex: 1;
+}
+
+/* 算法选择样式 */
+.algorithm-selection {
+    margin-top: 8px;
+}
+
+.algorithm-option {
+    padding: 12px 16px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background: white;
+}
+
+.algorithm-option.selected {
+    border-color: #667eea;
+    background: #f0f4ff;
+}
+
+.algorithm-name {
+    font-weight: 500;
+    color: #374151;
+}
+
+/* 带单位的输入框 */
+.input-with-unit {
+    display: flex;
+    align-items: center;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+    overflow: hidden;
+}
+
+.input-with-unit input {
+    border: none;
+    padding: 10px 12px;
+    flex: 1;
+    background: transparent;
+}
+
+.input-with-unit input:focus {
+    outline: none;
+    box-shadow: none;
+}
+
+.input-with-unit .unit {
+    padding: 10px 12px;
+    background: #f9fafb;
+    color: #6b7280;
+    font-size: 14px;
+    border-left: 1px solid #e5e7eb;
+}
+
+.input-with-unit:focus-within {
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+/* 切换开关样式 */
+.toggle-switch {
+    display: flex;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.toggle-switch input[type="checkbox"] {
+    display: none;
+}
+
+.toggle-label {
+    width: 48px;
+    height: 24px;
+    background: #d1d5db;
+    border-radius: 12px;
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.toggle-label::after {
+    content: '';
+    width: 20px;
+    height: 20px;
+    background: white;
+    border-radius: 50%;
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    transition: all 0.3s ease;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.toggle-switch input[type="checkbox"]:checked + .toggle-label {
+    background: #667eea;
+}
+
+.toggle-switch input[type="checkbox"]:checked + .toggle-label::after {
+    left: 26px;
+}
+
+/* 添加按钮样式 */
+.add-metric-btn,
+.add-influence-btn {
+    background: #667eea;
+    color: white;
+    border: none;
+    width: 36px;
+    height: 36px;
+    border-radius: 6px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+    margin-left: 8px;
+}
+
+.add-metric-btn:hover,
+.add-influence-btn:hover {
+    background: #5a67d8;
+    transform: translateY(-1px);
+}
+
+/* 底部按钮样式 */
+.modal-footer-model {
+    padding: 24px 32px;
+    background: #f9fafb;
+    display: flex;
+    justify-content: flex-end;
+    gap: 16px;
+    border-radius: 0 0 16px 16px;
+}
+
+.btn-cancel-model,
+.btn-save-model {
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn-cancel-model {
+    background: #f3f4f6;
+    color: #374151;
+}
+
+.btn-cancel-model:hover {
+    background: #e5e7eb;
+}
+
+.btn-save-model {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.btn-save-model:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes modalSlideIn {
+    from {
+        opacity: 0;
+        transform: translateY(-50px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .modal-content-model {
+        width: 95%;
+        margin: 20px;
+    }
+
+    .form-row-model {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .modal-header-model,
+    .modal-body-model,
+    .modal-footer-model {
+        padding: 20px;
+    }
+
+    .step-content-model {
+        padding: 16px;
+    }
+}

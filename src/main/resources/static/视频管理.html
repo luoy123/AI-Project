@@ -1,10 +1,42 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<style>
+/* 立即隐藏CMDB菜单项 - 防止闪烁 */
+.nav-cmdb { display: none !important; }
+.sidebar-item[data-page="CMDB"] { display: none !important; }
+</style>
+<script>
+// 立即执行：尽早隐藏CMDB，防止闪烁
+(function() {
+    function hideCMDB() {
+        var items = document.querySelectorAll('.sidebar-item');
+        items.forEach(function(item) {
+            var span = item.querySelector('span');
+            if (span && span.textContent.trim() === 'CMDB') {
+                item.style.display = 'none';
+                item.setAttribute('data-hidden', 'true');
+            }
+        });
+    }
+    
+    // 立即执行
+    hideCMDB();
+    
+    // DOM Ready时再执行一次
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideCMDB);
+    }
+    
+    // 额外保险：延迟执行确保覆盖所有情况
+    setTimeout(hideCMDB, 10);
+    setTimeout(hideCMDB, 100);
+})();
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>视频管理 - 人工智能运维平台</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="libs/fontawesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="视频管理.css">
     <script src="chart.js"></script>
 </head>
@@ -66,7 +98,7 @@
                 <span>资产管理</span>
             </div>
             <div class="sidebar-item">
-                <i class="fas fa-user-cog"></i>
+                <i class="fas fa-users"></i>
                 <span>运维管理</span>
             </div>
             <div class="sidebar-item">
@@ -101,21 +133,46 @@
         <div class="main-content">
             <!-- 顶部导航栏 -->
             <header class="top-header">
+<style>
+/* 立即隐藏CMDB菜单项 - 防止闪烁 */
+.nav-cmdb { display: none !important; }
+.sidebar-item[data-page="CMDB"] { display: none !important; }
+</style>
+<script>
+// 立即执行：尽早隐藏CMDB，防止闪烁
+(function() {
+    function hideCMDB() {
+        var items = document.querySelectorAll('.sidebar-item');
+        items.forEach(function(item) {
+            var span = item.querySelector('span');
+            if (span && span.textContent.trim() === 'CMDB') {
+                item.style.display = 'none';
+                item.setAttribute('data-hidden', 'true');
+            }
+        });
+    }
+    
+    // 立即执行
+    hideCMDB();
+    
+    // DOM Ready时再执行一次
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideCMDB);
+    }
+    
+    // 额外保险：延迟执行确保覆盖所有情况
+    setTimeout(hideCMDB, 10);
+    setTimeout(hideCMDB, 100);
+})();
+</script>
                 <div class="header-left">
                     <div class="breadcrumb">
                         <span class="breadcrumb-item">视频管理</span>
                     </div>
                 </div>
                 <div class="header-right">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" placeholder="搜索视频设备..." id="searchInput">
-                    </div>
-                    <div class="user-menu">
-                        <div class="user-avatar">
-                            <img src="1.png" alt="用户头像">
-                        </div>
-                    </div>
+                    <!-- 用户下拉菜单容器 -->
+                    <div id="user-dropdown-container"></div>
                 </div>
             </header>
 
@@ -125,7 +182,7 @@
                 <div class="stats-section">
                     <div class="stats-grid">
                         <!-- 正常设备数 -->
-                        <div class="stat-card green">
+                        <div class="stat-card green" data-filter="status" data-value="online" style="cursor: pointer; transition: transform 0.2s;">
                             <div class="stat-icon">
                                 <i class="fas fa-video"></i>
                             </div>
@@ -135,36 +192,14 @@
                             </div>
                         </div>
 
-                        <!-- 故障设备数 -->
-                        <div class="stat-card blue">
+                        <!-- 异常设备数 -->
+                        <div class="stat-card blue" data-filter="status" data-value="abnormal" style="cursor: pointer; transition: transform 0.2s;">
                             <div class="stat-icon">
                                 <i class="fas fa-exclamation-triangle"></i>
                             </div>
                             <div class="stat-content">
-                                <div class="stat-title">故障设备数</div>
-                                <div class="stat-number" id="faultDevices">0</div>
-                            </div>
-                        </div>
-
-                        <!-- 今日新增故障设备数 -->
-                        <div class="stat-card purple">
-                            <div class="stat-icon">
-                                <i class="fas fa-plus-circle"></i>
-                            </div>
-                            <div class="stat-content">
-                                <div class="stat-title">今日新增故障设备数</div>
-                                <div class="stat-number" id="todayFaultDevices">0</div>
-                            </div>
-                        </div>
-
-                        <!-- 可用设备数 -->
-                        <div class="stat-card orange">
-                            <div class="stat-icon">
-                                <i class="fas fa-check-circle"></i>
-                            </div>
-                            <div class="stat-content">
-                                <div class="stat-title">可用设备数</div>
-                                <div class="stat-number" id="availableDevices">0</div>
+                                <div class="stat-title">异常设备数</div>
+                                <div class="stat-number" id="abnormalDevices">0</div>
                             </div>
                         </div>
                     </div>
@@ -186,24 +221,69 @@
                             </div>
                         </div>
 
-                        <!-- 故障设备统计 -->
+                        <!-- 设备状态统计 -->
                         <div class="chart-card">
                             <div class="chart-header">
-                                <h3>故障设备统计</h3>
+                                <h3>设备状态统计</h3>
                             </div>
                             <div class="chart-content">
-                                <div class="fault-stats">
-                                    <div class="fault-item">
-                                        <span class="fault-label">离线</span>
-                                        <span class="fault-count" id="offlineCount">0</span>
+                                <div class="fault-stats" style="display: flex; flex-direction: column; gap: 12px; padding: 20px;">
+                                    <div class="fault-item" data-filter="status" data-value="online" style="
+                                        cursor: pointer; 
+                                        transition: all 0.3s; 
+                                        padding: 15px 20px; 
+                                        border-radius: 10px;
+                                        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+                                        color: white;
+                                        display: flex;
+                                        justify-content: space-between;
+                                        align-items: center;
+                                        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+                                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(16, 185, 129, 0.4)'" 
+                                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(16, 185, 129, 0.3)'">
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <i class="fas fa-check-circle" style="font-size: 20px;"></i>
+                                            <span class="fault-label" style="font-weight: 600; font-size: 16px;">在线设备</span>
+                                        </div>
+                                        <span class="fault-count" id="onlineCount" style="font-size: 24px; font-weight: 700;">0</span>
                                     </div>
-                                    <div class="fault-item">
-                                        <span class="fault-label">故障</span>
-                                        <span class="fault-count" id="faultCount">0</span>
+                                    <div class="fault-item" data-filter="status" data-value="offline" style="
+                                        cursor: pointer; 
+                                        transition: all 0.3s; 
+                                        padding: 15px 20px; 
+                                        border-radius: 10px;
+                                        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                                        color: white;
+                                        display: flex;
+                                        justify-content: space-between;
+                                        align-items: center;
+                                        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+                                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(239, 68, 68, 0.4)'" 
+                                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(239, 68, 68, 0.3)'">
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <i class="fas fa-times-circle" style="font-size: 20px;"></i>
+                                            <span class="fault-label" style="font-weight: 600; font-size: 16px;">离线设备</span>
+                                        </div>
+                                        <span class="fault-count" id="offlineCount" style="font-size: 24px; font-weight: 700;">0</span>
                                     </div>
-                                    <div class="fault-item">
-                                        <span class="fault-label">维护</span>
-                                        <span class="fault-count" id="maintenanceCount">0</span>
+                                    <div class="fault-item" data-filter="status" data-value="maintenance" style="
+                                        cursor: pointer; 
+                                        transition: all 0.3s; 
+                                        padding: 15px 20px; 
+                                        border-radius: 10px;
+                                        background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+                                        color: white;
+                                        display: flex;
+                                        justify-content: space-between;
+                                        align-items: center;
+                                        box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);
+                                    " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(245, 158, 11, 0.4)'" 
+                                       onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(245, 158, 11, 0.3)'">
+                                        <div style="display: flex; align-items: center; gap: 10px;">
+                                            <i class="fas fa-wrench" style="font-size: 20px;"></i>
+                                            <span class="fault-label" style="font-weight: 600; font-size: 16px;">维护设备</span>
+                                        </div>
+                                        <span class="fault-count" id="maintenanceCount" style="font-size: 24px; font-weight: 700;">0</span>
                                     </div>
                                 </div>
                             </div>
@@ -212,24 +292,191 @@
 
                     <!-- 趋势图表 -->
                     <div class="trend-section">
-                        <div class="trend-grid">
-                            <!-- 近七天设备故障趋势 -->
-                            <div class="chart-card">
-                                <div class="chart-header">
-                                    <h3>近七天设备故障趋势</h3>
+                        <!-- 近七天设备可用性趋势 -->
+                        <div class="chart-card" style="width: 100%;">
+                            <div class="chart-header">
+                                <h3>近七天设备可用性趋势</h3>
+                            </div>
+                            <div class="chart-container" style="height: 400px;">
+                                <canvas id="availabilityTrendChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 设备列表区域 -->
+                <div class="device-list-section" style="margin-top: 20px;">
+                    <div class="chart-card">
+                        <div class="chart-header" style="display: flex; justify-content: space-between; align-items: center;">
+                            <h3 id="deviceListTitle">全部设备</h3>
+                            <button id="addDeviceBtn" style="
+                                padding: 10px 20px;
+                                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                                color: white;
+                                border: none;
+                                border-radius: 8px;
+                                font-weight: 600;
+                                font-size: 14px;
+                                cursor: pointer;
+                                transition: all 0.3s;
+                                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+                            " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.4)'" 
+                               onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.3)'">
+                                <i class="fas fa-plus"></i> 添加设备
+                            </button>
+                        </div>
+                        
+                        <!-- 搜索和过滤区域 -->
+                        <div class="filter-section" style="
+                            padding: 20px 20px 0 20px;
+                            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                            margin: 0 20px 20px 20px;
+                            border-radius: 12px;
+                            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+                        ">
+                            <div style="display: flex; gap: 15px; align-items: flex-end; flex-wrap: wrap; padding-bottom: 20px;">
+                                <!-- 关键字搜索 -->
+                                <div style="flex: 1; min-width: 250px;">
+                                    <label style="color: #fff; font-weight: 500; margin-bottom: 8px; display: block; font-size: 13px;">
+                                        <i class="fas fa-search"></i> 关键字搜索
+                                    </label>
+                                    <input type="text" id="deviceSearchInput" placeholder="搜索设备名称、IP地址（输入后点击搜索按钮）..." style="
+                                        width: 100%;
+                                        padding: 10px 15px;
+                                        border: 2px solid rgba(255,255,255,0.3);
+                                        border-radius: 8px;
+                                        background: rgba(255,255,255,0.95);
+                                        font-size: 14px;
+                                        transition: all 0.3s;
+                                    " onfocus="this.style.borderColor='#fff'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'" 
+                                       onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
                                 </div>
-                                <div class="chart-container">
-                                    <canvas id="faultTrendChart"></canvas>
+                                
+                                <!-- 设备类型过滤 -->
+                                <div style="min-width: 160px;">
+                                    <label style="color: #fff; font-weight: 500; margin-bottom: 8px; display: block; font-size: 13px;">
+                                        <i class="fas fa-filter"></i> 设备类型
+                                    </label>
+                                    <select id="deviceTypeFilter" style="
+                                        width: 100%;
+                                        padding: 10px 15px;
+                                        border: 2px solid rgba(255,255,255,0.3);
+                                        border-radius: 8px;
+                                        background: rgba(255,255,255,0.95);
+                                        font-size: 14px;
+                                        cursor: pointer;
+                                        transition: all 0.3s;
+                                    " onfocus="this.style.borderColor='#fff'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'" 
+                                       onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+                                        <option value="">全部类型</option>
+                                        <option value="摄像头">摄像头</option>
+                                        <option value="视频交换机">视频交换机</option>
+                                        <option value="录像机">录像机</option>
+                                        <option value="视频存储">视频存储</option>
+                                        <option value="显示器">显示器</option>
+                                        <option value="视频服务器">视频服务器</option>
+                                        <option value="视频网关">视频网关</option>
+                                        <option value="其他视频设备">其他视频设备</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- 设备状态过滤 -->
+                                <div style="min-width: 140px;">
+                                    <label style="color: #fff; font-weight: 500; margin-bottom: 8px; display: block; font-size: 13px;">
+                                        <i class="fas fa-signal"></i> 设备状态
+                                    </label>
+                                    <select id="deviceStatusFilter" style="
+                                        width: 100%;
+                                        padding: 10px 15px;
+                                        border: 2px solid rgba(255,255,255,0.3);
+                                        border-radius: 8px;
+                                        background: rgba(255,255,255,0.95);
+                                        font-size: 14px;
+                                        cursor: pointer;
+                                        transition: all 0.3s;
+                                    " onfocus="this.style.borderColor='#fff'; this.style.boxShadow='0 0 0 3px rgba(255,255,255,0.2)'" 
+                                       onblur="this.style.borderColor='rgba(255,255,255,0.3)'; this.style.boxShadow='none'">
+                                        <option value="">全部状态</option>
+                                        <option value="online">在线</option>
+                                        <option value="offline">离线</option>
+                                        <option value="maintenance">维护中</option>
+                                    </select>
+                                </div>
+                                
+                                <!-- 操作按钮 -->
+                                <div style="display: flex; gap: 10px;">
+                                    <button id="searchDeviceBtn" style="
+                                        padding: 12px 30px;
+                                        background: #fff;
+                                        color: #667eea;
+                                        border: 3px solid #fff;
+                                        border-radius: 10px;
+                                        font-weight: 700;
+                                        font-size: 15px;
+                                        cursor: pointer;
+                                        transition: all 0.3s;
+                                        box-shadow: 0 6px 15px rgba(0,0,0,0.15);
+                                        position: relative;
+                                    " onmouseover="this.style.background='#f8f9ff'; this.style.transform='translateY(-3px)'; this.style.boxShadow='0 8px 20px rgba(0,0,0,0.2)'; this.style.borderColor='#f0f0ff'" 
+                                       onmouseout="this.style.background='#fff'; this.style.transform='translateY(0)'; this.style.boxShadow='0 6px 15px rgba(0,0,0,0.15)'; this.style.borderColor='#fff'">
+                                        <i class="fas fa-search"></i> 点击搜索
+                                    </button>
+                                    <button id="resetDeviceBtn" style="
+                                        padding: 10px 25px;
+                                        background: rgba(255,255,255,0.2);
+                                        color: #fff;
+                                        border: 2px solid rgba(255,255,255,0.5);
+                                        border-radius: 8px;
+                                        font-weight: 600;
+                                        font-size: 14px;
+                                        cursor: pointer;
+                                        transition: all 0.3s;
+                                    " onmouseover="this.style.background='rgba(255,255,255,0.3)'; this.style.transform='translateY(-2px)'" 
+                                       onmouseout="this.style.background='rgba(255,255,255,0.2)'; this.style.transform='translateY(0)'">
+                                        <i class="fas fa-redo"></i> 重置
+                                    </button>
                                 </div>
                             </div>
-
-                            <!-- 近七天设备可用性趋势 -->
-                            <div class="chart-card">
-                                <div class="chart-header">
-                                    <h3>近七天设备可用性趋势</h3>
+                        </div>
+                        
+                        <div class="device-list-content" style="padding: 20px;">
+                            <!-- 设备表格 -->
+                            <div class="device-table-wrapper" style="overflow-x: auto;">
+                                <table class="device-table" style="width: 100%; border-collapse: collapse;">
+                                    <thead>
+                                        <tr style="background: #f9fafb; border-bottom: 2px solid #e5e7eb;">
+                                            <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">设备名称</th>
+                                            <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">设备类型</th>
+                                            <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">IP地址</th>
+                                            <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">状态</th>
+                                            <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">位置</th>
+                                            <th style="padding: 12px; text-align: left; font-weight: 600; color: #374151;">制造商</th>
+                                            <th style="padding: 12px; text-align: center; font-weight: 600; color: #374151; width: 120px;">操作</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="deviceTableBody">
+                                        <tr>
+                                            <td colspan="7" style="padding: 40px; text-align: center; color: #9ca3af;">
+                                                <i class="fas fa-spinner fa-spin" style="font-size: 24px;"></i>
+                                                <div style="margin-top: 10px;">加载中...</div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            
+                            <!-- 分页控件 -->
+                            <div class="pagination-wrapper" style="display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                                <div class="pagination-info" style="color: #6b7280; font-size: 14px;">
+                                    共 <span id="totalDevices">0</span> 条记录，第 <span id="currentPage">1</span> / <span id="totalPages">1</span> 页
                                 </div>
-                                <div class="chart-container">
-                                    <canvas id="availabilityTrendChart"></canvas>
+                                <div class="pagination-controls" style="display: flex; gap: 10px;">
+                                    <button id="prevPageBtn" class="page-btn" style="padding: 8px 16px; background: #fff; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; font-size: 14px; color: #374151;">
+                                        <i class="fas fa-chevron-left"></i> 上一页
+                                    </button>
+                                    <button id="nextPageBtn" class="page-btn" style="padding: 8px 16px; background: #fff; border: 1px solid #d1d5db; border-radius: 6px; cursor: pointer; font-size: 14px; color: #374151;">
+                                        下一页 <i class="fas fa-chevron-right"></i>
+                                    </button>
                                 </div>
                             </div>
                         </div>
@@ -239,6 +486,364 @@
         </div>
     </div>
 
-    <script src="视频管理.js"></script>
+    <!-- 设备编辑模态框 -->
+    <div id="deviceModal" class="modal" style="
+        display: none;
+        position: fixed;
+        z-index: 2000;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        background-color: rgba(0,0,0,0.5);
+        backdrop-filter: blur(5px);
+    ">
+        <div class="modal-content" style="
+            background-color: #fff;
+            margin: 2% auto;
+            padding: 0;
+            border-radius: 12px;
+            width: 95%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            animation: modalSlideIn 0.3s ease-out;
+        ">
+            <div class="modal-header" style="
+                padding: 25px 30px;
+                border-bottom: 1px solid #e5e7eb;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-radius: 12px 12px 0 0;
+            ">
+                <h2 id="modalTitle" style="margin: 0; font-size: 20px; font-weight: 600;">添加设备</h2>
+                <span class="close" style="
+                    font-size: 28px;
+                    font-weight: bold;
+                    cursor: pointer;
+                    color: rgba(255,255,255,0.8);
+                    transition: color 0.3s;
+                " onmouseover="this.style.color='white'" onmouseout="this.style.color='rgba(255,255,255,0.8)'">&times;</span>
+            </div>
+            <div class="modal-body" style="padding: 30px;">
+                <form id="deviceForm">
+                    <!-- 基本信息 -->
+                    <div class="form-section" style="margin-bottom: 25px;">
+                        <h4 class="section-title" style="
+                            margin: 0 0 15px 0;
+                            padding-bottom: 8px;
+                            border-bottom: 2px solid #667eea;
+                            color: #374151;
+                            font-size: 16px;
+                            font-weight: 600;
+                        ">基本信息</h4>
+                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px;">
+                            <div class="form-group" id="assetCodeGroup">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">资产编号</label>
+                                <input type="text" id="assetCode" name="assetCode" placeholder="系统自动生成" readonly style="
+                                    width: 100%;
+                                    padding: 12px 15px;
+                                    border: 2px solid #e5e7eb;
+                                    border-radius: 8px;
+                                    font-size: 14px;
+                                    background-color: #f9fafb;
+                                    color: #6b7280;
+                                ">
+                            </div>
+                            <div class="form-group" id="assetNameGroup">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">资产名称 *</label>
+                                <input type="text" id="assetName" name="assetName" required placeholder="请输入资产名称" style="
+                                    width: 100%;
+                                    padding: 12px 15px;
+                                    border: 2px solid #e5e7eb;
+                                    border-radius: 8px;
+                                    font-size: 14px;
+                                    transition: border-color 0.3s;
+                                " onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e7eb'">
+                            </div>
+                        </div>
+                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 15px;">
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">设备名称 *</label>
+                                <input type="text" id="deviceName" name="deviceName" required placeholder="请输入设备名称" style="
+                                    width: 100%;
+                                    padding: 12px 15px;
+                                    border: 2px solid #e5e7eb;
+                                    border-radius: 8px;
+                                    font-size: 14px;
+                                    transition: border-color 0.3s;
+                                " onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e7eb'">
+                            </div>
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">IP地址</label>
+                                <input type="text" id="deviceIP" name="deviceIP" placeholder="如：192.168.1.100" style="
+                                    width: 100%;
+                                    padding: 12px 15px;
+                                    border: 2px solid #e5e7eb;
+                                    border-radius: 8px;
+                                    font-size: 14px;
+                                    transition: border-color 0.3s;
+                                " onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e7eb'">
+                            </div>
+                        </div>
+                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">MAC地址</label>
+                                <input type="text" id="macAddress" name="macAddress" placeholder="如：00:1B:44:11:3A:B7" style="
+                                    width: 100%;
+                                    padding: 12px 15px;
+                                    border: 2px solid #e5e7eb;
+                                    border-radius: 8px;
+                                    font-size: 14px;
+                                    transition: border-color 0.3s;
+                                " onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e7eb'">
+                            </div>
+                            <div class="form-group" id="serialNumberGroup">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">序列号</label>
+                                <input type="text" id="serialNumber" name="serialNumber" placeholder="设备序列号" style="
+                                    width: 100%;
+                                    padding: 12px 15px;
+                                    border: 2px solid #e5e7eb;
+                                    border-radius: 8px;
+                                    font-size: 14px;
+                                    transition: border-color 0.3s;
+                                " onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e7eb'">
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 分类信息 -->
+                    <div class="form-section" style="margin-bottom: 25px;">
+                        <h4 class="section-title" style="
+                            margin: 0 0 15px 0;
+                            padding-bottom: 8px;
+                            border-bottom: 2px solid #667eea;
+                            color: #374151;
+                            font-size: 16px;
+                            font-weight: 600;
+                        ">分类信息</h4>
+                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">设备类型 *</label>
+                                <select id="deviceType" name="deviceType" required style="
+                                    width: 100%;
+                                    padding: 12px 15px;
+                                    border: 2px solid #e5e7eb;
+                                    border-radius: 8px;
+                                    font-size: 14px;
+                                    transition: border-color 0.3s;
+                                    cursor: pointer;
+                                " onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e7eb'">
+                                    <option value="">请选择设备类型</option>
+                                    <option value="video">视频设备</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">设备分组 *</label>
+                                <select id="deviceGroup" name="categoryId" required style="
+                                    width: 100%;
+                                    padding: 12px 15px;
+                                    border: 2px solid #e5e7eb;
+                                    border-radius: 8px;
+                                    font-size: 14px;
+                                    transition: border-color 0.3s;
+                                    cursor: pointer;
+                                " onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e7eb'">
+                                    <option value="">请先选择设备类型</option>
+                                    <option value="15">摄像头</option>
+                                    <option value="16">视频交换机</option>
+                                    <option value="17">录像机</option>
+                                    <option value="18">视频存储</option>
+                                    <option value="19">显示器</option>
+                                    <option value="20">视频服务器</option>
+                                    <option value="21">视频网关</option>
+                                    <option value="22">其他视频设备</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 状态信息 -->
+                    <div class="form-section" style="margin-bottom: 25px;">
+                        <h4 class="section-title" style="
+                            margin: 0 0 15px 0;
+                            padding-bottom: 8px;
+                            border-bottom: 2px solid #667eea;
+                            color: #374151;
+                            font-size: 16px;
+                            font-weight: 600;
+                        ">状态信息</h4>
+                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">设备状态 *</label>
+                                <select id="deviceStatus" name="assetStatus" required style="
+                                    width: 100%;
+                                    padding: 12px 15px;
+                                    border: 2px solid #e5e7eb;
+                                    border-radius: 8px;
+                                    font-size: 14px;
+                                    transition: border-color 0.3s;
+                                    cursor: pointer;
+                                " onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e7eb'">
+                                    <option value="online">在线</option>
+                                    <option value="offline">离线</option>
+                                    <option value="maintenance">维护中</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <!-- 空位，保持布局对称 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 位置信息 -->
+                    <div class="form-section" style="margin-bottom: 25px;">
+                        <h4 class="section-title" style="
+                            margin: 0 0 15px 0;
+                            padding-bottom: 8px;
+                            border-bottom: 2px solid #667eea;
+                            color: #374151;
+                            font-size: 16px;
+                            font-weight: 600;
+                        ">位置信息</h4>
+                        <div class="form-row" style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+                            <div class="form-group">
+                                <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">物理位置</label>
+                                <input type="text" id="location" name="location" placeholder="如：主机房-机柜A1-U01" style="
+                                    width: 100%;
+                                    padding: 12px 15px;
+                                    border: 2px solid #e5e7eb;
+                                    border-radius: 8px;
+                                    font-size: 14px;
+                                    transition: border-color 0.3s;
+                                " onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e7eb'">
+                            </div>
+                            <div class="form-group">
+                                <!-- 空位，保持布局对称 -->
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 其他信息 -->
+                    <div class="form-section">
+                        <h4 class="section-title" style="
+                            margin: 0 0 15px 0;
+                            padding-bottom: 8px;
+                            border-bottom: 2px solid #667eea;
+                            color: #374151;
+                            font-size: 16px;
+                            font-weight: 600;
+                        ">其他信息</h4>
+                        <div class="form-group" style="margin-bottom: 15px;">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">标签</label>
+                            <input type="text" id="tags" name="tags" placeholder="多个标签用逗号分隔，如：监控,重要,备份" style="
+                                width: 100%;
+                                padding: 12px 15px;
+                                border: 2px solid #e5e7eb;
+                                border-radius: 8px;
+                                font-size: 14px;
+                                transition: border-color 0.3s;
+                            " onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e7eb'">
+                        </div>
+                        <div class="form-group">
+                            <label style="display: block; margin-bottom: 8px; font-weight: 600; color: #374151;">备注信息</label>
+                            <textarea id="description" name="description" rows="3" placeholder="设备描述信息..." style="
+                                width: 100%;
+                                padding: 12px 15px;
+                                border: 2px solid #e5e7eb;
+                                border-radius: 8px;
+                                font-size: 14px;
+                                transition: border-color 0.3s;
+                                resize: vertical;
+                                font-family: inherit;
+                            " onfocus="this.style.borderColor='#667eea'" onblur="this.style.borderColor='#e5e7eb'"></textarea>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer" style="
+                padding: 20px 30px;
+                border-top: 1px solid #e5e7eb;
+                display: flex;
+                justify-content: flex-end;
+                gap: 15px;
+                background: #f9fafb;
+                border-radius: 0 0 12px 12px;
+            ">
+                <button type="button" class="btn-cancel" style="
+                    padding: 12px 24px;
+                    background: #f3f4f6;
+                    color: #374151;
+                    border: none;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                " onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">取消</button>
+                <button type="button" id="saveDeviceBtn" onclick="if(window.videoManager) { console.log('🖱️ 直接onclick被触发'); window.videoManager.saveDevice(); }" style="
+                    padding: 12px 24px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 8px;
+                    font-weight: 600;
+                    cursor: pointer;
+                    transition: all 0.3s;
+                    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+                " onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 6px 20px rgba(102, 126, 234, 0.4)'" 
+                   onmouseout="this.style.transform='translateY(0)'; this.style.boxShadow='0 4px 12px rgba(102, 126, 234, 0.3)'">
+                    <i class="fas fa-save"></i> 保存
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <style>
+        @keyframes modalSlideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-50px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+        
+        @media (max-width: 768px) {
+            .form-row {
+                grid-template-columns: 1fr !important;
+            }
+            .modal-content {
+                margin: 5% auto !important;
+                width: 98% !important;
+                max-height: 95vh !important;
+            }
+            .modal-body {
+                padding: 20px !important;
+            }
+            .form-section {
+                margin-bottom: 20px !important;
+            }
+        }
+    </style>
+
+    <!-- 侧边栏导航脚本 -->
+    <script src="js/navigation-fix.js"></script>
+    
+    <!-- 加载用户下拉菜单 -->
+    <script src="js/user-dropdown-loader.js"></script>
+    <script src="视频管理-fixed.js"></script>
 </body>
 </html>

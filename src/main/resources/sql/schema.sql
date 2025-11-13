@@ -66,18 +66,19 @@ CREATE TABLE `device` (
 -- ====================================
 -- 3. 设备分组表
 -- ====================================
-DROP TABLE IF EXISTS `device_group`;
-CREATE TABLE `device_group` (
-    `id` BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    `name` VARCHAR(100) NOT NULL COMMENT '分组名称',
-    `parent_id` BIGINT(20) DEFAULT NULL COMMENT '父分组ID',
-    `icon` VARCHAR(50) DEFAULT NULL COMMENT '图标',
-    `sort_order` INT DEFAULT 0 COMMENT '排序',
-    `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
-    `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
-    `deleted` TINYINT(1) DEFAULT 0 COMMENT '逻辑删除',
-    PRIMARY KEY (`id`),
-    KEY `idx_parent_id` (`parent_id`)
+-- 创建设备分组表（如果不存在）
+CREATE TABLE IF NOT EXISTS `device_group` (
+                                              `id` bigint(20) NOT NULL AUTO_INCREMENT COMMENT '分组ID',
+                                              `name` varchar(100) NOT NULL COMMENT '分组名称',
+                                              `parent_id` bigint(20) DEFAULT NULL COMMENT '父分组ID',
+                                              `icon` varchar(100) DEFAULT NULL COMMENT '图标',
+                                              `sort_order` int(11) DEFAULT '0' COMMENT '排序',
+                                              `create_time` datetime DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
+                                              `update_time` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
+                                              `deleted` tinyint(1) DEFAULT '0' COMMENT '逻辑删除',
+                                              PRIMARY KEY (`id`),
+                                              KEY `idx_parent_id` (`parent_id`),
+                                              KEY `idx_deleted` (`deleted`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='设备分组表';
 
 -- ====================================
@@ -166,23 +167,32 @@ INSERT INTO `sys_user` (`username`, `password`, `real_name`, `role`, `status`) V
 ('test', '$2a$10$7JB720yubVSZvUI0rEqK/.VqGOZTH.ulu33dHOiBE/1Q2V/JWpQAa', '测试用户', 'user', 1);
 
 -- 初始化设备分组
-INSERT INTO `device_group` (`name`, `parent_id`, `icon`, `sort_order`) VALUES
-('服务器', NULL, 'fa-server', 1),
-('Web服务器', 1, 'fa-globe', 1),
-('数据库服务器', 1, 'fa-database', 2),
-('应用服务器', 1, 'fa-cogs', 3),
-('网络设备', NULL, 'fa-network-wired', 2),
-('交换机', 5, 'fa-project-diagram', 1),
-('路由器', 5, 'fa-route', 2),
-('防火墙', 5, 'fa-shield-alt', 3),
-('存储设备', NULL, 'fa-hdd', 3),
-('NAS存储', 9, 'fa-archive', 1),
-('SAN存储', 9, 'fa-server', 2);
 
--- 初始化设备
-INSERT INTO `device` (`name`, `ip`, `type`, `status`, `group_id`, `location`, `description`) VALUES
-('主服务器', '192.168.1.12', 'server', 'online', 2, '机房A-机柜1', '主管理服务器'),
-('主交换机', '192.168.1.1', 'switch', 'online', 6, '机房A-网络区', '核心网络交换设备');
+-- 插入根分组
+INSERT INTO `device_group` (`id`, `name`, `parent_id`, `icon`, `sort_order`, `deleted`) VALUES
+                                                                                            (1, '服务器', NULL, 'fas fa-server', 1, 0),
+                                                                                            (2, '网络设备', NULL, 'fas fa-network-wired', 2, 0),
+                                                                                            (3, '存储设备', NULL, 'fas fa-hdd', 3, 0);
+
+-- 插入服务器子分组
+INSERT INTO `device_group` (`id`, `name`, `parent_id`, `icon`, `sort_order`, `deleted`) VALUES
+                                                                                            (4, 'Web服务器', 1, 'fas fa-globe', 1, 0),
+                                                                                            (5, '数据库服务器', 1, 'fas fa-database', 2, 0),
+                                                                                            (6, '应用服务器', 1, 'fas fa-cogs', 3, 0);
+
+-- 插入网络设备子分组（包括新增的无线AP和网关）
+INSERT INTO `device_group` (`id`, `name`, `parent_id`, `icon`, `sort_order`, `deleted`) VALUES
+                                                                                            (7, '交换机', 2, 'fas fa-project-diagram', 1, 0),
+                                                                                            (8, '路由器', 2, 'fas fa-route', 2, 0),
+                                                                                            (9, '防火墙', 2, 'fas fa-shield-alt', 3, 0),
+                                                                                            (10, '无线AP', 2, 'fas fa-wifi', 4, 0),
+                                                                                            (11, '网关', 2, 'fas fa-door-open', 5, 0);
+
+-- 插入存储设备子分组
+INSERT INTO `device_group` (`id`, `name`, `parent_id`, `icon`, `sort_order`, `deleted`) VALUES
+                                                                                            (12, 'NAS存储', 3, 'fas fa-archive', 1, 0),
+                                                                                            (13, 'SAN存储', 3, 'fas fa-server', 2, 0);
+
 
 -- 初始化告警
 INSERT INTO `alert` (`severity`, `message`, `device_name`, `device_type`, `status`, `description`) VALUES

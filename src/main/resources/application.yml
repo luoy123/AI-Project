@@ -1,5 +1,6 @@
 server:
-  port: 8080
+  port: 1234
+  address: 0.0.0.0  # 监听所有网卡，允许内网访问
   servlet:
     context-path: /api
 spring:
@@ -10,7 +11,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/aiops_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: root
+    username: zxb
     password: 2004
     hikari:
       minimum-idle: 5
@@ -44,6 +45,8 @@ spring:
   web:
     resources:
       static-locations: classpath:/static/,classpath:/public/
+      cache:
+            period: 0  # 禁用静态资源缓存（开发环境）
   mvc:
     pathmatch:
       matching-strategy: ant_path_matcher
@@ -71,14 +74,14 @@ jwt:
 
 # 验证码配置
 captcha:
-  enabled: true
+  enabled: true  # 设置为 true 启用验证码验证
   type: math  # math 或 char
   length: 4
   expire-time: 120  # 秒
 
 # 文件上传配置
 file:
-  upload-path: /data/upload/
+  upload-path: E:/modern-blog/AI-project2/upload/
   max-size: 10485760  # 10MB
 
 # Swagger配置

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>用户下拉菜单片段</title>
+</head>
+<body>
+<!-- 用户下拉菜单片段 -->
+<div th:fragment="userDropdown" class="user-info" id="userInfo">
+    <span id="username" th:text="${username != null ? username : '管理员'}">管理员</span>
+    <img src="1.png" alt="用户头像">
+    <i class="fas fa-chevron-down"></i>
+    <!-- 下拉菜单 -->
+    <div class="user-dropdown" id="userDropdown">
+        <div class="dropdown-item" id="switchAccount">
+            <i class="fas fa-exchange-alt"></i>
+            <span>切换账号</span>
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item" id="logout">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>退出登录</span>
+        </div>
+    </div>
+</div>
+
+<!-- 用户下拉菜单样式片段 -->
+<th:block th:fragment="userDropdownStyles">
+    <style>
+        .user-info {
+            display: flex;
+            align-items: center;
+            position: relative;
+            cursor: pointer;
+            padding: 8px 12px;
+            border-radius: 8px;
+            transition: background-color 0.3s;
+        }
+
+        .user-info:hover {
+            background-color: #f0f0f0;
+        }
+
+        .user-info #username {
+            font-size: 14px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .user-info img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            margin-left: 10px;
+            margin-right: 8px;
+        }
+
+        .user-info .fa-chevron-down {
+            font-size: 12px;
+            color: #666;
+            transition: transform 0.3s;
+        }
+
+        .user-info.active .fa-chevron-down {
+            transform: rotate(180deg);
+        }
+
+        /* 用户下拉菜单 */
+        .user-dropdown {
+            position: absolute;
+            top: 100%;
+            right: 0;
+            margin-top: 8px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            min-width: 180px;
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-10px);
+            transition: all 0.3s ease;
+            z-index: 1000;
+        }
+
+        .user-dropdown.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0);
+        }
+
+        .dropdown-item {
+            padding: 12px 16px;
+            display: flex;
+            align-items: center;
+            cursor: pointer;
+            transition: background-color 0.2s;
+            color: #333;
+            font-size: 14px;
+        }
+
+        .dropdown-item:first-child {
+            border-radius: 8px 8px 0 0;
+        }
+
+        .dropdown-item:last-child {
+            border-radius: 0 0 8px 8px;
+        }
+
+        .dropdown-item:hover {
+            background-color: #f5f5f5;
+        }
+
+        .dropdown-item i {
+            margin-right: 10px;
+            width: 16px;
+            text-align: center;
+            color: #666;
+        }
+
+        .dropdown-item#logout:hover {
+            background-color: #fee;
+            color: #e53e3e;
+        }
+
+        .dropdown-item#logout:hover i {
+            color: #e53e3e;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background-color: #e5e5e5;
+            margin: 4px 0;
+        }
+    </style>
+</th:block>
+
+<!-- 用户下拉菜单脚本片段 -->
+<th:block th:fragment="userDropdownScripts">
+    <script>
+        // 用户下拉菜单通用组件
+        const UserDropdown = {
+            init: function() {
+                const userInfo = document.getElementById('userInfo');
+                const userDropdown = document.getElementById('userDropdown');
+                const switchAccountBtn = document.getElementById('switchAccount');
+                const logoutBtn = document.getElementById('logout');
+
+                if (!userInfo || !userDropdown) {
+                    console.warn('用户下拉菜单元素未找到');
+                    return;
+                }
+
+                // 点击用户信息区域切换下拉菜单
+                userInfo.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    userInfo.classList.toggle('active');
+                    userDropdown.classList.toggle('show');
+                });
+
+                // 点击页面其他地方关闭下拉菜单
+                document.addEventListener('click', function() {
+                    userInfo.classList.remove('active');
+                    userDropdown.classList.remove('show');
+                });
+
+                // 阻止下拉菜单内部点击事件冒泡
+                userDropdown.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                });
+
+                // 切换账号
+                if (switchAccountBtn) {
+                    switchAccountBtn.addEventListener('click', function() {
+                        UserDropdown.switchAccount();
+                    });
+                }
+
+                // 退出登录
+                if (logoutBtn) {
+                    logoutBtn.addEventListener('click', function() {
+                        UserDropdown.logout();
+                    });
+                }
+
+                // 加载用户名
+                this.loadUsername();
+            },
+
+            loadUsername: function() {
+                const username = localStorage.getItem('username');
+                const usernameElement = document.getElementById('username');
+
+                if (usernameElement && username) {
+                    usernameElement.textContent = username;
+                }
+            },
+
+            switchAccount: function() {
+                if (confirm('确定要切换账号吗？')) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('username');
+                    window.location.href = '/login';
+                }
+            },
+
+            logout: function() {
+                if (confirm('确定要退出登录吗？')) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('username');
+                    localStorage.removeItem('refreshToken');
+                    window.location.href = '/login';
+                }
+            }
+        };
+
+        // 页面加载完成后自动初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            UserDropdown.init();
+        });
+    </script>
+</th:block>
+</body>
+</html>

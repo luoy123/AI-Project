@@ -1,5 +1,162 @@
 /* 视图页面特有样式 */
 
+/* 活跃设备样式 */
+.clickable-device {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin: 2px 0;
+}
+
+.clickable-device:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.clickable-device:active {
+    transform: translateX(3px);
+}
+
+.device-time {
+    font-size: 11px;
+    color: #666;
+    margin-left: auto;
+    margin-right: 8px;
+}
+
+.device-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin: 2px 0;
+}
+
+.device-item i {
+    width: 16px;
+    text-align: center;
+}
+
+.device-item.loading {
+    color: #666;
+    font-style: italic;
+}
+
+.device-item.loading i {
+    color: #007bff;
+}
+
+/* 最近告警样式 */
+.clickable-alert {
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-radius: 4px;
+    padding: 8px 12px;
+    margin: 2px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.clickable-alert:hover {
+    background-color: #f8f9fa;
+    transform: translateX(5px);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.clickable-alert:active {
+    transform: translateX(3px);
+}
+
+.alert-message {
+    flex: 1;
+    font-weight: 500;
+}
+
+.alert-time {
+    font-size: 11px;
+    color: #666;
+    margin-right: 8px;
+}
+
+.alert-status {
+    font-size: 10px;
+    padding: 2px 6px;
+    border-radius: 10px;
+    font-weight: bold;
+}
+
+.alert-status.status-active {
+    background-color: #dc3545;
+    color: white;
+}
+
+.alert-status.status-acknowledged {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.alert-status.status-resolved {
+    background-color: #28a745;
+    color: white;
+}
+
+/* 告警严重级别样式 */
+.severity-critical {
+    border-left: 3px solid #dc3545;
+    background-color: #fff5f5;
+}
+
+.severity-critical i {
+    color: #dc3545;
+}
+
+.severity-warning {
+    border-left: 3px solid #ffc107;
+    background-color: #fffbf0;
+}
+
+.severity-warning i {
+    color: #ffc107;
+}
+
+.severity-info {
+    border-left: 3px solid #17a2b8;
+    background-color: #f0f9ff;
+}
+
+.severity-info i {
+    color: #17a2b8;
+}
+
+/* 告警项通用样式 */
+.alert-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 4px;
+    margin: 2px 0;
+}
+
+.alert-item i {
+    width: 16px;
+    text-align: center;
+}
+
+.alert-item.loading {
+    color: #666;
+    font-style: italic;
+}
+
+.alert-item.loading i {
+    color: #007bff;
+}
+
+
 /* 视图控制面板样式 */
 .view-controls {
     display: flex;
@@ -340,4 +497,5 @@
 canvas {
     width: 100% !important;
     height: 250px !important;
+    display: block;
 }

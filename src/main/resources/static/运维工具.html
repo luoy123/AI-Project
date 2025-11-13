@@ -1,10 +1,479 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<style>
+/* 立即隐藏CMDB菜单项 - 防止闪烁 */
+.nav-cmdb { display: none !important; }
+.sidebar-item[data-page="CMDB"] { display: none !important; }
+
+/* ============================================
+   性能监控页面增强样式
+   ============================================ */
+
+/* 头部标题区 */
+.monitor-header {
+    margin-bottom: 20px;
+}
+
+.header-title {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 20px !important;
+    margin-bottom: 15px !important;
+    flex-wrap: nowrap !important;
+}
+
+.header-title h3 {
+    margin: 0 !important;
+    font-size: 24px !important;
+    color: #1f2937 !important;
+    white-space: nowrap !important;
+}
+
+/* 服务器选择器 */
+.server-selector {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    flex: 1 !important;
+    max-width: 600px !important;
+}
+
+.server-selector label {
+    font-weight: 600 !important;
+    color: #4b5563 !important;
+    white-space: nowrap !important;
+    margin-right: 5px !important;
+}
+
+.server-selector .form-select {
+    flex: 1 !important;
+    padding: 8px 12px !important;
+    border: 1px solid #d1d5db !important;
+    border-radius: 6px !important;
+    font-size: 14px !important;
+    background-color: white !important;
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+}
+
+.server-selector .form-select:hover {
+    border-color: #3b82f6;
+}
+
+.server-selector .form-select:focus {
+    outline: none;
+    border-color: #3b82f6;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* 监控控制栏 */
+.monitor-control-bar {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    padding: 15px 20px !important;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+    border-radius: 10px !important;
+    margin-bottom: 20px !important;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1) !important;
+    flex-wrap: nowrap !important;
+}
+
+/* 时间范围选择器 */
+.time-range-selector {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.time-range-selector label {
+    color: white;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.time-range-selector .form-select {
+    padding: 8px 12px;
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.95);
+    font-size: 14px;
+    cursor: pointer;
+    min-width: 150px;
+}
+
+/* 监控操作按钮组 */
+.monitor-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.monitor-actions .btn {
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.monitor-actions .btn-success {
+    background-color: #10b981;
+    color: white;
+}
+
+.monitor-actions .btn-success:hover {
+    background-color: #059669;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+}
+
+.monitor-actions .btn-warning {
+    background-color: #f59e0b;
+    color: white;
+}
+
+.monitor-actions .btn-warning:hover {
+    background-color: #d97706;
+}
+
+.monitor-actions .btn-primary {
+    background-color: #3b82f6;
+    color: white;
+}
+
+.monitor-actions .btn-primary:hover {
+    background-color: #2563eb;
+}
+
+.monitor-actions .btn-info {
+    background-color: #06b6d4;
+    color: white;
+}
+
+.monitor-actions .btn-info:hover {
+    background-color: #0891b2;
+}
+
+/* 双值显示 */
+.dual-value {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    font-size: 13px !important;
+    flex-wrap: nowrap !important;
+}
+
+.value-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 4px !important;
+    white-space: nowrap !important;
+}
+
+.value-item i {
+    font-size: 14px !important;
+}
+
+.text-success {
+    color: #10b981 !important;
+}
+
+.text-danger {
+    color: #ef4444 !important;
+}
+
+.text-primary {
+    color: #3b82f6 !important;
+}
+
+.text-warning {
+    color: #f59e0b !important;
+}
+
+/* 磁盘空间使用率 */
+.disk-space-section {
+    margin: 20px 0;
+    padding: 20px;
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+
+.disk-space-section h4 {
+    margin: 0 0 15px 0;
+    color: #1f2937;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.disk-partitions {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.partition-item {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.partition-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.partition-name {
+    font-weight: 700;
+    font-size: 16px;
+    color: #1f2937;
+}
+
+.partition-size {
+    font-size: 14px;
+    color: #6b7280;
+}
+
+.partition-progress {
+    height: 30px;
+    background-color: #e5e7eb;
+    border-radius: 15px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-bar {
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: width 0.3s ease;
+    border-radius: 15px;
+    position: relative;
+}
+
+.progress-bar span {
+    color: white;
+    font-weight: 600;
+    font-size: 13px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* 进程统计区域 */
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.section-header h4 {
+    margin: 0;
+}
+
+.btn-outline {
+    padding: 6px 12px;
+    border: 2px solid #3b82f6;
+    background: white;
+    color: #3b82f6;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-outline:hover {
+    background: #3b82f6;
+    color: white;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);
+}
+
+/* TOP 10进程模态框 */
+.tab-buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.tab-btn {
+    padding: 10px 20px;
+    border: none;
+    background: transparent;
+    color: #6b7280;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    transition: all 0.2s;
+}
+
+.tab-btn:hover {
+    color: #3b82f6;
+}
+
+.tab-btn.active {
+    color: #3b82f6;
+    border-bottom-color: #3b82f6;
+}
+
+.process-table-container {
+    overflow-x: auto;
+}
+
+.process-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.process-table thead th {
+    background: #f9fafb;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #374151;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.process-table tbody td {
+    padding: 12px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.process-table tbody tr:hover {
+    background: #f9fafb;
+}
+
+.process-table .text-center {
+    text-align: center;
+    color: #9ca3af;
+    padding: 30px;
+}
+
+.badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.badge-success {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+.badge-danger {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.status-running {
+    color: #10b981;
+    font-weight: 600;
+}
+
+/* 模态框样式调整 */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 0;
+    border-radius: 12px;
+    max-width: 900px;
+    width: 90%;
+    max-height: 80vh;
+    overflow: hidden;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 25px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 20px;
+    color: #1f2937;
+}
+
+.modal-header .close {
+    font-size: 28px;
+    font-weight: 700;
+    color: #9ca3af;
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.modal-header .close:hover {
+    color: #ef4444;
+}
+
+.modal-body {
+    padding: 25px;
+    max-height: calc(80vh - 80px);
+    overflow-y: auto;
+}
+</style>
+<script>
+// 立即执行：尽早隐藏CMDB，防止闪烁
+(function() {
+    function hideCMDB() {
+        var items = document.querySelectorAll('.sidebar-item');
+        items.forEach(function(item) {
+            var span = item.querySelector('span');
+            if (span && span.textContent.trim() === 'CMDB') {
+                item.style.display = 'none';
+                item.setAttribute('data-hidden', 'true');
+            }
+        });
+    }
+    
+    // 立即执行
+    hideCMDB();
+    
+    // DOM Ready时再执行一次
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideCMDB);
+    }
+    
+    // 额外保险：延迟执行确保覆盖所有情况
+    setTimeout(hideCMDB, 10);
+    setTimeout(hideCMDB, 100);
+})();
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>运维工具 - 人工智能运维平台</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="libs/fontawesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="运维工具.css">
 </head>
 <body>
@@ -108,22 +577,8 @@
                     </div>
                 </div>
                 <div class="toolbar-right">
-                    <div class="view-controls">
-                        <button class="view-btn active" data-view="list" title="列表视图">
-                            <i class="fas fa-list"></i>
-                        </button>
-                        <button class="view-btn" data-view="grid" title="网格视图">
-                            <i class="fas fa-th"></i>
-                        </button>
-                    </div>
-                    <div class="search-box">
-                        <input type="text" id="searchInput" placeholder="搜索文件..." class="search-input">
-                        <i class="fas fa-search search-icon"></i>
-                    </div>
-                    <button class="btn btn-primary" id="refreshBtn">
-                        <i class="fas fa-sync-alt"></i>
-                        刷新
-                    </button>
+                    <!-- 用户下拉菜单容器 -->
+                    <div id="user-dropdown-container"></div>
                 </div>
             </div>
 
@@ -622,16 +1077,40 @@
                 <div class="tool-panel" id="performance">
                     <div class="performance-monitor">
                         <div class="monitor-header">
-                            <h3>实时性能监控</h3>
-                            <div class="monitor-controls">
-                                <button class="btn btn-primary" id="startMonitor">
-                                    <i class="fas fa-play"></i> 开始监控
+                            <div class="header-title">
+                                <h3>实时性能监控</h3>
+                                <div class="server-selector">
+                                    <label for="serverSelect"><i class="fas fa-server"></i> 监控服务器:</label>
+                                    <select id="serverSelect" class="form-select">
+                                        <option value="">加载中...</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="monitor-control-bar">
+                            <div class="time-range-selector">
+                                <label><i class="fas fa-clock"></i> 时间范围:</label>
+                                <select id="timeRangeSelect" class="form-select">
+                                    <option value="realtime" selected>实时</option>
+                                    <option value="1h">最近1小时</option>
+                                    <option value="6h">最近6小时</option>
+                                    <option value="24h">最近24小时</option>
+                                    <option value="custom">自定义</option>
+                                </select>
+                            </div>
+                            <div class="monitor-actions">
+                                <button class="btn btn-success" id="startMonitor">
+                                    <i class="fas fa-play"></i> 开始
                                 </button>
-                                <button class="btn btn-secondary" id="stopMonitor">
-                                    <i class="fas fa-stop"></i> 停止监控
+                                <button class="btn btn-warning" id="pauseMonitor" style="display:none;">
+                                    <i class="fas fa-pause"></i> 暂停
+                                </button>
+                                <button class="btn btn-primary" id="refreshMonitor">
+                                    <i class="fas fa-sync-alt"></i> 刷新
                                 </button>
                                 <button class="btn btn-info" id="exportMonitorData">
-                                    <i class="fas fa-download"></i> 导出数据
+                                    <i class="fas fa-download"></i> 导出
                                 </button>
                             </div>
                         </div>
@@ -660,7 +1139,16 @@
                             <div class="performance-card">
                                 <div class="card-header">
                                     <h4>磁盘I/O</h4>
-                                    <span class="current-value" id="diskValue">0 MB/s</span>
+                                    <div class="dual-value">
+                                        <span class="value-item">
+                                            <i class="fas fa-arrow-up text-success"></i>
+                                            <span id="diskReadValue">0 MB/s</span>
+                                        </span>
+                                        <span class="value-item">
+                                            <i class="fas fa-arrow-down text-danger"></i>
+                                            <span id="diskWriteValue">0 MB/s</span>
+                                        </span>
+                                    </div>
                                 </div>
                                 <div class="chart-container">
                                     <canvas id="diskChart" width="300" height="150"></canvas>
@@ -670,10 +1158,37 @@
                             <div class="performance-card">
                                 <div class="card-header">
                                     <h4>网络流量</h4>
-                                    <span class="current-value" id="networkValue">0 KB/s</span>
+                                    <div class="dual-value">
+                                        <span class="value-item">
+                                            <i class="fas fa-arrow-up text-primary"></i>
+                                            <span id="networkUpValue">0 KB/s</span>
+                                        </span>
+                                        <span class="value-item">
+                                            <i class="fas fa-arrow-down text-warning"></i>
+                                            <span id="networkDownValue">0 KB/s</span>
+                                        </span>
+                                    </div>
                                 </div>
                                 <div class="chart-container">
                                     <canvas id="networkChart" width="300" height="150"></canvas>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 新增：磁盘空间使用率 -->
+                        <div class="disk-space-section">
+                            <h4><i class="fas fa-hdd"></i> 磁盘空间使用率</h4>
+                            <div class="disk-partitions" id="diskPartitions">
+                                <div class="partition-item">
+                                    <div class="partition-info">
+                                        <span class="partition-name">C:</span>
+                                        <span class="partition-size">50GB / 100GB</span>
+                                    </div>
+                                    <div class="partition-progress">
+                                        <div class="progress-bar" style="width: 50%; background-color: #4CAF50;">
+                                            <span>50%</span>
+                                        </div>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -698,7 +1213,12 @@
                             </div>
 
                             <div class="details-section">
-                                <h4>进程统计</h4>
+                                <div class="section-header">
+                                    <h4>进程统计</h4>
+                                    <button class="btn btn-sm btn-outline" id="viewTopProcesses">
+                                        <i class="fas fa-list"></i> 查看TOP 10
+                                    </button>
+                                </div>
                                 <div class="process-stats">
                                     <div class="stat-item">
                                         <span class="stat-label">总进程:</span>
@@ -713,6 +1233,41 @@
                                         <span class="stat-value" id="sleepingProcesses">67</span>
                                     </div>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- TOP 10进程模态框 -->
+                <div class="modal" id="topProcessesModal" style="display:none;">
+                    <div class="modal-content" style="max-width: 900px;">
+                        <div class="modal-header">
+                            <h3>TOP 10 进程详情</h3>
+                            <span class="close" id="closeTopProcesses">&times;</span>
+                        </div>
+                        <div class="modal-body">
+                            <div class="tab-buttons">
+                                <button class="tab-btn active" data-tab="cpu">按CPU排序</button>
+                                <button class="tab-btn" data-tab="memory">按内存排序</button>
+                            </div>
+                            <div class="process-table-container">
+                                <table class="process-table">
+                                    <thead>
+                                        <tr>
+                                            <th>排名</th>
+                                            <th>进程名</th>
+                                            <th>PID</th>
+                                            <th>CPU %</th>
+                                            <th>内存</th>
+                                            <th>状态</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="topProcessesTable">
+                                        <tr>
+                                            <td colspan="6" class="text-center">加载中...</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
@@ -979,5 +1534,7 @@
 
     <script src="chart.js"></script>
     <script src="运维工具.js"></script>
+    <!-- 引入用户下拉菜单加载器 -->
+    <script src="js/user-dropdown-loader.js"></script>
 </body>
 </html>

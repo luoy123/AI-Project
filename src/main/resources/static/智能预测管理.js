@@ -77,8 +77,8 @@ function initializeEventListeners() {
 
 // 初始化预测分类树
 function initializePredictionTree() {
-    // 预测分类节点选择事件
-    const nodeItems = document.querySelectorAll('.node-item');
+    // 预测分类节点选择事件，只选择预测页面内部的导航元素
+    const nodeItems = document.querySelectorAll('.prediction-main .node-item, .main-content .node-item');
     nodeItems.forEach(item => {
         item.addEventListener('click', function() {
             // 移除其他节点的选中状态
