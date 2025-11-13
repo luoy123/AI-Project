@@ -5,6 +5,56 @@
     box-sizing: border-box;
 }
 
+/* 设备高亮样式 */
+.highlight-device {
+    background-color: #fff3cd !important;
+    border: 2px solid #ffc107 !important;
+    animation: highlightPulse 2s ease-in-out;
+}
+
+@keyframes highlightPulse {
+    0% { 
+        background-color: #fff3cd;
+        transform: scale(1);
+    }
+    50% { 
+        background-color: #ffeaa7;
+        transform: scale(1.02);
+    }
+    100% { 
+        background-color: #fff3cd;
+        transform: scale(1);
+    }
+}
+
+/* 分组展开动画 */
+.tree-node-children {
+    overflow: hidden;
+    transition: max-height 0.3s ease-in-out;
+    max-height: 0;
+}
+
+.tree-node-children.expanded {
+    max-height: none;
+}
+
+/* 分组展开时的视觉反馈 */
+.tree-node-toggle.expanded {
+    transform: rotate(90deg);
+    transition: transform 0.3s ease;
+}
+
+.tree-node-toggle {
+    transition: transform 0.3s ease;
+}
+
+/* 选中分组的高亮效果 */
+.tree-node-content.selected {
+    background-color: #e3f2fd;
+    border-left: 3px solid #2196f3;
+    font-weight: bold;
+}
+
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
     background-color: #f5f7fa;
@@ -529,11 +579,13 @@ body {
 
 .modal-content {
     background-color: white;
-    margin: 5% auto;
+    margin: 2% auto;
     border-radius: 8px;
-    width: 600px;
-    max-width: 90%;
+    width: 900px;  /* 增加宽度以容纳更多字段 */
+    max-width: 95%;
+    max-height: 90vh;  /* 限制最大高度 */
     box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
 }
 
 .modal-header {
@@ -565,6 +617,8 @@ body {
 
 .modal-body {
     padding: 20px;
+    max-height: calc(90vh - 140px);  /* 减去header和footer的高度 */
+    overflow-y: auto;  /* 添加滚动条 */
 }
 
 .modal-footer {
@@ -615,6 +669,146 @@ body {
     outline: none;
     border-color: #3b82f6;
     box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* 表单分区样式 */
+.form-section {
+    margin-bottom: 24px;
+    padding: 16px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+.form-section:last-child {
+    margin-bottom: 0;
+}
+
+.section-title {
+    margin: 0 0 16px 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #3b82f6;
+    display: flex;
+    align-items: center;
+}
+
+.section-title::before {
+    content: '';
+    width: 4px;
+    height: 16px;
+    background: #3b82f6;
+    margin-right: 8px;
+    border-radius: 2px;
+}
+
+/* 只读字段样式 */
+.form-group input[readonly] {
+    background-color: #f3f4f6;
+    color: #6b7280;
+    cursor: not-allowed;
+}
+
+/* 必填字段标识 */
+.form-group label[for] {
+    position: relative;
+}
+
+.form-group label[for]:has(~ input[required])::after,
+.form-group label[for]:has(~ select[required])::after {
+    content: ' *';
+    color: #ef4444;
+    font-weight: bold;
+}
+
+/* 按钮样式增强 */
+.btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-primary {
+    background: #3b82f6;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #2563eb;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+}
+
+.btn-secondary {
+    background: #6b7280;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #4b5563;
+    transform: translateY(-1px);
+}
+
+.btn-info {
+    background: #06b6d4;
+    color: white;
+}
+
+.btn-info:hover {
+    background: #0891b2;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(6, 182, 212, 0.3);
+}
+
+/* 表单验证样式 */
+.form-group input.error,
+.form-group select.error,
+.form-group textarea.error {
+    border-color: #ef4444;
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1);
+}
+
+.error-message {
+    color: #ef4444;
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .modal-content {
+        width: 95%;
+        margin: 1% auto;
+    }
+    
+    .form-row {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .section-title {
+        font-size: 14px;
+    }
+    
+    .modal-footer {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .btn {
+        width: 100%;
+        justify-content: center;
+    }
 }
 
 .form-group textarea {
@@ -672,7 +866,13 @@ body {
     }
 
     .modal-content {
-        width: 95%;
-        margin: 2% auto;
+        width: 98%;
+        margin: 1% auto;
+        max-height: 95vh;
+    }
+    
+    .modal-body {
+        max-height: calc(95vh - 120px);
+        padding: 15px;
     }
 }

@@ -1,254 +1,361 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<style>
+/* 立即隐藏CMDB菜单项 - 防止闪烁 */
+.nav-cmdb { display: none !important; }
+.sidebar-item[data-page="CMDB"] { display: none !important; }
+</style>
+<script>
+// 立即执行：尽早隐藏CMDB，防止闪烁
+(function() {
+    function hideCMDB() {
+        var items = document.querySelectorAll('.sidebar-item');
+        items.forEach(function(item) {
+            var span = item.querySelector('span');
+            if (span && span.textContent.trim() === 'CMDB') {
+                item.style.display = 'none';
+                item.setAttribute('data-hidden', 'true');
+            }
+        });
+    }
+    
+    // 立即执行
+    hideCMDB();
+    
+    // DOM Ready时再执行一次
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideCMDB);
+    }
+    
+    // 额外保险：延迟执行确保覆盖所有情况
+    setTimeout(hideCMDB, 10);
+    setTimeout(hideCMDB, 100);
+})();
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>设备管理 - 人工智能运维平台</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="libs/fontawesome/6.4.0/css/all.min.css">
     <link rel="stylesheet" href="设备管理.css">
+    <link rel="stylesheet" href="common-override.css">
 </head>
 <body>
-    <div class="dashboard-container">
-        <!-- 侧边栏 -->
-        <div class="sidebar">
-            <div class="sidebar-header">
-                <h2>人工智能运维平台</h2>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-tachometer-alt"></i>
-                <span>总览</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-eye"></i>
-                <span>视图</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-bell"></i>
-                <span>告警中心</span>
-            </div>
-            <div class="sidebar-item active">
-                <i class="fas fa-server"></i>
-                <span>设备管理</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-network-wired"></i>
-                <span>网络拓扑</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-chart-line"></i>
-                <span>统计报表</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-tools"></i>
-                <span>运维工具</span>
-            </div>
-            <div class="sidebar-divider"></div>
-            <div class="sidebar-group-title">拓展中心</div>
-            <div class="sidebar-item">
-                <i class="fas fa-layer-group"></i>
-                <span>业务管理</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-globe"></i>
-                <span>网络管理</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-video"></i>
-                <span>视频管理</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-building"></i>
-                <span>机房管理</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-cubes"></i>
-                <span>资产管理</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-user-cog"></i>
-                <span>运维管理</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-database"></i>
-                <span>CMDB</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-file-alt"></i>
-                <span>日志管理</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-chart-pie"></i>
-                <span>智能预测管理</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-cloud"></i>
-                <span>云平台</span>
-            </div>
-            <div class="sidebar-divider"></div>
-            <div class="sidebar-group-title">设置中心</div>
-            <div class="sidebar-item">
-                <i class="fas fa-cog"></i>
-                <span>设置</span>
-            </div>
-            <div class="sidebar-item">
-                <i class="fas fa-plug"></i>
-                <span>对接配置</span>
-            </div>
+<div class="dashboard-container">
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>人工智能运维平台</h2>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>总览</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-eye"></i>
+            <span>视图</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-bell"></i>
+            <span>告警中心</span>
+        </div>
+        <div class="sidebar-item active">
+            <i class="fas fa-server"></i>
+            <span>设备管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-network-wired"></i>
+            <span>网络拓扑</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-chart-line"></i>
+            <span>统计报表</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-tools"></i>
+            <span>运维工具</span>
+        </div>
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-group-title">拓展中心</div>
+        <div class="sidebar-item">
+            <i class="fas fa-layer-group"></i>
+            <span>业务管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-globe"></i>
+            <span>网络管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-video"></i>
+            <span>视频管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-building"></i>
+            <span>机房管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-cubes"></i>
+            <span>资产管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-user-cog"></i>
+            <span>运维管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-database"></i>
+            <span>CMDB</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-file-alt"></i>
+            <span>日志管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-chart-pie"></i>
+            <span>智能预测管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-cloud"></i>
+            <span>云平台</span>
+        </div>
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-group-title">设置中心</div>
+        <div class="sidebar-item">
+            <i class="fas fa-cog"></i>
+            <span>设置</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-plug"></i>
+            <span>对接配置</span>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="main-content">
+        <div class="header">
+            <h1>设备管理</h1>
+            <!-- 用户下拉菜单容器 -->
+            <div id="user-dropdown-container"></div>
         </div>
 
-        <!-- 主内容区域 -->
-        <div class="main-content">
-            <div class="header">
-                <h1>设备管理</h1>
-                <div class="user-info">
-                    <span>管理员</span>
-                    <img src="1.png" alt="用户头像">
+        <div class="device-management-container">
+            <!-- 左侧设备树 -->
+            <div class="device-tree-panel">
+                <div class="tree-header">
+                    <h3>设备分组</h3>
+                    <div class="tree-actions">
+                        <button class="btn-icon" title="展开全部">
+                            <i class="fas fa-expand-arrows-alt"></i>
+                        </button>
+                        <button class="btn-icon" title="折叠全部">
+                            <i class="fas fa-compress-arrows-alt"></i>
+                        </button>
+                        <button class="btn-icon" title="刷新">
+                            <i class="fas fa-sync-alt"></i>
+                        </button>
+                    </div>
+                </div>
+                <div class="device-tree" id="deviceTree">
+                    <!-- 设备树将通过JavaScript动态生成 -->
                 </div>
             </div>
 
-            <div class="device-management-container">
-                <!-- 左侧设备树 -->
-                <div class="device-tree-panel">
-                    <div class="tree-header">
-                        <h3>设备分组</h3>
-                        <div class="tree-actions">
-                            <button class="btn-icon" title="展开全部">
-                                <i class="fas fa-expand-arrows-alt"></i>
-                            </button>
-                            <button class="btn-icon" title="折叠全部">
-                                <i class="fas fa-compress-arrows-alt"></i>
-                            </button>
-                            <button class="btn-icon" title="刷新">
-                                <i class="fas fa-sync-alt"></i>
-                            </button>
-                        </div>
+            <!-- 右侧设备列表 -->
+            <div class="device-list-panel">
+                <!-- 工具栏 -->
+                <div class="toolbar">
+                    <div class="toolbar-left">
+                        <button class="btn btn-primary" id="addDeviceBtn">
+                            <i class="fas fa-plus"></i>
+                            添加设备
+                        </button>
+                        <button class="btn btn-secondary" id="importBtn">
+                            <i class="fas fa-upload"></i>
+                            导入
+                        </button>
+                        <button class="btn btn-secondary" id="exportBtn">
+                            <i class="fas fa-download"></i>
+                            导出
+                        </button>
                     </div>
-                    <div class="device-tree" id="deviceTree">
-                        <!-- 设备树将通过JavaScript动态生成 -->
+                    <div class="toolbar-right">
+                        <div class="search-box">
+                            <i class="fas fa-search"></i>
+                            <input type="text" id="searchInput" placeholder="搜索设备...">
+                        </div>
                     </div>
                 </div>
 
-                <!-- 右侧设备列表 -->
-                <div class="device-list-panel">
-                    <!-- 工具栏 -->
-                    <div class="toolbar">
-                        <div class="toolbar-left">
-                            <button class="btn btn-primary" id="addDeviceBtn">
-                                <i class="fas fa-plus"></i>
-                                添加设备
-                            </button>
-                            <button class="btn btn-secondary" id="importBtn">
-                                <i class="fas fa-upload"></i>
-                                导入
-                            </button>
-                            <button class="btn btn-secondary" id="exportBtn">
-                                <i class="fas fa-download"></i>
-                                导出
-                            </button>
-                        </div>
-                        <div class="toolbar-right">
-                            <div class="search-box">
-                                <i class="fas fa-search"></i>
-                                <input type="text" id="searchInput" placeholder="搜索设备...">
-                            </div>
-                        </div>
-                    </div>
+                <!-- 设备列表表格 -->
+                <div class="device-table-container">
+                    <table class="device-table" id="deviceTable">
+                        <thead>
+                        <tr>
+                            <th><input type="checkbox" id="selectAll"></th>
+                            <th>设备名称</th>
+                            <th>IP地址</th>
+                            <th>设备类型</th>
+                            <th>设备状态</th>
+                            <th>最后更新时间</th>
+                            <th>备注信息</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody id="deviceTableBody">
+                        <!-- 设备数据将通过JavaScript动态加载 -->
+                        </tbody>
+                    </table>
+                </div>
 
-                    <!-- 设备列表表格 -->
-                    <div class="device-table-container">
-                        <table class="device-table" id="deviceTable">
-                            <thead>
-                                <tr>
-                                    <th><input type="checkbox" id="selectAll"></th>
-                                    <th>设备名称</th>
-                                    <th>IP地址</th>
-                                    <th>设备类型</th>
-                                    <th>设备状态</th>
-                                    <th>最后更新时间</th>
-                                    <th>备注信息</th>
-                                    <th>操作</th>
-                                </tr>
-                            </thead>
-                            <tbody id="deviceTableBody">
-                                <!-- 设备数据将通过JavaScript动态加载 -->
-                            </tbody>
-                        </table>
-                    </div>
-
-                    <!-- 分页 -->
-                    <div class="pagination" id="pagination">
-                        <!-- 分页控件将通过JavaScript动态生成 -->
-                    </div>
+                <!-- 分页 -->
+                <div class="pagination" id="pagination">
+                    <!-- 分页控件将通过JavaScript动态生成 -->
                 </div>
             </div>
         </div>
     </div>
+</div>
 
-    <!-- 设备详情/编辑模态框 -->
-    <div class="modal" id="deviceModal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modalTitle">设备详情</h3>
-                <span class="close" id="closeModal">&times;</span>
-            </div>
-            <div class="modal-body">
-                <form id="deviceForm">
+<!-- 设备详情/编辑模态框 -->
+<div class="modal" id="deviceModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 id="modalTitle">设备详情</h3>
+            <span class="close" id="closeModal">&times;</span>
+        </div>
+        <div class="modal-body">
+            <form id="deviceForm">
+                <!-- 基本信息 -->
+                <div class="form-section">
+                    <h4 class="section-title">基本信息</h4>
+                    <div class="form-row">
+                        <div class="form-group" style="display: none;">
+                            <label for="assetCode">资产编号</label>
+                            <input type="text" id="assetCode" name="assetCode" placeholder="系统自动生成" readonly>
+                        </div>
+                        <div class="form-group">
+                            <label for="assetName">资产名称 *</label>
+                            <input type="text" id="assetName" name="assetName" required placeholder="请输入资产名称">
+                        </div>
+                    </div>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="deviceName">设备名称 *</label>
-                            <input type="text" id="deviceName" name="deviceName" required>
+                            <input type="text" id="deviceName" name="deviceName" required placeholder="请输入设备名称">
                         </div>
                         <div class="form-group">
-                            <label for="deviceIP">IP地址 *</label>
-                            <input type="text" id="deviceIP" name="deviceIP" required>
+                            <label for="deviceIP">IP地址</label>
+                            <input type="text" id="deviceIP" name="deviceIP" placeholder="如：192.168.1.100">
                         </div>
                     </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="macAddress">MAC地址</label>
+                            <input type="text" id="macAddress" name="macAddress" placeholder="如：00:1B:44:11:3A:B7">
+                        </div>
+                        <div class="form-group" style="display: none;">
+                            <label for="serialNumber">序列号</label>
+                            <input type="text" id="serialNumber" name="serialNumber" placeholder="设备序列号" readonly style="background-color: #f5f5f5; cursor: not-allowed;">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 分类信息 -->
+                <div class="form-section">
+                    <h4 class="section-title">分类信息</h4>
                     <div class="form-row">
                         <div class="form-group">
                             <label for="deviceType">设备类型 *</label>
                             <select id="deviceType" name="deviceType" required>
-                                <option value="">请选择</option>
+                                <option value="">请选择设备类型</option>
                                 <option value="server">服务器</option>
-                                <option value="switch">交换机</option>
-                                <option value="router">路由器</option>
-                                <option value="firewall">防火墙</option>
+                                <option value="network">网络设备</option>
                                 <option value="storage">存储设备</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="deviceGroup">设备分组</label>
-                            <select id="deviceGroup" name="deviceGroup">
-                                <option value="">请选择</option>
+                            <label for="deviceGroup">设备分组 *</label>
+                            <select id="deviceGroup" name="deviceGroup" required>
+                                <option value="">请先选择设备类型</option>
                             </select>
                         </div>
                     </div>
+                </div>
+
+                <!-- 状态信息 -->
+                <div class="form-section">
+                    <h4 class="section-title">状态信息</h4>
                     <div class="form-row">
                         <div class="form-group">
-                            <label for="deviceStatus">设备状态</label>
-                            <select id="deviceStatus" name="deviceStatus">
+                            <label for="assetStatus">设备状态 *</label>
+                            <select id="assetStatus" name="assetStatus" required>
                                 <option value="online">在线</option>
                                 <option value="offline">离线</option>
                                 <option value="maintenance">维护中</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label for="devicePort">端口</label>
-                            <input type="number" id="devicePort" name="devicePort" placeholder="如：22, 80, 443">
+                            <!-- 空位，保持布局对称 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 位置信息 -->
+                <div class="form-section">
+                    <h4 class="section-title">位置信息</h4>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cabinetSelect">机柜</label>
+                            <select id="cabinetSelect" name="cabinet">
+                                <option value="">请选择机柜</option>
+                                <option value="主机房-机柜A1">主机房-机柜A1</option>
+                                <option value="主机房-机柜A2">主机房-机柜A2</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="uPositionSelect">U位</label>
+                            <select id="uPositionSelect" name="uPosition">
+                                <option value="">请选择U位</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="location">完整位置（自动生成）</label>
+                            <input type="text" id="location" name="location" readonly style="background-color: #f5f5f5;">
+                        </div>
+                        <div class="form-group">
+                            <!-- 空位，保持布局对称 -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 标签和备注 -->
+                <div class="form-section">
+                    <h4 class="section-title">其他信息</h4>
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label for="tags">标签</label>
+                            <input type="text" id="tags" name="tags" placeholder="多个标签用逗号分隔，如：生产,重要,备份">
                         </div>
                     </div>
                     <div class="form-group full-width">
                         <label for="deviceDescription">备注信息</label>
                         <textarea id="deviceDescription" name="deviceDescription" rows="3" placeholder="设备描述信息..."></textarea>
                     </div>
-                </form>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" id="cancelBtn">取消</button>
-                <button type="button" class="btn btn-primary" id="saveBtn">保存</button>
-            </div>
+                </div>
+            </form>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" id="cancelBtn">取消</button>
+            <button type="button" class="btn btn-primary" id="saveBtn">保存</button>
+            <button type="button" class="btn btn-info" id="resetBtn">重置</button>
         </div>
     </div>
+</div>
 
-    <script src="设备管理.js"></script>
+<script src="common.js"></script>
+<!-- 引入用户下拉菜单组件 -->
+<script src="js/user-dropdown-loader.js"></script>
+<script src="设备管理.js"></script>
 </body>
 </html>

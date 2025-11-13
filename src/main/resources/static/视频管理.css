@@ -144,6 +144,8 @@ body {
     display: flex;
     align-items: center;
     gap: 20px;
+    position: relative;
+    z-index: 1001;
 }
 
 .search-box {
@@ -479,8 +481,38 @@ body {
     .header-right {
         width: 100%;
         justify-content: space-between;
+        z-index: 1001;
     }
-    
+}
+
+/* 用户下拉菜单样式优化 */
+#user-dropdown-container .user-info {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    transition: all 0.3s ease;
+}
+
+#user-dropdown-container .user-info:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-1px);
+}
+
+#user-dropdown-container .user-dropdown {
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    backdrop-filter: blur(10px);
+}
+
+#user-dropdown-container .dropdown-item:hover {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+#user-dropdown-container .dropdown-item:hover i {
+    color: white;
+}
+
+/* 响应式设计补充 */
+@media (max-width: 480px) {
     .search-box input {
         width: 150px;
     }

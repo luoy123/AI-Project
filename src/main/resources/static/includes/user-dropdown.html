@@ -1,0 +1,209 @@
+<!-- 用户下拉菜单 - SSI包含文件 -->
+<div class="user-info" id="userInfo">
+    <span id="username">管理员</span>
+    <img id="userAvatar" src="1.png" alt="用户头像">
+    <i class="fas fa-chevron-down"></i>
+    <!-- 下拉菜单 -->
+    <div class="user-dropdown" id="userDropdown">
+        <div class="dropdown-item" id="switchAccount">
+            <i class="fas fa-exchange-alt"></i>
+            <span>切换账号</span>
+        </div>
+        <div class="dropdown-divider"></div>
+        <div class="dropdown-item" id="logout">
+            <i class="fas fa-sign-out-alt"></i>
+            <span>退出登录</span>
+        </div>
+    </div>
+</div>
+
+<style>
+    .user-info {
+        display: flex;
+        align-items: center;
+        position: relative;
+        cursor: pointer;
+        padding: 8px 12px;
+        border-radius: 8px;
+        transition: background-color 0.3s;
+    }
+
+    .user-info:hover {
+        background-color: #f0f0f0;
+    }
+
+    .user-info #username {
+        font-size: 14px;
+        font-weight: 500;
+        color: #333;
+    }
+
+    .user-info img {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        margin-left: 10px;
+        margin-right: 8px;
+    }
+
+    .user-info .fa-chevron-down {
+        font-size: 12px;
+        color: #666;
+        transition: transform 0.3s;
+    }
+
+    .user-info.active .fa-chevron-down {
+        transform: rotate(180deg);
+    }
+
+    .user-dropdown {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 8px;
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        min-width: 180px;
+        opacity: 0;
+        visibility: hidden;
+        transform: translateY(-10px);
+        transition: all 0.3s ease;
+        z-index: 1000;
+    }
+
+    .user-dropdown.show {
+        opacity: 1;
+        visibility: visible;
+        transform: translateY(0);
+    }
+
+    .dropdown-item {
+        padding: 12px 16px;
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+        transition: background-color 0.2s;
+        color: #333;
+        font-size: 14px;
+    }
+
+    .dropdown-item:first-child {
+        border-radius: 8px 8px 0 0;
+    }
+
+    .dropdown-item:last-child {
+        border-radius: 0 0 8px 8px;
+    }
+
+    .dropdown-item:hover {
+        background-color: #f5f5f5;
+    }
+
+    .dropdown-item i {
+        margin-right: 10px;
+        width: 16px;
+        text-align: center;
+        color: #666;
+    }
+
+    .dropdown-item#logout:hover {
+        background-color: #fee;
+        color: #e53e3e;
+    }
+
+    .dropdown-item#logout:hover i {
+        color: #e53e3e;
+    }
+
+    .dropdown-divider {
+        height: 1px;
+        background-color: #e5e5e5;
+        margin: 4px 0;
+    }
+</style>
+
+<script>
+    (function() {
+        const userInfo = document.getElementById('userInfo');
+        const userDropdown = document.getElementById('userDropdown');
+        const switchAccountBtn = document.getElementById('switchAccount');
+        const logoutBtn = document.getElementById('logout');
+
+        if (!userInfo || !userDropdown) return;
+
+        userInfo.addEventListener('click', function(e) {
+            e.stopPropagation();
+            userInfo.classList.toggle('active');
+            userDropdown.classList.toggle('show');
+        });
+
+        document.addEventListener('click', function() {
+            userInfo.classList.remove('active');
+            userDropdown.classList.remove('show');
+        });
+
+        userDropdown.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+
+        if (switchAccountBtn) {
+            switchAccountBtn.addEventListener('click', function() {
+                if (confirm('确定要切换账号吗？')) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('username');
+                    window.location.href = '登录.html';
+                }
+            });
+        }
+
+        if (logoutBtn) {
+            logoutBtn.addEventListener('click', function() {
+                if (confirm('确定要退出登录吗？')) {
+                    localStorage.removeItem('token');
+                    localStorage.removeItem('username');
+                    localStorage.removeItem('refreshToken');
+                    window.location.href = '登录.html';
+                }
+            });
+        }
+
+        // 加载用户名
+        const username = localStorage.getItem('username');
+        const usernameElement = document.getElementById('username');
+        if (usernameElement && username) {
+            usernameElement.textContent = username;
+        }
+
+        // 加载用户头像
+        const avatar = localStorage.getItem('userAvatar');
+        const avatarElement = document.getElementById('userAvatar');
+        if (avatarElement) {
+            if (avatar && avatar !== 'null' && avatar !== '') {
+                avatarElement.src = avatar;
+            } else {
+                // 默认头像
+                avatarElement.src = '1.png';
+            }
+        }
+
+        // 监听localStorage变化，实时更新头像
+        window.addEventListener('storage', function(e) {
+            if (e.key === 'userAvatar' && avatarElement) {
+                const newAvatar = e.newValue;
+                if (newAvatar && newAvatar !== 'null' && newAvatar !== '') {
+                    avatarElement.src = newAvatar;
+                } else {
+                    avatarElement.src = '1.png';
+                }
+            }
+        });
+
+        // 监听自定义事件（用于同一页面内的头像更新）
+        window.addEventListener('avatarUpdated', function(e) {
+            if (avatarElement && e.detail && e.detail.avatar) {
+                avatarElement.src = e.detail.avatar;
+            }
+        });
+    })();
+</script>

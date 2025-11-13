@@ -1,10 +1,42 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<style>
+/* 立即隐藏CMDB菜单项 - 防止闪烁 */
+.nav-cmdb { display: none !important; }
+.sidebar-item[data-page="CMDB"] { display: none !important; }
+</style>
+<script>
+// 立即执行：尽早隐藏CMDB，防止闪烁
+(function() {
+    function hideCMDB() {
+        var items = document.querySelectorAll('.sidebar-item');
+        items.forEach(function(item) {
+            var span = item.querySelector('span');
+            if (span && span.textContent.trim() === 'CMDB') {
+                item.style.display = 'none';
+                item.setAttribute('data-hidden', 'true');
+            }
+        });
+    }
+    
+    // 立即执行
+    hideCMDB();
+    
+    // DOM Ready时再执行一次
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideCMDB);
+    }
+    
+    // 额外保险：延迟执行确保覆盖所有情况
+    setTimeout(hideCMDB, 10);
+    setTimeout(hideCMDB, 100);
+})();
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>设置 - 人工智能运维平台</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="libs/fontawesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="设置.css">
 </head>
 <body>
@@ -100,6 +132,38 @@
         <div class="main-content">
             <!-- 顶部导航栏 -->
             <header class="top-header">
+<style>
+/* 立即隐藏CMDB菜单项 - 防止闪烁 */
+.nav-cmdb { display: none !important; }
+.sidebar-item[data-page="CMDB"] { display: none !important; }
+</style>
+<script>
+// 立即执行：尽早隐藏CMDB，防止闪烁
+(function() {
+    function hideCMDB() {
+        var items = document.querySelectorAll('.sidebar-item');
+        items.forEach(function(item) {
+            var span = item.querySelector('span');
+            if (span && span.textContent.trim() === 'CMDB') {
+                item.style.display = 'none';
+                item.setAttribute('data-hidden', 'true');
+            }
+        });
+    }
+    
+    // 立即执行
+    hideCMDB();
+    
+    // DOM Ready时再执行一次
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideCMDB);
+    }
+    
+    // 额外保险：延迟执行确保覆盖所有情况
+    setTimeout(hideCMDB, 10);
+    setTimeout(hideCMDB, 100);
+})();
+</script>
                 <div class="header-left">
                     <div class="breadcrumb">
                         <span class="breadcrumb-item">设置</span>
@@ -112,7 +176,7 @@
                     </div>
                     <div class="user-menu">
                         <div class="user-avatar">
-                            <img src="1.png" alt="用户头像">
+                            <img id="settingsUserAvatar" src="1.png" alt="用户头像">
                         </div>
                     </div>
                 </div>
@@ -194,6 +258,12 @@
                                     <span class="node-text">设置</span>
                                 </div>
                             </div>
+                            <div class="tree-node">
+                                <div class="node-item" data-setting="detection-template">
+                                    <i class="fas fa-clipboard-check node-icon"></i>
+                                    <span class="node-text">检测模板设置</span>
+                                </div>
+                            </div>
                         </div>
                     </div>
 
@@ -205,6 +275,7 @@
                                 <div class="nav-tabs">
                                     <button class="nav-tab active" data-tab="users">用户</button>
                                     <button class="nav-tab" data-tab="add">新增</button>
+                                    <button class="nav-tab" data-tab="edit" style="display: none;">编辑</button>
                                     <button class="nav-tab" data-tab="import">导入</button>
                                 </div>
                             </div>
@@ -286,30 +357,127 @@
                             <div class="add-user-form" id="addTab" style="display: none;">
                                 <div class="form-container">
                                     <h3>新增用户</h3>
-                                    <form class="user-form">
+                                    <form class="user-form" id="addUserForm">
+                                        <input type="hidden" id="add-userId" name="id">
+                                        
+                                        <!-- 头像上传 -->
+                                        <div class="form-group avatar-upload-group">
+                                            <label>头像</label>
+                                            <div class="avatar-upload-container">
+                                                <div class="avatar-preview" id="add-avatarPreview">
+                                                    <img src="https://via.placeholder.com/100" alt="头像预览" id="add-avatarImage">
+                                                    <div class="avatar-upload-overlay">
+                                                        <i class="fas fa-camera"></i>
+                                                        <span>上传头像</span>
+                                                    </div>
+                                                </div>
+                                                <input type="file" id="add-avatarInput" accept="image/*" style="display: none;">
+                                                <input type="hidden" id="add-avatarUrl" name="avatar">
+                                                <div class="avatar-tips">
+                                                    <p>支持 JPG、PNG 格式，文件大小不超过 2MB</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
                                         <div class="form-group">
-                                            <label for="username">用户名</label>
-                                            <input type="text" id="username" name="username" required>
+                                            <label for="add-username">用户名 <span class="required">*</span></label>
+                                            <input type="text" id="add-username" name="username" required>
                                         </div>
                                         <div class="form-group">
-                                            <label for="displayName">显示名称</label>
-                                            <input type="text" id="displayName" name="displayName" required>
+                                            <label for="add-realName">真实姓名 <span class="required">*</span></label>
+                                            <input type="text" id="add-realName" name="realName" required>
                                         </div>
                                         <div class="form-group">
-                                            <label for="email">邮箱</label>
-                                            <input type="email" id="email" name="email">
+                                            <label for="add-email">邮箱</label>
+                                            <input type="email" id="add-email" name="email">
                                         </div>
                                         <div class="form-group">
-                                            <label for="password">密码</label>
-                                            <input type="password" id="password" name="password" required>
+                                            <label for="add-phone">手机号</label>
+                                            <input type="tel" id="add-phone" name="phone">
                                         </div>
                                         <div class="form-group">
-                                            <label for="confirmPassword">确认密码</label>
-                                            <input type="password" id="confirmPassword" name="confirmPassword" required>
+                                            <label for="add-password">密码 <span class="required">*</span></label>
+                                            <input type="password" id="add-password" name="password" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="add-confirmPassword">确认密码 <span class="required">*</span></label>
+                                            <input type="password" id="add-confirmPassword" name="confirmPassword" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="add-role">角色</label>
+                                            <select id="add-role" name="role">
+                                                <option value="user">普通用户</option>
+                                                <option value="admin">管理员</option>
+                                            </select>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="add-status">状态</label>
+                                            <select id="add-status" name="status">
+                                                <option value="1">启用</option>
+                                                <option value="0">禁用</option>
+                                            </select>
                                         </div>
                                         <div class="form-actions">
                                             <button type="submit" class="btn-primary">保存</button>
-                                            <button type="button" class="btn-secondary">取消</button>
+                                            <button type="button" class="btn-secondary" onclick="switchTab('users')">取消</button>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+
+                            <!-- 编辑用户表单 -->
+                            <div class="edit-user-form" id="editTab" style="display: none;">
+                                <div class="form-container">
+                                    <h3>编辑用户</h3>
+                                    <form class="user-form" id="editUserForm">
+                                        <input type="hidden" id="edit-userId" name="id">
+                                        
+                                        <!-- 头像上传 -->
+                                        <div class="form-group avatar-upload-group">
+                                            <label>头像</label>
+                                            <div class="avatar-upload-container">
+                                                <div class="avatar-preview" id="edit-avatarPreview">
+                                                    <img src="https://via.placeholder.com/100" alt="头像预览" id="edit-avatarImage">
+                                                    <div class="avatar-upload-overlay">
+                                                        <i class="fas fa-camera"></i>
+                                                        <span>上传头像</span>
+                                                    </div>
+                                                </div>
+                                                <input type="file" id="edit-avatarInput" accept="image/*" style="display: none;">
+                                                <input type="hidden" id="edit-avatarUrl" name="avatar">
+                                                <div class="avatar-tips">
+                                                    <p>支持 JPG、PNG 格式，文件大小不超过 2MB</p>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                        <div class="form-group">
+                                            <label for="edit-username">用户名 <span class="required">*</span></label>
+                                            <input type="text" id="edit-username" name="username" required readonly>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="edit-realName">真实姓名 <span class="required">*</span></label>
+                                            <input type="text" id="edit-realName" name="realName" required>
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="edit-email">邮箱</label>
+                                            <input type="email" id="edit-email" name="email">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="edit-phone">手机号</label>
+                                            <input type="tel" id="edit-phone" name="phone">
+                                        </div>
+                                        <div class="form-group">
+                                            <label>修改密码（留空则不修改）</label>
+                                            <input type="password" id="edit-password" name="password" placeholder="留空则不修改密码">
+                                        </div>
+                                        <div class="form-group">
+                                            <label for="edit-confirmPassword">确认新密码</label>
+                                            <input type="password" id="edit-confirmPassword" name="confirmPassword" placeholder="确认新密码">
+                                        </div>
+                                        <div class="form-actions">
+                                            <button type="submit" class="btn-primary">保存修改</button>
+                                            <button type="button" class="btn-secondary" onclick="switchTab('users')">取消</button>
                                         </div>
                                     </form>
                                 </div>
@@ -338,6 +506,75 @@
                                     </div>
                                 </div>
                             </div>
+
+                            <!-- 检测模板设置 -->
+                            <div class="detection-template-management" id="detectionTemplateTab" style="display: none;">
+                                <div class="template-header">
+                                    <div class="header-left">
+                                        <h3>检测模板设置</h3>
+                                        <div class="template-stats">
+                                            <span class="stat-item">全部 <span class="stat-count" id="totalTemplates">0</span></span>
+                                        </div>
+                                    </div>
+                                    <div class="header-right">
+                                        <div class="search-container">
+                                            <input type="text" class="search-input" placeholder="输入模板名称" id="templateSearchInput">
+                                            <button class="search-btn" onclick="searchTemplates()">
+                                                <i class="fas fa-search"></i>
+                                            </button>
+                                        </div>
+                                        <button class="btn-primary add-template-btn" onclick="showAddTemplateModal()">
+                                            <i class="fas fa-plus"></i>
+                                            添加检测模板
+                                        </button>
+                                    </div>
+                                </div>
+
+                                <div class="template-content">
+                                    <div class="table-container">
+                                        <table class="detection-template-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>模板名称</th>
+                                                    <th>检测类型</th>
+                                                    <th>阈值设置</th>
+                                                    <th>更新时间</th>
+                                                    <th>状态</th>
+                                                    <th>操作</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="templateTableBody">
+                                                <!-- 模板数据将通过JavaScript动态加载 -->
+                                                <tr class="empty-row">
+                                                    <td colspan="6">
+                                                        <div class="empty-state">
+                                                            <i class="fas fa-clipboard-list"></i>
+                                                            <p>暂无检测模板</p>
+                                                            <button class="btn-primary" onclick="showAddTemplateModal()">添加第一个模板</button>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+
+                                    <!-- 分页 -->
+                                    <div class="pagination" id="templatePagination" style="display: none;">
+                                        <div class="pagination-info">
+                                            <span id="templatePaginationInfo">共计 0 条记录，共 0 页，每页 20 条，当前第 1 页</span>
+                                        </div>
+                                        <div class="pagination-controls">
+                                            <button class="page-btn" id="templatePrevBtn" onclick="changeTemplatePage(-1)">
+                                                <i class="fas fa-angle-left"></i>
+                                            </button>
+                                            <span class="page-numbers" id="templatePageNumbers"></span>
+                                            <button class="page-btn" id="templateNextBtn" onclick="changeTemplatePage(1)">
+                                                <i class="fas fa-angle-right"></i>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -345,6 +582,167 @@
         </div>
     </div>
 
+    <!-- 密码验证弹窗 -->
+    <div class="password-modal" id="passwordModal" style="display: none;">
+        <div class="modal-overlay"></div>
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>验证管理员密码</h3>
+                <button class="modal-close" onclick="closePasswordModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <p class="modal-tip">新增用户需要管理员密码验证</p>
+                <div class="form-group">
+                    <label for="adminPassword">管理员密码 <span class="required">*</span></label>
+                    <input type="password" id="adminPassword" placeholder="请输入管理员密码" autofocus>
+                    <span class="error-message" id="passwordError" style="display: none;"></span>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closePasswordModal()">取消</button>
+                <button class="btn-primary" onclick="verifyPassword()">确认</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 检测模板弹窗 -->
+    <div class="template-modal" id="templateModal" style="display: none;">
+        <div class="modal-overlay" onclick="closeTemplateModal()"></div>
+        <div class="modal-content template-modal-content">
+            <div class="modal-header">
+                <h3 id="templateModalTitle">添加检测模板</h3>
+                <button class="modal-close" onclick="closeTemplateModal()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form class="template-form" id="templateForm">
+                    <input type="hidden" id="templateId" name="id">
+                    
+                    <div class="form-group">
+                        <label for="templateName">模板名称 <span class="required">*</span></label>
+                        <input type="text" id="templateName" name="templateName" placeholder="请输入模板名称" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="detectionType">监控类型 <span class="required">*</span></label>
+                        <select id="detectionType" name="detectionType" required>
+                            <option value="">请选择监控类型</option>
+                            <option value="cpu">CPU监控</option>
+                            <option value="memory">内存监控</option>
+                            <option value="disk">磁盘监控</option>
+                            <option value="network">网络监控</option>
+                            <option value="temperature">温度监控</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="warningThreshold">警告阈值 <span class="required">*</span></label>
+                        <div class="threshold-input">
+                            <input type="number" id="warningThreshold" name="warningThreshold" placeholder="0" min="0" max="100" required>
+                            <span class="threshold-unit">%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="criticalThreshold">严重阈值 <span class="required">*</span></label>
+                        <div class="threshold-input">
+                            <input type="number" id="criticalThreshold" name="criticalThreshold" placeholder="0" min="0" max="100" required>
+                            <span class="threshold-unit">%</span>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="checkInterval">检测间隔 <span class="required">*</span></label>
+                        <div class="interval-input">
+                            <input type="number" id="checkInterval" name="checkInterval" placeholder="5" min="1" required>
+                            <select id="intervalUnit" name="intervalUnit">
+                                <option value="minutes">分钟</option>
+                                <option value="hours">小时</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="templateDescription">描述</label>
+                        <textarea id="templateDescription" name="description" placeholder="请输入模板描述" rows="3"></textarea>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="templateStatus">状态</label>
+                        <select id="templateStatus" name="status">
+                            <option value="1">启用</option>
+                            <option value="0">禁用</option>
+                        </select>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeTemplateModal()">取消</button>
+                <button class="btn-primary" onclick="saveTemplate()">保存</button>
+            </div>
+        </div>
+    </div>
+
     <script src="设置.js"></script>
+    
+    <!-- 立即执行的头像修复脚本 -->
+    <script>
+    (function() {
+        'use strict';
+        
+        function fixSettingsAvatarImmediate() {
+            console.log('🔧 立即修复设置页面头像');
+            
+            const avatarElement = document.getElementById('settingsUserAvatar');
+            if (!avatarElement) {
+                console.log('❌ 未找到头像元素 settingsUserAvatar');
+                return;
+            }
+            
+            // 修复URL格式
+            let userAvatar = localStorage.getItem('userAvatar');
+            if (userAvatar && userAvatar.startsWith('/upload/')) {
+                userAvatar = userAvatar.replace('/upload/', '/api/upload/');
+                localStorage.setItem('userAvatar', userAvatar);
+                console.log('✅ 修复头像URL格式:', userAvatar);
+            }
+            
+            // 设置头像
+            if (userAvatar && userAvatar !== 'null' && userAvatar !== '') {
+                avatarElement.src = userAvatar;
+                console.log('✅ 设置页面头像已更新:', userAvatar);
+            } else {
+                avatarElement.src = '1.png';
+                console.log('✅ 使用默认头像');
+            }
+        }
+        
+        // 立即尝试修复
+        fixSettingsAvatarImmediate();
+        
+        // DOM加载完成后再次尝试
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', fixSettingsAvatarImmediate);
+        }
+        
+        // 延迟再次尝试
+        setTimeout(fixSettingsAvatarImmediate, 500);
+        setTimeout(fixSettingsAvatarImmediate, 1500);
+        
+        // 监听头像更新事件
+        window.addEventListener('avatarUpdated', function(e) {
+            const avatarElement = document.getElementById('settingsUserAvatar');
+            if (avatarElement && e.detail && e.detail.avatar) {
+                avatarElement.src = e.detail.avatar;
+                console.log('✅ 设置页面头像事件更新:', e.detail.avatar);
+            }
+        });
+        
+        console.log('🎯 设置页面头像修复脚本已加载');
+    })();
+    </script>
 </body>
 </html>

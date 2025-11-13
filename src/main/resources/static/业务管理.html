@@ -1,10 +1,42 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<style>
+/* 立即隐藏CMDB菜单项 - 防止闪烁 */
+.nav-cmdb { display: none !important; }
+.sidebar-item[data-page="CMDB"] { display: none !important; }
+</style>
+<script>
+// 立即执行：尽早隐藏CMDB，防止闪烁
+(function() {
+    function hideCMDB() {
+        var items = document.querySelectorAll('.sidebar-item');
+        items.forEach(function(item) {
+            var span = item.querySelector('span');
+            if (span && span.textContent.trim() === 'CMDB') {
+                item.style.display = 'none';
+                item.setAttribute('data-hidden', 'true');
+            }
+        });
+    }
+    
+    // 立即执行
+    hideCMDB();
+    
+    // DOM Ready时再执行一次
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideCMDB);
+    }
+    
+    // 额外保险：延迟执行确保覆盖所有情况
+    setTimeout(hideCMDB, 10);
+    setTimeout(hideCMDB, 100);
+})();
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>业务管理 - 人工智能运维平台</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="libs/fontawesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="业务管理.css">
 </head>
 <body>
@@ -108,18 +140,8 @@
                     </div>
                 </div>
                 <div class="nav-right">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" placeholder="搜索业务组件..." id="searchInput">
-                    </div>
-                    <div class="user-actions">
-                        <button class="btn btn-icon" title="刷新">
-                            <i class="fas fa-sync-alt"></i>
-                        </button>
-                        <button class="btn btn-icon" title="设置">
-                            <i class="fas fa-cog"></i>
-                        </button>
-                    </div>
+                    <!-- 用户下拉菜单容器 -->
+                    <div id="user-dropdown-container"></div>
                 </div>
             </div>
 
@@ -166,6 +188,10 @@
                             </div>
                         </div>
                         <div class="header-right">
+                            <div class="search-box">
+                                <i class="fas fa-search"></i>
+                                <input type="text" placeholder="搜索业务组件..." id="searchInput">
+                            </div>
                             <div class="view-controls">
                                 <button class="view-btn active" data-view="grid" title="网格视图">
                                     <i class="fas fa-th"></i>
@@ -308,7 +334,7 @@
                     </div>
                     <div class="form-group">
                         <label>服务地址</label>
-                        <input type="text" id="componentUrl" placeholder="http://localhost:8080">
+                        <input type="text" id="componentUrl" placeholder="请输入服务地址">
                     </div>
                     <div class="form-group">
                         <label>组件描述</label>
@@ -463,6 +489,175 @@
         </div>
     </div>
 
+    <!-- 新增业务模态框 -->
+    <div class="modal" id="addBusinessModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>新增业务</h3>
+                <button class="modal-close" onclick="closeModal('addBusinessModal')">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="businessForm">
+                    <!-- 业务类型选择 -->
+                    <div class="business-type-selector">
+                        <div class="type-option">
+                            <label class="radio-option">
+                                <input type="radio" name="businessType" value="root" checked>
+                                <span class="radio-label">
+                                    <i class="fas fa-building"></i>
+                                    新增根业务（大类）
+                                </span>
+                                <small>创建顶级业务分类，如"电商平台"、"数据分析平台"等</small>
+                            </label>
+                        </div>
+                        <div class="type-option">
+                            <label class="radio-option">
+                                <input type="radio" name="businessType" value="child">
+                                <span class="radio-label">
+                                    <i class="fas fa-sitemap"></i>
+                                    新增子业务
+                                </span>
+                                <small>在现有业务下创建子业务，如"用户服务"、"订单服务"等</small>
+                            </label>
+                        </div>
+                    </div>
+
+                    <!-- 父业务选择（仅子业务时显示） -->
+                    <div class="form-group" id="parentBusinessGroup" style="display: none;">
+                        <label>父业务 *</label>
+                        <select id="parentBusinessSelect" required>
+                            <option value="">请选择父业务</option>
+                            <!-- 动态填充 -->
+                        </select>
+                        <small class="form-hint">选择在哪个业务下创建子业务</small>
+                    </div>
+
+                    <!-- 基本信息 -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>业务名称 *</label>
+                            <input type="text" id="businessName" required placeholder="请输入业务名称">
+                            <small class="form-hint">如：电商平台、用户服务等</small>
+                        </div>
+                        <div class="form-group">
+                            <label>业务编码 *</label>
+                            <input type="text" id="businessCode" required placeholder="请输入业务编码">
+                            <small class="form-hint">英文字母、数字、短横线，如：ecommerce、user-service</small>
+                            <div class="code-validation" id="codeValidation"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>业务类型</label>
+                            <select id="businessTypeSelect">
+                                <option value="platform">平台</option>
+                                <option value="service">服务</option>
+                                <option value="module">模块</option>
+                                <option value="component">组件</option>
+                                <option value="system">系统</option>
+                                <option value="application">应用</option>
+                            </select>
+                            <small class="form-hint">选择最符合的业务类型</small>
+                        </div>
+                        <div class="form-group">
+                            <label>负责人</label>
+                            <input type="text" id="businessOwner" placeholder="请输入负责人姓名或团队">
+                            <small class="form-hint">如：张三、前端团队等</small>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>业务状态</label>
+                            <select id="businessStatus">
+                                <option value="active">活跃</option>
+                                <option value="inactive">非活跃</option>
+                                <option value="planning">规划中</option>
+                                <option value="deprecated">已废弃</option>
+                            </select>
+                            <small class="form-hint">当前业务的运行状态</small>
+                        </div>
+                        <div class="form-group">
+                            <label>优先级</label>
+                            <select id="businessPriority">
+                                <option value="high">高</option>
+                                <option value="medium" selected>中</option>
+                                <option value="low">低</option>
+                            </select>
+                            <small class="form-hint">业务的重要程度</small>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>业务描述</label>
+                        <textarea id="businessDescription" rows="3" placeholder="请输入业务描述，如：负责用户注册、登录、权限管理等功能"></textarea>
+                        <small class="form-hint">详细描述业务的功能和职责</small>
+                    </div>
+
+                    <!-- 表单预览区域 -->
+                    <div class="form-preview" id="businessPreview" style="display: none;">
+                        <h4><i class="fas fa-eye"></i> 业务信息预览</h4>
+                        <div class="preview-content">
+                            <div class="preview-item">
+                                <span class="preview-label">业务类型:</span>
+                                <span class="preview-value" id="previewBusinessType"></span>
+                            </div>
+                            <div class="preview-item" id="previewParentGroup" style="display: none;">
+                                <span class="preview-label">父业务:</span>
+                                <span class="preview-value" id="previewParent"></span>
+                            </div>
+                            <div class="preview-item">
+                                <span class="preview-label">业务名称:</span>
+                                <span class="preview-value" id="previewName"></span>
+                            </div>
+                            <div class="preview-item">
+                                <span class="preview-label">业务编码:</span>
+                                <span class="preview-value" id="previewCode"></span>
+                            </div>
+                            <div class="preview-item">
+                                <span class="preview-label">类型:</span>
+                                <span class="preview-value" id="previewType"></span>
+                            </div>
+                            <div class="preview-item">
+                                <span class="preview-label">状态:</span>
+                                <span class="preview-value" id="previewStatus"></span>
+                            </div>
+                            <div class="preview-item">
+                                <span class="preview-label">优先级:</span>
+                                <span class="preview-value" id="previewPriority"></span>
+                            </div>
+                            <div class="preview-item">
+                                <span class="preview-label">负责人:</span>
+                                <span class="preview-value" id="previewOwner"></span>
+                            </div>
+                            <div class="preview-item">
+                                <span class="preview-label">描述:</span>
+                                <span class="preview-value" id="previewDescription"></span>
+                            </div>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" onclick="closeModal('addBusinessModal')">取消</button>
+                <button class="btn btn-info" onclick="window.businessManager.previewBusiness()">
+                    <i class="fas fa-eye"></i>
+                    预览
+                </button>
+                <button class="btn btn-primary" onclick="saveBusiness()">
+                    <i class="fas fa-save"></i>
+                    保存
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="业务管理.js"></script>
+    
+    <!-- 加载用户下拉菜单 -->
+    <script src="js/user-dropdown-loader.js"></script>
 </body>
 </html>

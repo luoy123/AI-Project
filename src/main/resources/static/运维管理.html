@@ -1,11 +1,44 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<style>
+/* 立即隐藏CMDB菜单项 - 防止闪烁 */
+.nav-cmdb { display: none !important; }
+.sidebar-item[data-page="CMDB"] { display: none !important; }
+</style>
+<script>
+// 立即执行：尽早隐藏CMDB，防止闪烁
+(function() {
+    function hideCMDB() {
+        var items = document.querySelectorAll('.sidebar-item');
+        items.forEach(function(item) {
+            var span = item.querySelector('span');
+            if (span && span.textContent.trim() === 'CMDB') {
+                item.style.display = 'none';
+                item.setAttribute('data-hidden', 'true');
+            }
+        });
+    }
+    
+    // 立即执行
+    hideCMDB();
+    
+    // DOM Ready时再执行一次
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideCMDB);
+    }
+    
+    // 额外保险：延迟执行确保覆盖所有情况
+    setTimeout(hideCMDB, 10);
+    setTimeout(hideCMDB, 100);
+})();
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>运维管理 - 人工智能运维平台</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="libs/fontawesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="运维管理.css">
+    <link rel="stylesheet" href="common-override.css">
     <script src="chart.js"></script>
 </head>
 <body>
@@ -101,21 +134,46 @@
         <div class="main-content">
             <!-- 顶部导航栏 -->
             <header class="top-header">
+<style>
+/* 立即隐藏CMDB菜单项 - 防止闪烁 */
+.nav-cmdb { display: none !important; }
+.sidebar-item[data-page="CMDB"] { display: none !important; }
+</style>
+<script>
+// 立即执行：尽早隐藏CMDB，防止闪烁
+(function() {
+    function hideCMDB() {
+        var items = document.querySelectorAll('.sidebar-item');
+        items.forEach(function(item) {
+            var span = item.querySelector('span');
+            if (span && span.textContent.trim() === 'CMDB') {
+                item.style.display = 'none';
+                item.setAttribute('data-hidden', 'true');
+            }
+        });
+    }
+    
+    // 立即执行
+    hideCMDB();
+    
+    // DOM Ready时再执行一次
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideCMDB);
+    }
+    
+    // 额外保险：延迟执行确保覆盖所有情况
+    setTimeout(hideCMDB, 10);
+    setTimeout(hideCMDB, 100);
+})();
+</script>
                 <div class="header-left">
                     <div class="breadcrumb">
                         <span class="breadcrumb-item">运维管理</span>
                     </div>
                 </div>
                 <div class="header-right">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" placeholder="搜索工单..." id="searchInput">
-                    </div>
-                    <div class="user-menu">
-                        <div class="user-avatar">
-                            <img src="1.png" alt="用户头像">
-                        </div>
-                    </div>
+                    <!-- 用户下拉菜单容器 -->
+                    <div id="user-dropdown-container"></div>
                 </div>
             </header>
 
@@ -124,16 +182,757 @@
                 <!-- 工单状态标签页 -->
                 <div class="ticket-tabs">
                     <div class="tab-item active">配置工单</div>
-                    <div class="tab-item">工单</div>
-                    <div class="tab-item">文档</div>
+                    <div class="tab-item">我的工单</div>
                     <div class="tab-item">上传</div>
-                    <div class="tab-item">归档</div>
+                    <div class="tab-item">派发</div>
+                </div>
+                
+                <!-- 工单配置子标签页 -->
+                <div class="config-sub-tabs" id="configSubTabs" style="display: block;">
+                    <div class="sub-tab-item active" data-config="priority-levels">优先级设置</div>
+                    <div class="sub-tab-item" data-config="type-settings">类型设置</div>
+                    <div class="sub-tab-item" data-config="source-settings">来源设置</div>
                 </div>
 
                 <!-- 主要内容区域 -->
                 <div class="content-grid">
-                    <!-- 左侧主要内容区域 -->
-                    <div class="main-view">
+                    <!-- 配置工单页面 -->
+                    <div class="config-ticket-page" id="configTicketPage" style="display: block;">
+                        <div class="config-layout-full">
+                            <!-- 配置内容 -->
+                            <div class="config-content-full">
+                                <!-- 优先级配置 -->
+                                <div class="config-panel active" id="priority-levels">
+                                    <div class="panel-header">
+                                        <h3>优先级设置</h3>
+                                    </div>
+                                    <div class="panel-content">
+                                        <div class="priority-list">
+                                            <!-- 优先级列表将通过JavaScript动态加载 -->
+                                        </div>
+                                        <div class="add-priority-link">
+                                            <button class="btn-link" id="addNewPriority">
+                                                <i class="fas fa-plus"></i>
+                                                新增优先级
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 类型设置 -->
+                                <div class="config-panel" id="type-settings">
+                                    <div class="panel-header">
+                                        <h3>类型设置</h3>
+                                    </div>
+                                    <div class="panel-content">
+                                        <div class="type-settings-list">
+                                            <div class="type-setting-item" data-type="incident" data-default="true">
+                                                <div class="type-setting-info">
+                                                    <div class="type-setting-color" style="background-color: #ff4757;"></div>
+                                                    <div class="type-setting-details">
+                                                        <span class="type-setting-name">故障工单</span>
+                                                        <span class="type-setting-desc">系统故障、服务中断等紧急问题</span>
+                                                    </div>
+                                                </div>
+                                                <div class="type-setting-actions">
+                                                    <button class="btn-icon" title="编辑" onclick="editTicketType('incident')">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <span class="default-label">默认</span>
+                                                </div>
+                                            </div>
+                                            <div class="type-setting-item" data-type="change">
+                                                <div class="type-setting-info">
+                                                    <div class="type-setting-color" style="background-color: #ffa502;"></div>
+                                                    <div class="type-setting-details">
+                                                        <span class="type-setting-name">变更工单</span>
+                                                        <span class="type-setting-desc">系统变更、配置修改等计划性工作</span>
+                                                    </div>
+                                                </div>
+                                                <div class="type-setting-actions">
+                                                    <button class="btn-icon" title="编辑" onclick="editTicketType('change')">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn-icon" title="删除" onclick="deleteTicketType('change')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                            <div class="type-setting-item" data-type="problem">
+                                                <div class="type-setting-info">
+                                                    <div class="type-setting-color" style="background-color: #ff6b81;"></div>
+                                                    <div class="type-setting-details">
+                                                        <span class="type-setting-name">问题工单</span>
+                                                        <span class="type-setting-desc">根本原因分析、问题调查等</span>
+                                                    </div>
+                                                </div>
+                                                <div class="type-setting-actions">
+                                                    <button class="btn-icon" title="编辑" onclick="editTicketType('problem')">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn-icon" title="删除" onclick="deleteTicketType('problem')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="add-type-link">
+                                            <button class="btn-link" id="addNewTicketType">
+                                                <i class="fas fa-plus"></i>
+                                                新增类型
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 来源设置 -->
+                                <div class="config-panel" id="source-settings">
+                                    <div class="panel-header">
+                                        <h3>来源设置</h3>
+                                    </div>
+                                    <div class="panel-content">
+                                        <div class="source-settings-list">
+                                            <div class="source-setting-item" data-source="web" data-default="true">
+                                                <div class="source-setting-info">
+                                                    <div class="source-setting-icon">
+                                                        <i class="fas fa-globe"></i>
+                                                    </div>
+                                                    <div class="source-setting-details">
+                                                        <span class="source-setting-name">Web端</span>
+                                                        <span class="source-setting-desc">通过Web界面提交的工单</span>
+                                                    </div>
+                                                </div>
+                                                <div class="source-setting-actions">
+                                                    <button class="btn-icon" title="编辑" onclick="editTicketSource('web')">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <span class="default-label">默认</span>
+                                                </div>
+                                            </div>
+                                            <div class="source-setting-item" data-source="email" data-default="true">
+                                                <div class="source-setting-info">
+                                                    <div class="source-setting-icon">
+                                                        <i class="fas fa-envelope"></i>
+                                                    </div>
+                                                    <div class="source-setting-details">
+                                                        <span class="source-setting-name">邮件</span>
+                                                        <span class="source-setting-desc">通过邮件自动创建的工单</span>
+                                                    </div>
+                                                </div>
+                                                <div class="source-setting-actions">
+                                                    <button class="btn-icon" title="编辑" onclick="editTicketSource('email')">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <span class="default-label">默认</span>
+                                                </div>
+                                            </div>
+                                            <div class="source-setting-item" data-source="api">
+                                                <div class="source-setting-info">
+                                                    <div class="source-setting-icon">
+                                                        <i class="fas fa-code"></i>
+                                                    </div>
+                                                    <div class="source-setting-details">
+                                                        <span class="source-setting-name">API接口</span>
+                                                        <span class="source-setting-desc">通过API接口创建的工单</span>
+                                                    </div>
+                                                </div>
+                                                <div class="source-setting-actions">
+                                                    <button class="btn-icon" title="编辑" onclick="editTicketSource('api')">
+                                                        <i class="fas fa-edit"></i>
+                                                    </button>
+                                                    <button class="btn-icon" title="删除" onclick="deleteTicketSource('api')">
+                                                        <i class="fas fa-trash"></i>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="add-source-link">
+                                            <button class="btn-link" id="addNewTicketSource">
+                                                <i class="fas fa-plus"></i>
+                                                新增来源
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 类型设置编辑模态框 -->
+                    <div class="modal-overlay" id="editTypeModal" style="display: none;">
+                        <div class="modal-container">
+                            <div class="modal-header">
+                                <h3>编辑工单类型</h3>
+                                <button class="modal-close" onclick="closeTypeEditModal()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="editTypeForm">
+                                    <input type="hidden" id="editTypeId">
+                                    
+                                    <div class="form-group">
+                                        <label for="editTypeKey">类型标识 *</label>
+                                        <input type="text" id="editTypeKey" class="form-control" placeholder="例如: incident" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="editTypeName">类型名称 *</label>
+                                        <input type="text" id="editTypeName" class="form-control" placeholder="例如: 故障处理" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="editTypeDesc">类型描述</label>
+                                        <textarea id="editTypeDesc" class="form-control" rows="3" placeholder="请输入类型描述"></textarea>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="editTypeColor">颜色标识</label>
+                                        <input type="color" id="editTypeColor" class="form-control" value="#007bff">
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" onclick="closeTypeEditModal()">取消</button>
+                                <button type="button" class="btn btn-primary" onclick="saveTypeEdit()">保存</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 来源设置编辑模态框 -->
+                    <div class="modal-overlay" id="editSourceModal" style="display: none;">
+                        <div class="modal-container">
+                            <div class="modal-header">
+                                <h3>编辑工单来源</h3>
+                                <button class="modal-close" onclick="closeSourceEditModal()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="editSourceForm">
+                                    <input type="hidden" id="editSourceId">
+                                    
+                                    <div class="form-group">
+                                        <label for="editSourceKey">来源标识 *</label>
+                                        <input type="text" id="editSourceKey" class="form-control" placeholder="例如: web" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="editSourceName">来源名称 *</label>
+                                        <input type="text" id="editSourceName" class="form-control" placeholder="例如: Web端" required>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="editSourceDesc">来源描述</label>
+                                        <textarea id="editSourceDesc" class="form-control" rows="3" placeholder="请输入来源描述"></textarea>
+                                    </div>
+                                    
+                                    <div class="form-group" style="display: none;">
+                                        <label for="sourceIcon">图标选择</label>
+                                        <div class="icon-picker-group">
+                                            <div class="icon-option" data-icon="fas fa-globe">
+                                                <i class="fas fa-globe"></i>
+                                                <span>Web端</span>
+                                            </div>
+                                            <div class="icon-option" data-icon="fas fa-envelope">
+                                                <i class="fas fa-envelope"></i>
+                                                <span>邮件</span>
+                                            </div>
+                                            <div class="icon-option" data-icon="fas fa-code">
+                                                <i class="fas fa-code"></i>
+                                                <span>API</span>
+                                            </div>
+                                            <div class="icon-option" data-icon="fas fa-mobile-alt">
+                                                <i class="fas fa-mobile-alt"></i>
+                                                <span>移动端</span>
+                                            </div>
+                                            <div class="icon-option" data-icon="fas fa-phone">
+                                                <i class="fas fa-phone"></i>
+                                                <span>电话</span>
+                                            </div>
+                                            <div class="icon-option" data-icon="fas fa-comments">
+                                                <i class="fas fa-comments"></i>
+                                                <span>聊天</span>
+                                            </div>
+                                            <div class="icon-option" data-icon="fas fa-desktop">
+                                                <i class="fas fa-desktop"></i>
+                                                <span>桌面端</span>
+                                            </div>
+                                            <div class="icon-option" data-icon="fas fa-plus">
+                                                <i class="fas fa-plus"></i>
+                                                <span>其他</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="sourceType">来源类型</label>
+                                        <select id="sourceType" class="form-control">
+                                            <option value="manual">手动创建</option>
+                                            <option value="automatic">自动创建</option>
+                                            <option value="integration">集成接口</option>
+                                            <option value="import">批量导入</option>
+                                        </select>
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" onclick="closeSourceEditModal()">取消</button>
+                                <button type="button" class="btn btn-primary" onclick="saveSourceEdit()">保存</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 优先级编辑模态框 -->
+                    <div class="modal-overlay" id="editPriorityModal" style="display: none;">
+                        <div class="modal-container">
+                            <div class="modal-header">
+                                <h3>编辑优先级</h3>
+                                <button class="modal-close" onclick="closeEditModal()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="modal-body">
+                                <form id="editPriorityForm">
+                                    <div class="form-group">
+                                        <label for="priorityName">优先级名称</label>
+                                        <input type="text" id="priorityName" class="form-control" placeholder="例如: P1">
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="priorityLevel">优先级等级</label>
+                                        <select id="priorityLevel" class="form-control">
+                                            <option value="urgent">紧急</option>
+                                            <option value="high">高</option>
+                                            <option value="medium">中</option>
+                                            <option value="low">低</option>
+                                            <option value="lowest">最低</option>
+                                        </select>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="priorityDesc">描述</label>
+                                        <textarea id="priorityDesc" class="form-control" rows="3" placeholder="请输入优先级描述"></textarea>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="prioritySla">响应时间 (SLA)</label>
+                                        <div class="sla-input-group">
+                                            <input type="number" id="slaValue" class="form-control" placeholder="1" min="1">
+                                            <select id="slaUnit" class="form-control">
+                                                <option value="小时">小时</option>
+                                                <option value="分钟">分钟</option>
+                                                <option value="天">天</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="form-group">
+                                        <label for="priorityColor">颜色标识</label>
+                                        <div class="color-picker-group">
+                                            <div class="color-option" data-color="#ff4757" style="background-color: #ff4757;"></div>
+                                            <div class="color-option" data-color="#ffa502" style="background-color: #ffa502;"></div>
+                                            <div class="color-option" data-color="#ffc107" style="background-color: #ffc107;"></div>
+                                            <div class="color-option" data-color="#5352ed" style="background-color: #5352ed;"></div>
+                                            <div class="color-option" data-color="#3742fa" style="background-color: #3742fa;"></div>
+                                            <div class="color-option" data-color="#2ed573" style="background-color: #2ed573;"></div>
+                                            <div class="color-option" data-color="#ff6b81" style="background-color: #ff6b81;"></div>
+                                            <div class="color-option" data-color="#6c757d" style="background-color: #6c757d;"></div>
+                                        </div>
+                                        <input type="color" id="customColor" class="custom-color-input" title="自定义颜色">
+                                    </div>
+                                </form>
+                            </div>
+                            <div class="modal-footer">
+                                <button type="button" class="btn btn-secondary" onclick="closeEditModal()">取消</button>
+                                <button type="button" class="btn btn-primary" onclick="savePriorityEdit()">保存</button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 我的工单页面 -->
+                    <div class="main-view" id="myTicketsPage" style="display: none;">
+                        <!-- 页面标题和说明 -->
+                        <div class="page-title-section">
+                            <h2>我的工单</h2>
+                            <p class="page-description">这里显示别人派发给我处理的工单</p>
+                        </div>
+                        
+                        <!-- 筛选工具栏 -->
+                        <div class="ticket-filters">
+                            <div class="filter-group">
+                                <select class="filter-select" id="myStatusFilter">
+                                    <option value="">全部状态</option>
+                                    <option value="pending">待处理</option>
+                                    <option value="processing">处理中</option>
+                                    <option value="resolved">已解决</option>
+                                    <option value="closed">已关闭</option>
+                                </select>
+                                
+                                <select class="filter-select" id="myTypeFilter">
+                                    <option value="">全部类型</option>
+                                    <option value="incident">故障</option>
+                                    <option value="change">变更</option>
+                                    <option value="service">服务</option>
+                                    <option value="consultation">咨询</option>
+                                    <option value="maintenance">维护</option>
+                                </select>
+                                
+                                <select class="filter-select" id="myPriorityFilter">
+                                    <option value="">全部优先级</option>
+                                    <option value="urgent">P1</option>
+                                    <option value="high">P2</option>
+                                    <option value="medium">P3</option>
+                                    <option value="low">P4</option>
+                                </select>
+                                
+                                <div class="search-container">
+                                    <input type="text" class="search-input" id="myTicketSearch" placeholder="搜索工单标题、描述...">
+                                    <i class="fas fa-search search-icon"></i>
+                                </div>
+                                
+                                <button class="btn btn-primary" id="searchMyTicketsBtn">
+                                    <i class="fas fa-search"></i>
+                                    搜索
+                                </button>
+                                
+                                <button class="btn btn-secondary" id="resetMyTicketsBtn">
+                                    <i class="fas fa-redo"></i>
+                                    重置
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 操作工具栏 -->
+                        <div class="ticket-toolbar">
+                            <div class="toolbar-left">
+                                <button class="btn btn-success" id="batchCompleteBtn" disabled>
+                                    <i class="fas fa-check-double"></i>
+                                    批量完成
+                                </button>
+                            </div>
+                            <div class="toolbar-right">
+                                <button class="btn btn-outline" id="exportMyTicketsBtn">
+                                    <i class="fas fa-download"></i>
+                                    导出
+                                </button>
+                                <button class="btn btn-outline" id="refreshMyTicketsBtn">
+                                    <i class="fas fa-sync-alt"></i>
+                                    刷新
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 工单列表 -->
+                        <div class="ticket-list-container">
+                            <div class="ticket-list-header">
+                                <div class="list-header-item checkbox-col">
+                                    <input type="checkbox" id="selectAllMyTickets">
+                                </div>
+                                <div class="list-header-item">工单编号</div>
+                                <div class="list-header-item status-col">状态</div>
+                                <div class="list-header-item title-col">标题</div>
+                                <div class="list-header-item type-col">类型</div>
+                                <div class="list-header-item priority-col">优先级</div>
+                                <div class="list-header-item">来源</div>
+                                <div class="list-header-item creator-col">创建人</div>
+                                <div class="list-header-item date-col">创建时间</div>
+                                <div class="list-header-item date-col">派发时间</div>
+                                <div class="list-header-item actions-col">操作</div>
+                            </div>
+                            
+                            <div class="ticket-list-body" id="myTicketListBody">
+                                <!-- 工单数据将通过JavaScript动态加载 -->
+                                <div class="ticket-list-item" data-ticket-id="1" style="display: none;">
+                                    <div class="list-item-cell checkbox-col">
+                                        <input type="checkbox" class="my-ticket-checkbox">
+                                    </div>
+                                    <div class="list-item-cell status-col">
+                                        <span class="status-badge assigned">已分配</span>
+                                    </div>
+                                    <div class="list-item-cell title-col">
+                                        <div class="ticket-title">服务器性能优化</div>
+                                        <div class="ticket-desc">需要对生产服务器进行性能调优</div>
+                                        <div class="assign-note">派发备注：请在本周内完成</div>
+                                    </div>
+                                    <div class="list-item-cell type-col">
+                                        <span class="type-badge maintenance">维护</span>
+                                    </div>
+                                    <div class="list-item-cell priority-col">
+                                        <span class="priority-badge p2">P2</span>
+                                    </div>
+                                    <div class="list-item-cell creator-col">
+                                        <div class="creator-info">
+                                            <img src="https://via.placeholder.com/24" class="creator-avatar" alt="王五">
+                                            <span>王五</span>
+                                        </div>
+                                    </div>
+                                    <div class="list-item-cell date-col">2025-10-27 10:15</div>
+                                    <div class="list-item-cell actions-col">
+                                        <button class="btn-icon" title="查看详情" onclick="viewMyTicket(1)">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn-icon" title="开始处理" onclick="startProcessingTicket(1)">
+                                            <i class="fas fa-play"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="ticket-list-item" data-ticket-id="2" style="display: none;">
+                                    <div class="list-item-cell checkbox-col">
+                                        <input type="checkbox" class="my-ticket-checkbox">
+                                    </div>
+                                    <div class="list-item-cell status-col">
+                                        <span class="status-badge processing">处理中</span>
+                                    </div>
+                                    <div class="list-item-cell title-col">
+                                        <div class="ticket-title">数据库备份检查</div>
+                                        <div class="ticket-desc">检查数据库备份是否正常</div>
+                                        <div class="assign-note">派发备注：每日例行检查</div>
+                                    </div>
+                                    <div class="list-item-cell type-col">
+                                        <span class="type-badge maintenance">维护</span>
+                                    </div>
+                                    <div class="list-item-cell priority-col">
+                                        <span class="priority-badge p3">P3</span>
+                                    </div>
+                                    <div class="list-item-cell creator-col">
+                                        <div class="creator-info">
+                                            <img src="https://via.placeholder.com/24" class="creator-avatar" alt="赵六">
+                                            <span>赵六</span>
+                                        </div>
+                                    </div>
+                                    <div class="list-item-cell date-col">2025-10-26 16:30</div>
+                                    <div class="list-item-cell actions-col">
+                                        <button class="btn-icon" title="查看详情" onclick="viewMyTicket(2)">
+                                            <i class="fas fa-eye"></i>
+                                        </button>
+                                        <button class="btn-icon" title="标记完成" onclick="completeTicket(2)">
+                                            <i class="fas fa-check"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 分页控件 -->
+                        <div class="pagination-container">
+                            <div class="pagination-info">
+                                显示 1-20 条，共 45 条记录
+                            </div>
+                            <div class="pagination-controls">
+                                <button class="btn-pagination" disabled>
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button class="btn-pagination active">1</button>
+                                <button class="btn-pagination">2</button>
+                                <button class="btn-pagination">3</button>
+                                <button class="btn-pagination">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 上传页面 -->
+                    <div class="main-view" id="uploadPage" style="display: none;">
+                        <!-- 页面标题 -->
+                        <div class="page-title-section">
+                            <h2><i class="fas fa-cloud-upload-alt"></i> 工单批量导入</h2>
+                            <p class="page-description">通过Excel、CSV或文本文件批量创建工单，系统将自动识别和导入数据</p>
+                        </div>
+                        
+                        <!-- 上传类型选择 -->
+                        <div class="upload-types">
+                            <div class="upload-type-grid">
+                                <div class="upload-type-card active" data-type="excel">
+                                    <div class="type-icon">
+                                        <i class="fas fa-file-excel"></i>
+                                    </div>
+                                    <div class="type-title">Excel / CSV 导入</div>
+                                    <div class="type-desc">结构化数据，支持批量导入多条工单</div>
+                                    <div class="template-downloads">
+                                        <button class="download-btn" onclick="downloadExcelTemplate()">
+                                            <i class="fas fa-download"></i> 下载 Excel 模板
+                                        </button>
+                                        <button class="download-btn" onclick="downloadCsvTemplate()">
+                                            <i class="fas fa-download"></i> 下载 CSV 模板
+                                        </button>
+                                    </div>
+                                </div>
+                                
+                                <div class="upload-type-card" data-type="text">
+                                    <div class="type-icon">
+                                        <i class="fas fa-file-alt"></i>
+                                    </div>
+                                    <div class="type-title">文本智能导入</div>
+                                    <div class="type-desc">自然语言描述，AI自动提取工单信息</div>
+                                    <div class="template-downloads">
+                                        <button class="download-btn" onclick="downloadTextTemplate()">
+                                            <i class="fas fa-download"></i> 下载文本示例
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 文件上传区域 -->
+                        <div class="upload-area">
+                            <div class="upload-dropzone" id="uploadDropzone">
+                                <div class="dropzone-content">
+                                    <div class="dropzone-icon">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                    </div>
+                                    <div class="dropzone-text">
+                                        <h4>拖拽文件到此处或点击选择文件</h4>
+                                        <p class="format-hint">
+                                            <i class="fas fa-info-circle"></i>
+                                            支持格式：<span class="highlight">.xlsx .xls .csv .txt</span>
+                                        </p>
+                                        <p class="size-hint">
+                                            <i class="fas fa-hdd"></i>
+                                            最大文件大小：<span class="highlight">50MB</span>
+                                        </p>
+                                    </div>
+                                    <button class="btn btn-primary btn-large" id="selectFilesBtn">
+                                        <i class="fas fa-folder-open"></i>
+                                        选择文件
+                                    </button>
+                                </div>
+                                <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.txt" style="display: none;">
+                            </div>
+                        </div>
+                        
+                        <!-- 上传历史记录 -->
+                        <div class="upload-history-container">
+                            <div class="history-header">
+                                <h4><i class="fas fa-history"></i> 上传历史</h4>
+                                <button class="btn btn-outline" onclick="loadUploadHistory()">
+                                    <i class="fas fa-sync-alt"></i> 刷新
+                                </button>
+                            </div>
+                            <div class="upload-history-list" id="uploadHistoryList">
+                                <!-- 上传历史将通过JavaScript动态渲染 -->
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 未派发页面 -->
+                    <div class="main-view" id="unassignedPage" style="display: none;">
+                        <!-- 页面标题和说明 -->
+                        <div class="page-title-section">
+                            <h2>派发工单</h2>
+                            <p class="page-description">查看和管理所有未派发的工单，可以将工单派发给处理人</p>
+                        </div>
+                        
+                        <!-- 筛选工具栏 -->
+                        <div class="ticket-filters">
+                            <div class="filter-group">
+                                <select class="filter-select" id="unassignedTypeFilter">
+                                    <option value="">全部类型</option>
+                                    <!-- 动态加载 -->
+                                </select>
+                                
+                                <select class="filter-select" id="unassignedPriorityFilter">
+                                    <option value="">全部优先级</option>
+                                    <!-- 动态加载 -->
+                                </select>
+                                
+                                <input type="date" class="filter-input" id="unassignedDateFilter" placeholder="创建日期">
+                                
+                                <div class="search-box-wrapper">
+                                    <input type="text" class="filter-input search-keyword" id="unassignedKeywordFilter" placeholder="搜索工单标题、描述...">
+                                    <i class="fas fa-search search-icon-inline"></i>
+                                </div>
+                                
+                                <button class="btn btn-primary btn-sm" id="applyUnassignedFilter">
+                                    <i class="fas fa-search"></i>
+                                    搜索
+                                </button>
+                                
+                                <button class="btn btn-outline btn-sm" id="resetUnassignedFilter">
+                                    <i class="fas fa-redo"></i>
+                                    重置
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 操作工具栏 -->
+                        <div class="ticket-toolbar">
+                            <div class="toolbar-left">
+                                <button class="btn btn-primary" id="createNewTicketBtn">
+                                    <i class="fas fa-plus"></i>
+                                    新建工单
+                                </button>
+                                <button class="btn btn-success" id="batchAssignTicketsBtn" disabled>
+                                    <i class="fas fa-user-plus"></i>
+                                    批量派发
+                                </button>
+                            </div>
+                            <div class="toolbar-right">
+                                <button class="btn btn-outline" id="exportUnassignedBtn">
+                                    <i class="fas fa-download"></i>
+                                    导出
+                                </button>
+                                <button class="btn btn-outline" id="refreshUnassignedBtn">
+                                    <i class="fas fa-sync-alt"></i>
+                                    刷新
+                                </button>
+                            </div>
+                        </div>
+                        
+                        <!-- 工单列表（表格形式） -->
+                        <div class="table-container">
+                            <table class="ticket-table" id="unassignedTicketTable">
+                                <thead>
+                                    <tr>
+                                        <th width="5%"><input type="checkbox" id="selectAllUnassigned"></th>
+                                        <th width="10%">工单编号</th>
+                                        <th width="15%">标题</th>
+                                        <th width="7%">类型</th>
+                                        <th width="7%">优先级</th>
+                                        <th width="7%">状态</th>
+                                        <th width="8%">创建人</th>
+                                        <th width="7%">处理人ID</th>
+                                        <th width="7%">处理人</th>
+                                        <th width="9%">关联设备</th>
+                                        <th width="9%">创建时间</th>
+                                        <th width="9%">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="unassignedListBody">
+                                    <tr>
+                                        <td colspan="12" class="empty-state">
+                                            <i class="fas fa-inbox" style="font-size: 48px; color: #ccc; margin-bottom: 16px;"></i>
+                                            <p style="color: #999; font-size: 16px;">加载中...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        <!-- 分页控件 -->
+                        <div class="pagination-container">
+                            <div class="pagination-info">
+                                显示 1-20 条，共 28 条记录
+                            </div>
+                            <div class="pagination-controls">
+                                <button class="btn-pagination" disabled>
+                                    <i class="fas fa-chevron-left"></i>
+                                </button>
+                                <button class="btn-pagination active">1</button>
+                                <button class="btn-pagination">2</button>
+                                <button class="btn-pagination">
+                                    <i class="fas fa-chevron-right"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- 派发工单模态框 - 已移除，改为JavaScript动态创建 -->
+                    
+                    <!-- 原有的工单统计页面 -->
+                    <div class="main-view" id="ticketStatsPage" style="display: none;">
                         <!-- 工单状态统计 -->
                         <div class="ticket-stats-row">
                             <div class="stat-card">
@@ -217,29 +1016,15 @@
                         </div>
                     </div>
 
-                    <!-- 右侧信息面板 -->
-                    <div class="info-panel">
-                        <!-- 优先级分析 -->
-                        <div class="priority-analysis">
-                            <div class="analysis-header">
-                                <h3>优先级分析</h3>
-                            </div>
-                            <div class="analysis-content">
-                                <div class="gauge-container">
-                                    <canvas id="priorityGauge"></canvas>
-                                    <div class="gauge-value">
-                                        <span class="value">0</span>
-                                        <span class="unit">总计</span>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="运维管理.js"></script>
+    <script src="运维管理.js?v=20251106-1358"></script>
+    <!-- 引入导航修复脚本 -->
+    <script src="js/navigation-fix.js"></script>
+    <!-- 引入用户下拉菜单加载器 -->
+    <script src="js/user-dropdown-loader.js"></script>
 </body>
 </html>

@@ -11,9 +11,9 @@ class NetworkManager {
         this.init();
     }
 
-    init() {
+    async init() {
         this.initEventListeners();
-        this.loadMockData();
+        await this.loadNetworkDevices();
         this.updateStats();
         this.renderDevices();
     }
@@ -65,11 +65,109 @@ class NetworkManager {
         });
     }
 
-    // 加载模拟数据
-    loadMockData() {
+    // 从asset表加载网络设备数据
+    async loadNetworkDevices() {
+        try {
+            console.log('开始加载网络设备数据...');
+            
+            // 调用API获取网络设备数据（categoryId: 8-12）
+            const response = await fetch('/api/asset/list?deviceManagementOnly=true');
+            const result = await response.json();
+            
+            if (result.code === 200 && result.data) {
+                // 过滤出网络设备类（categoryId: 8-12）
+                const networkAssets = result.data.filter(asset => {
+                    const categoryId = asset.categoryId;
+                    return categoryId >= 8 && categoryId <= 12;
+                });
+                
+                // 将Asset数据转换为网络管理页面需要的格式
+                this.devices = networkAssets.map(asset => ({
+                    id: asset.id,
+                    name: asset.deviceName || asset.assetName,
+                    type: this.getNetworkDeviceType(asset.categoryId),
+                    ip: asset.ipAddress || '',
+                    mac: asset.macAddress || '',
+                    brand: asset.manufacturer || '',
+                    model: asset.model || '',
+                    location: this.getLocationShort(asset.location),
+                    status: this.mapAssetStatus(asset.assetStatus),
+                    uptime: this.calculateUptime(asset.createTime),
+                    description: asset.description || '',
+                    // 保留原始asset数据
+                    assetData: asset
+                }));
+                
+                console.log(`成功加载${this.devices.length}台网络设备:`, this.devices);
+            } else {
+                console.warn('获取网络设备数据失败，使用备用数据');
+                this.loadFallbackData();
+            }
+        } catch (error) {
+            console.error('加载网络设备数据时出错:', error);
+            console.log('使用备用数据');
+            this.loadFallbackData();
+        }
+        
+        this.filteredDevices = [...this.devices];
+    }
+    
+    // 根据分类ID获取网络设备类型
+    getNetworkDeviceType(categoryId) {
+        const typeMap = {
+            8: 'switch',     // 交换机
+            9: 'router',     // 路由器
+            10: 'firewall',  // 防火墙
+            11: 'ap',        // 无线AP
+            12: 'gateway'    // 网关
+        };
+        return typeMap[categoryId] || 'unknown';
+    }
+    
+    // 映射资产状态到网络管理状态
+    mapAssetStatus(assetStatus) {
+        const statusMap = {
+            'online': 'online',
+            'offline': 'offline',
+            'maintenance': 'warning'
+        };
+        return statusMap[assetStatus] || 'offline';
+    }
+    
+    // 获取位置简称
+    getLocationShort(location) {
+        if (!location) return 'unknown';
+        
+        // 提取位置关键信息
+        if (location.includes('主机房')) return 'datacenter';
+        if (location.includes('办公')) return 'office';
+        if (location.includes('机柜')) return 'rack';
+        
+        return location.length > 10 ? location.substring(0, 10) + '...' : location;
+    }
+    
+    // 计算运行时间
+    calculateUptime(createTime) {
+        if (!createTime) return '未知';
+        
+        try {
+            const created = new Date(createTime);
+            const now = new Date();
+            const diffMs = now.getTime() - created.getTime();
+            const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+            
+            if (diffDays < 1) return '不足1天';
+            return `${diffDays}天`;
+        } catch (error) {
+            return '未知';
+        }
+    }
+    
+    // 备用数据（API失败时使用）
+    loadFallbackData() {
         this.devices = [
             {
-                id: 'device-1',
+                id: 'fallback-1',
                 name: '核心交换机-01',
                 type: 'switch',
                 ip: '192.168.1.10',
@@ -79,10 +177,10 @@ class NetworkManager {
                 location: 'datacenter',
                 status: 'online',
                 uptime: '45天',
-                description: '数据中心核心交换机'
+                description: '数据中心核心交换机（备用数据）'
             },
             {
-                id: 'device-2',
+                id: 'fallback-2',
                 name: '边界路由器-01',
                 type: 'router',
                 ip: '192.168.1.1',
@@ -92,24 +190,9 @@ class NetworkManager {
                 location: 'datacenter',
                 status: 'online',
                 uptime: '30天',
-                description: '边界路由器'
-            },
-            {
-                id: 'device-3',
-                name: '防火墙-01',
-                type: 'firewall',
-                ip: '192.168.1.254',
-                mac: '00:1B:44:11:3A:B9',
-                brand: 'Fortinet',
-                model: 'FortiGate 600E',
-                location: 'datacenter',
-                status: 'warning',
-                uptime: '15天',
-                description: '边界防火墙'
+                description: '边界路由器（备用数据）'
             }
         ];
-
-        this.filteredDevices = [...this.devices];
     }
 
     // 更新统计数据
@@ -214,7 +297,7 @@ class NetworkManager {
         const statusLabels = {
             'online': '在线',
             'offline': '离线',
-            'warning': '告警'
+            'maintenance': '维护中'
         };
 
         return `

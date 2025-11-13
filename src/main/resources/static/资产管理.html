@@ -1,10 +1,42 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<style>
+/* 立即隐藏CMDB菜单项 - 防止闪烁 */
+.nav-cmdb { display: none !important; }
+.sidebar-item[data-page="CMDB"] { display: none !important; }
+</style>
+<script>
+// 立即执行：尽早隐藏CMDB，防止闪烁
+(function() {
+    function hideCMDB() {
+        var items = document.querySelectorAll('.sidebar-item');
+        items.forEach(function(item) {
+            var span = item.querySelector('span');
+            if (span && span.textContent.trim() === 'CMDB') {
+                item.style.display = 'none';
+                item.setAttribute('data-hidden', 'true');
+            }
+        });
+    }
+    
+    // 立即执行
+    hideCMDB();
+    
+    // DOM Ready时再执行一次
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideCMDB);
+    }
+    
+    // 额外保险：延迟执行确保覆盖所有情况
+    setTimeout(hideCMDB, 10);
+    setTimeout(hideCMDB, 100);
+})();
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>资产管理 - 人工智能运维平台</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="libs/fontawesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="资产管理.css">
     <script src="chart.js"></script>
 </head>
@@ -101,21 +133,46 @@
         <div class="main-content">
             <!-- 顶部导航栏 -->
             <header class="top-header">
+<style>
+/* 立即隐藏CMDB菜单项 - 防止闪烁 */
+.nav-cmdb { display: none !important; }
+.sidebar-item[data-page="CMDB"] { display: none !important; }
+</style>
+<script>
+// 立即执行：尽早隐藏CMDB，防止闪烁
+(function() {
+    function hideCMDB() {
+        var items = document.querySelectorAll('.sidebar-item');
+        items.forEach(function(item) {
+            var span = item.querySelector('span');
+            if (span && span.textContent.trim() === 'CMDB') {
+                item.style.display = 'none';
+                item.setAttribute('data-hidden', 'true');
+            }
+        });
+    }
+    
+    // 立即执行
+    hideCMDB();
+    
+    // DOM Ready时再执行一次
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideCMDB);
+    }
+    
+    // 额外保险：延迟执行确保覆盖所有情况
+    setTimeout(hideCMDB, 10);
+    setTimeout(hideCMDB, 100);
+})();
+</script>
                 <div class="header-left">
                     <div class="breadcrumb">
                         <span class="breadcrumb-item">资产管理</span>
                     </div>
                 </div>
                 <div class="header-right">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" placeholder="搜索资产..." id="searchInput">
-                    </div>
-                    <div class="user-menu">
-                        <div class="user-avatar">
-                            <img src="1.png" alt="用户头像">
-                        </div>
-                    </div>
+                    <!-- 用户下拉菜单容器 -->
+                    <div id="user-dropdown-container"></div>
                 </div>
             </header>
 
@@ -151,32 +208,6 @@
                                         <div class="gauge-label">闲置率</div>
                                     </div>
                                 </div>
-                                <div class="overview-stats">
-                                    <div class="stat-group">
-                                        <div class="stat-item">
-                                            <span class="stat-label">资产总数</span>
-                                            <span class="stat-value">0</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">在线</span>
-                                            <span class="stat-value">0</span>
-                                        </div>
-                                        <div class="stat-item">
-                                            <span class="stat-label">离线</span>
-                                            <span class="stat-value">0</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- 资产分类统计 -->
-                        <div class="asset-category-chart">
-                            <div class="chart-header">
-                                <h3>资产分类统计</h3>
-                            </div>
-                            <div class="chart-content">
-                                <canvas id="categoryChart"></canvas>
                             </div>
                         </div>
 
@@ -197,64 +228,330 @@
                         <div class="asset-categories">
                             <div class="categories-header">
                                 <h3>资产分类</h3>
-                                <button class="add-btn">
-                                    <i class="fas fa-plus"></i>
-                                </button>
                             </div>
-                            <div class="categories-content">
-                                <div class="category-item">
-                                    <div class="category-icon blue">
-                                        <i class="fas fa-server"></i>
-                                    </div>
-                                    <div class="category-info">
-                                        <div class="category-name">服务器</div>
-                                        <div class="category-count">0</div>
-                                    </div>
-                                </div>
-                                <div class="category-item">
-                                    <div class="category-icon purple">
-                                        <i class="fas fa-network-wired"></i>
-                                    </div>
-                                    <div class="category-info">
-                                        <div class="category-name">网络设备</div>
-                                        <div class="category-count">0</div>
-                                    </div>
-                                </div>
-                                <div class="category-item">
-                                    <div class="category-icon orange">
-                                        <i class="fas fa-hdd"></i>
-                                    </div>
-                                    <div class="category-info">
-                                        <div class="category-name">存储设备</div>
-                                        <div class="category-count">0</div>
-                                    </div>
-                                </div>
-                                <div class="category-item">
-                                    <div class="category-icon red">
-                                        <i class="fas fa-shield-alt"></i>
-                                    </div>
-                                    <div class="category-info">
-                                        <div class="category-name">安全设备</div>
-                                        <div class="category-count">0</div>
-                                    </div>
-                                </div>
-                                <div class="category-item">
-                                    <div class="category-icon cyan">
-                                        <i class="fas fa-desktop"></i>
-                                    </div>
-                                    <div class="category-info">
-                                        <div class="category-name">终端设备</div>
-                                        <div class="category-count">0</div>
-                                    </div>
-                                </div>
+                            <div class="categories-content" id="categoriesContent">
+                                <!-- 分类将通过JavaScript动态生成 -->
                             </div>
                         </div>
+                    </div>
+                </div>
+
+                <!-- 设备列表区域 -->
+                <div class="device-list-section">
+                    <div class="device-list-header">
+                        <h3>设备列表</h3>
+                        <div class="header-actions">
+                            <button class="btn-add-asset" onclick="openAddAssetModal()">
+                                <i class="fas fa-plus"></i> 新增资产
+                            </button>
+                            <select id="categoryFilter" class="filter-select">
+                                <option value="">全部分类</option>
+                                <!-- 选项将通过JavaScript动态加载 -->
+                            </select>
+                            <select id="statusFilter" class="filter-select">
+                                <option value="">全部状态</option>
+                                <option value="online">在线</option>
+                                <option value="offline">离线</option>
+                                <option value="maintenance">维护中</option>
+                            </select>
+                            <div class="search-box">
+                                <input type="text" id="deviceSearchInput" placeholder="搜索设备名称或IP地址..." class="search-input">
+                                <button onclick="searchDevices()" class="search-btn">
+                                    <i class="fas fa-search"></i> 搜索
+                                </button>
+                                <button onclick="resetFilters()" class="reset-btn">
+                                    <i class="fas fa-redo"></i> 重置
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="device-table-container">
+                        <table class="device-list-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>资产编号</th>
+                                    <th>资产名称</th>
+                                    <th>设备名称</th>
+                                    <th>分类</th>
+                                    <th>制造商</th>
+                                    <th>型号</th>
+                                    <th>位置</th>
+                                    <th>IP地址</th>
+                                    <th>资产状态</th>
+                                    <th>责任人</th>
+                                    <th>操作</th>
+                                </tr>
+                            </thead>
+                            <tbody id="deviceListTableBody">
+                                <!-- 设备数据将在这里动态加载 -->
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="pagination">
+                        <button class="pagination-btn" onclick="previousPage()">
+                            <i class="fas fa-chevron-left"></i> 上一页
+                        </button>
+                        <span class="pagination-info">
+                            第 <span id="currentPage">1</span> 页 / 共 <span id="totalPages">1</span> 页 
+                            (共 <span id="totalRecords">0</span> 条记录)
+                        </span>
+                        <button class="pagination-btn" onclick="nextPage()">
+                            下一页 <i class="fas fa-chevron-right"></i>
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
+    <!-- 资产详情模态框 -->
+    <div id="assetDetailModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>资产详情</h3>
+                <span class="modal-close" onclick="closeDetailModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="detail-container" id="assetDetailContent">
+                    <!-- 详情内容将动态加载 -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 资产新增模态框 -->
+    <div id="assetAddModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>新增资产</h3>
+                <span class="modal-close" onclick="closeAddModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="assetAddForm" class="edit-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>资产编号 <span class="required">*</span></label>
+                            <input type="text" id="add_assetCode" name="assetCode" required>
+                        </div>
+                        <div class="form-group">
+                            <label>资产名称 <span class="required">*</span></label>
+                            <input type="text" id="add_assetName" name="assetName" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label>设备名称 <span class="optional-hint">(可选)</span></label>
+                            <input type="text" id="add_deviceName" name="deviceName" placeholder="设备名称可以不填写">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>分类 <span class="required">*</span></label>
+                            <select id="add_categoryId" name="categoryId" required>
+                                <option value="">请选择分类</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>制造商</label>
+                            <input type="text" id="add_manufacturer" name="manufacturer">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>型号</label>
+                            <input type="text" id="add_model" name="model">
+                        </div>
+                        <div class="form-group">
+                            <label>序列号</label>
+                            <input type="text" id="add_serialNumber" name="serialNumber">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>IP地址</label>
+                            <input type="text" id="add_ipAddress" name="ipAddress">
+                        </div>
+                        <div class="form-group">
+                            <label>MAC地址</label>
+                            <input type="text" id="add_macAddress" name="macAddress">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>位置</label>
+                            <input type="text" id="add_location" name="location">
+                        </div>
+                        <div class="form-group">
+                            <label>责任人</label>
+                            <input type="text" id="add_owner" name="owner">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>资产状态</label>
+                            <select id="add_assetStatus" name="assetStatus">
+                                <option value="online">在线</option>
+                                <option value="offline">离线</option>
+                                <option value="maintenance">维护中</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <!-- 空位，保持布局 -->
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>采购日期</label>
+                            <input type="date" id="add_purchaseDate" name="purchaseDate">
+                        </div>
+                        <div class="form-group">
+                            <label>保修到期日期</label>
+                            <input type="date" id="add_warrantyEndDate" name="warrantyEndDate">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label>备注</label>
+                            <textarea id="add_remark" name="remark" rows="3"></textarea>
+                        </div>
+                    </div>
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="closeAddModal()">取消</button>
+                        <button type="submit" class="btn-submit">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 资产编辑模态框 -->
+    <div id="assetEditModal" class="modal">
+        <div class="modal-content modal-large">
+            <div class="modal-header">
+                <h3>编辑资产</h3>
+                <span class="modal-close" onclick="closeEditModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="assetEditForm" class="edit-form">
+                    <div class="form-row" id="edit_assetCodeNameRow">
+                        <div class="form-group">
+                            <label>资产编号 <span class="required">*</span></label>
+                            <input type="text" id="edit_assetCode" name="assetCode" required>
+                        </div>
+                        <div class="form-group">
+                            <label>资产名称 <span class="required">*</span></label>
+                            <input type="text" id="edit_assetName" name="assetName" required>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label>设备名称</label>
+                            <input type="text" id="edit_deviceName" name="deviceName" placeholder="在资产管理页面可选，设备页面必填">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>分类</label>
+                            <select id="edit_categoryId" name="categoryId">
+                                <option value="">请选择分类</option>
+                            </select>
+                        </div>
+                        <div class="form-group" id="edit_manufacturerGroup">
+                            <label>制造商</label>
+                            <input type="text" id="edit_manufacturer" name="manufacturer">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row" id="edit_modelSerialRow">
+                        <div class="form-group">
+                            <label>型号</label>
+                            <input type="text" id="edit_model" name="model">
+                        </div>
+                        <div class="form-group">
+                            <label>序列号</label>
+                            <input type="text" id="edit_serialNumber" name="serialNumber">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>IP地址</label>
+                            <input type="text" id="edit_ipAddress" name="ipAddress">
+                        </div>
+                        <div class="form-group">
+                            <label>MAC地址</label>
+                            <input type="text" id="edit_macAddress" name="macAddress">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>位置</label>
+                            <input type="text" id="edit_location" name="location">
+                        </div>
+                        <div class="form-group">
+                            <label>责任人</label>
+                            <input type="text" id="edit_owner" name="owner">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>资产状态</label>
+                            <select id="edit_assetStatus" name="assetStatus">
+                                <option value="online">在线</option>
+                                <option value="offline">离线</option>
+                                <option value="maintenance">维护中</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <!-- 空位，保持布局 -->
+                        </div>
+                    </div>
+                    
+                    <div class="form-row" id="edit_purchaseDateRow">
+                        <div class="form-group">
+                            <label>采购日期</label>
+                            <input type="date" id="edit_purchaseDate" name="purchaseDate">
+                        </div>
+                        <div class="form-group">
+                            <label>保修到期日期</label>
+                            <input type="date" id="edit_warrantyEndDate" name="warrantyEndDate">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group full-width">
+                            <label>备注</label>
+                            <textarea id="edit_remark" name="remark" rows="3"></textarea>
+                        </div>
+                    </div>
+                    
+                    <input type="hidden" id="edit_assetId" name="id">
+                    
+                    <div class="form-actions">
+                        <button type="button" class="btn-cancel" onclick="closeEditModal()">取消</button>
+                        <button type="submit" class="btn-submit">保存</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入用户下拉菜单加载器 -->
+    <script src="js/user-dropdown-loader.js"></script>
     <script src="资产管理.js"></script>
 </body>
 </html>

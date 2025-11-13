@@ -2,7 +2,7 @@
 let captchaKey = '';
 // 从后端获取验证码
 function generateCaptcha() {
-    fetch('http://localhost:8080/api/user/captcha')
+    fetch('/api/user/captcha')
         .then(response => response.json())
         .then(data => {
             if (data.code === 200) {
@@ -63,7 +63,7 @@ function performLogin() {
     loginBtn.disabled = true;
 
     // 调用后端登录API
-    fetch('http://localhost:8080/api/user/login', {
+    fetch('/api/user/login', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
@@ -87,9 +87,16 @@ function performLogin() {
                 localStorage.setItem('isLoggedIn', 'true');
                 localStorage.setItem('username', loginData.userInfo.username);
                 localStorage.setItem('loginTime', new Date().toISOString());
+                
+                // 保存用户头像
+                if (loginData.userInfo.avatar) {
+                    localStorage.setItem('userAvatar', loginData.userInfo.avatar);
+                } else {
+                    localStorage.removeItem('userAvatar');
+                }
 
                 alert('登录成功！即将跳转到系统主页...');
-                window.location.href = 'http://localhost:8080/api/总览.html';
+                window.location.href = '总览.html';  // 静态资源使用相对路径
             } else {
                 // 登录失败
                 alert(data.message || '登录失败，请重试！');

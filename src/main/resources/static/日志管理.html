@@ -1,11 +1,56 @@
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
+<style>
+/* 立即隐藏CMDB菜单项 - 防止闪烁 */
+.nav-cmdb { display: none !important; }
+.sidebar-item[data-page="CMDB"] { display: none !important; }
+
+/* ✨ 过滤器指示器动画 */
+@keyframes slideInRight {
+    from {
+        transform: translateX(100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+</style>
+<script>
+// 立即执行：尽早隐藏CMDB，防止闪烁
+(function() {
+    function hideCMDB() {
+        var items = document.querySelectorAll('.sidebar-item');
+        items.forEach(function(item) {
+            var span = item.querySelector('span');
+            if (span && span.textContent.trim() === 'CMDB') {
+                item.style.display = 'none';
+                item.setAttribute('data-hidden', 'true');
+            }
+        });
+    }
+    
+    // 立即执行
+    hideCMDB();
+    
+    // DOM Ready时再执行一次
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideCMDB);
+    }
+    
+    // 额外保险：延迟执行确保覆盖所有情况
+    setTimeout(hideCMDB, 10);
+    setTimeout(hideCMDB, 100);
+})();
+</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>运维平台 - 人工智能运维平台</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <title>日志管理 - 人工智能运维平台</title>
+    <link rel="stylesheet" href="libs/fontawesome/6.0.0/css/all.min.css">
     <link rel="stylesheet" href="日志管理.css">
+    <link rel="stylesheet" href="common-override.css">
 </head>
 <body>
     <div class="app-container">
@@ -100,21 +145,46 @@
         <div class="main-content">
             <!-- 顶部导航栏 -->
             <header class="top-header">
+<style>
+/* 立即隐藏CMDB菜单项 - 防止闪烁 */
+.nav-cmdb { display: none !important; }
+.sidebar-item[data-page="CMDB"] { display: none !important; }
+</style>
+<script>
+// 立即执行：尽早隐藏CMDB，防止闪烁
+(function() {
+    function hideCMDB() {
+        var items = document.querySelectorAll('.sidebar-item');
+        items.forEach(function(item) {
+            var span = item.querySelector('span');
+            if (span && span.textContent.trim() === 'CMDB') {
+                item.style.display = 'none';
+                item.setAttribute('data-hidden', 'true');
+            }
+        });
+    }
+    
+    // 立即执行
+    hideCMDB();
+    
+    // DOM Ready时再执行一次
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideCMDB);
+    }
+    
+    // 额外保险：延迟执行确保覆盖所有情况
+    setTimeout(hideCMDB, 10);
+    setTimeout(hideCMDB, 100);
+})();
+</script>
                 <div class="header-left">
                     <div class="breadcrumb">
                         <span class="breadcrumb-item">日志管理</span>
                     </div>
                 </div>
                 <div class="header-right">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" placeholder="搜索日志..." id="searchInput">
-                    </div>
-                    <div class="user-menu">
-                        <div class="user-avatar">
-                            <img src="1.png" alt="用户头像">
-                        </div>
-                    </div>
+                    <!-- 用户下拉菜单容器 -->
+                    <div id="user-dropdown-container"></div>
                 </div>
             </header>
 
@@ -152,12 +222,6 @@
                                     <span class="node-text">日志过滤</span>
                                 </div>
                             </div>
-                            <div class="tree-node">
-                                <div class="node-item">
-                                    <i class="fas fa-bell node-icon"></i>
-                                    <span class="node-text">告警日志</span>
-                                </div>
-                            </div>
                         </div>
                     </div>
 
@@ -185,9 +249,9 @@
                                     <i class="fas fa-download"></i>
                                     导出
                                 </button>
-                                <button class="btn btn-outline">
-                                    <i class="fas fa-sync"></i>
-                                    刷新
+                                <button class="btn btn-outline" onclick="resetFilters()">
+                                    <i class="fas fa-redo"></i>
+                                    重置
                                 </button>
                             </div>
                         </div>
@@ -200,8 +264,8 @@
                                         <th>事件时间</th>
                                         <th>数据来源</th>
                                         <th>设备类型</th>
-                                        <th>Facility</th>
-                                        <th>Severity</th>
+                                        <th>设施类型</th>
+                                        <th>严重程度</th>
                                         <th>事件类型</th>
                                         <th>日志内容</th>
                                         <th>操作</th>
@@ -226,6 +290,27 @@
         </div>
     </div>
 
+    <!-- 引入Chart.js -->
+    <script src="libs/chartjs/chart.min.js"></script>
+    <script>
+        // 检查Chart.js是否加载成功，如果失败则尝试备用CDN
+        if (typeof Chart === 'undefined') {
+            console.warn('主CDN加载失败，尝试备用CDN...');
+            const script = document.createElement('script');
+            script.src = 'libs/chartjs/chart.min.js';
+            script.onerror = function() {
+                console.error('Chart.js加载失败，图表功能将不可用');
+            };
+            document.head.appendChild(script);
+        }
+    </script>
+    
+    <!-- 引入用户下拉菜单加载器 -->
+    <script src="js/user-dropdown-loader.js"></script>
     <script src="日志管理.js"></script>
+    <script src="config-functions.js"></script>
+    <script src="statistics-functions.js"></script>
+    <script src="filtering-functions.js"></script>
+    <script src="auto-filter.js"></script>
 </body>
 </html>

@@ -32,20 +32,29 @@ class RoomManager {
 
     // 初始化事件监听器
     initEventListeners() {
-        // 搜索功能
-        document.getElementById('searchInput').addEventListener('input', (e) => {
-            this.searchDevices(e.target.value);
-        });
+        // 搜索功能（如果存在搜索框的话）
+        const searchInput = document.getElementById('searchInput');
+        if (searchInput) {
+            searchInput.addEventListener('input', (e) => {
+                this.searchDevices(e.target.value);
+            });
+        }
 
         // 全屏按钮
-        document.getElementById('fullscreenBtn').addEventListener('click', () => {
-            this.toggleFullscreen();
-        });
+        const fullscreenBtn = document.getElementById('fullscreenBtn');
+        if (fullscreenBtn) {
+            fullscreenBtn.addEventListener('click', () => {
+                this.toggleFullscreen();
+            });
+        }
 
         // 重置视图按钮
-        document.getElementById('resetViewBtn').addEventListener('click', () => {
-            this.resetView();
-        });
+        const resetViewBtn = document.getElementById('resetViewBtn');
+        if (resetViewBtn) {
+            resetViewBtn.addEventListener('click', () => {
+                this.resetView();
+            });
+        }
 
         // 机柜点击事件
         document.querySelectorAll('.room-rack').forEach(rack => {

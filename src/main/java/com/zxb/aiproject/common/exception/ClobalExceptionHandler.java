@@ -7,11 +7,13 @@ import org.springframework.core.Constants;
 import org.springframework.validation.BindException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
 
 import javax.validation.ConstraintViolationException;
 
 
 @Slf4j
+@RestControllerAdvice
 public class ClobalExceptionHandler {
 
     //处理自定义的异常
@@ -45,7 +47,7 @@ public class ClobalExceptionHandler {
     //处理其他自定义异常
     @ExceptionHandler(Exception.class)
     public Result handleException(Exception e){
-        log.error("其他异常:{}",e.getMessage());
-        return Result.error("系统异常，请联系管理员");
+        log.error("系统异常", e);  // 打印完整的异常堆栈
+        return Result.error("系统异常: " + e.getMessage());
     }
 }
