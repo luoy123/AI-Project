@@ -74,6 +74,10 @@
                 <i class="fas fa-tools"></i>
                 <span>运维工具</span>
             </div>
+            <div class="sidebar-item">
+                <i class="fas fa-desktop"></i>
+                <span>数字大屏</span>
+            </div>
             <div class="sidebar-divider"></div>
             <div class="sidebar-group-title">拓展中心</div>
             <div class="sidebar-item nav-business">
@@ -170,13 +174,6 @@
                     </div>
                 </div>
                 <div class="header-right">
-                    <div class="search-box">
-                        <i class="fas fa-search"></i>
-                        <input type="text" placeholder="搜索配置项..." id="searchInput">
-                        <div class="search-results" id="searchResults">
-                            <!-- 搜索结果将在这里显示 -->
-                        </div>
-                    </div>
                     <!-- 用户头像 -->
                     <div id="simple-avatar-container"></div>
                 </div>
@@ -189,13 +186,10 @@
                     <!-- 工具栏 -->
                     <div class="toolbar">
                         <div class="toolbar-left">
-                            <div class="nav-tabs">
-                                <button class="nav-tab active" data-tab="docking">对接配置</button>
-                            </div>
                         </div>
                         <div class="toolbar-right">
                             <div class="search-container">
-                                <input type="text" class="search-input" placeholder="输入关键字搜索对接配置信息" id="dockingSearchInput">
+                                <input type="text" class="search-input" placeholder="输入关键字搜索对接配置信息" id="dockingSearchInput" autocomplete="off">
                                 <button class="search-btn">
                                     <i class="fas fa-search"></i>
                                 </button>
@@ -218,14 +212,14 @@
                                 <table class="data-table">
                                     <thead>
                                         <tr>
-                                            <th>对接</th>
-                                            <th>对接</th>
-                                            <th>对接配置</th>
-                                            <th>对接配置</th>
-                                            <th>对接工具</th>
-                                            <th>对接配置</th>
-                                            <th>配置</th>
-                                            <th>配置时间</th>
+                                            <th>名称</th>
+                                            <th>类型</th>
+                                            <th>地址</th>
+                                            <th>端口</th>
+                                            <th>工具</th>
+                                            <th>状态</th>
+                                            <th>描述</th>
+                                            <th>创建时间</th>
                                             <th>操作</th>
                                         </tr>
                                     </thead>

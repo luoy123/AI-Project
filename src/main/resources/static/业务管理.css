@@ -2018,3 +2018,85 @@ body {
         margin-left: 22px;
     }
 }
+
+/* 业务树动画样式 */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+        max-height: 0;
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 500px;
+    }
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+        max-height: 500px;
+    }
+    to {
+        opacity: 0;
+        transform: translateY(-10px);
+        max-height: 0;
+    }
+}
+
+/* 业务树展开/折叠动画 */
+.tree-toggle {
+    transition: transform 0.3s ease;
+    cursor: pointer;
+    padding: 4px;
+    border-radius: 4px;
+}
+
+.tree-toggle:hover {
+    background-color: rgba(0, 0, 0, 0.1);
+}
+
+.tree-toggle i {
+    transition: transform 0.3s ease;
+}
+
+.tree-children {
+    overflow: hidden;
+    transition: max-height 0.3s ease, opacity 0.3s ease;
+}
+
+/* 业务计数器样式优化 */
+.business-count {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    font-size: 11px;
+    font-weight: bold;
+    padding: 2px 6px;
+    border-radius: 10px;
+    min-width: 18px;
+    text-align: center;
+    margin-left: auto;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+}
+
+.business-count[data-count="0"] {
+    background: #94a3b8;
+    color: #64748b;
+}
+
+/* 业务树项目悬停效果 */
+.tree-item {
+    transition: all 0.2s ease;
+}
+
+.tree-item:hover {
+    background-color: rgba(102, 126, 234, 0.1);
+    transform: translateX(2px);
+}
+
+.tree-item.active {
+    background-color: rgba(102, 126, 234, 0.2);
+    border-left: 3px solid #667eea;
+}

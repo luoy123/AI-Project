@@ -25,6 +25,14 @@ const AlertCenter = {
             AlertCenter.handleUrlParameters();
             AlertCenter.loadAlertData();
             AlertCenter.loadStatistics();
+            
+            // 初始化自动刷新（根据系统配置）
+            if (typeof initAutoRefresh === 'function') {
+                initAutoRefresh(function() {
+                    AlertCenter.loadAlertData();
+                    AlertCenter.loadStatistics();
+                });
+            }
         });
     },
 

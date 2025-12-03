@@ -1008,7 +1008,7 @@ body {
 .status-bar {
     position: fixed;
     bottom: 0;
-    left: 0;
+    left: 200px;  /* 从侧边栏右边开始 */
     right: 0;
     height: 32px;
     background: #f8fafc;

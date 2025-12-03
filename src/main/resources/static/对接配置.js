@@ -128,16 +128,36 @@ function initializeDockingData() {
 // 加载对接配置
 function loadDockingConfigs() {
     console.log('加载对接配置列表');
-    // 这里可以添加从服务器加载对接配置的逻辑
     
-    // 模拟数据加载
-    const mockData = [];
-    
-    if (mockData.length === 0) {
-        showEmptyState();
-    } else {
-        renderDockingTable(mockData);
-    }
+    fetch('/api/integration-config/list')
+        .then(response => response.json())
+        .then(result => {
+            console.log('加载对接配置数据:', result);
+            if (result.code === 200 && result.data && result.data.length > 0) {
+                // 转换数据格式
+                const configs = result.data.map(item => ({
+                    id: item.id,
+                    name: item.name,
+                    type: item.integrationType || item.integration_type || '-',
+                    url: item.dockingId || item.docking_id || '-',
+                    port: '-',
+                    tool: item.dockingType || item.docking_type || '-',
+                    status: item.status === 1 ? '正常' : '停用',
+                    statusValue: item.status,
+                    description: item.description || '-',
+                    createTime: item.createdTime || item.created_time || '-',
+                    username: item.username || '',
+                    password: item.password || ''
+                }));
+                renderDockingTable(configs);
+            } else {
+                showEmptyState();
+            }
+        })
+        .catch(error => {
+            console.error('加载对接配置失败:', error);
+            showEmptyState();
+        });
 }
 
 // 显示空状态
@@ -175,6 +195,7 @@ function renderDockingTable(data) {
 // 创建表格行
 function createTableRow(config) {
     const row = document.createElement('tr');
+    row.setAttribute('data-id', config.id);
     row.innerHTML = `
         <td>${config.name}</td>
         <td>${config.type}</td>
@@ -186,13 +207,13 @@ function createTableRow(config) {
         <td>${config.createTime}</td>
         <td>
             <div class="action-buttons">
-                <button class="btn-edit" title="编辑">
+                <button class="btn-edit" title="编辑" onclick="editConfig(${config.id})">
                     <i class="fas fa-edit"></i>
                 </button>
                 <button class="btn-test-connection" title="测试连接">
                     <i class="fas fa-plug"></i>
                 </button>
-                <button class="btn-delete" title="删除">
+                <button class="btn-delete" title="删除" onclick="deleteConfig(${config.id}, '${config.name}')">
                     <i class="fas fa-trash"></i>
                 </button>
             </div>
@@ -201,10 +222,93 @@ function createTableRow(config) {
     return row;
 }
 
+// 编辑配置
+function editConfig(id) {
+    console.log('编辑配置:', id);
+    // 获取配置详情
+    fetch(`/api/integration-config/get/${id}`)
+        .then(response => response.json())
+        .then(result => {
+            if (result.code === 200 && result.data) {
+                const config = result.data;
+                // 填充表单
+                document.getElementById('dockingName').value = config.name || '';
+                document.getElementById('dockingType').value = config.dockingType || '';
+                document.getElementById('dockingUrl').value = config.dockingId || '';
+                document.getElementById('dockingPort').value = config.port || '';
+                document.getElementById('username').value = config.username || '';
+                document.getElementById('password').value = config.password || '';
+                document.getElementById('description').value = config.description || '';
+                
+                // 设置编辑模式
+                window.editingConfigId = id;
+                
+                // 修改模态框标题
+                const modalTitle = document.querySelector('#addDockingModal h3');
+                if (modalTitle) {
+                    modalTitle.textContent = '编辑对接配置';
+                }
+                
+                showModal();
+            } else {
+                alert('获取配置详情失败');
+            }
+        })
+        .catch(error => {
+            console.error('获取配置详情失败:', error);
+            alert('获取配置详情失败: ' + error.message);
+        });
+}
+
+// 删除配置
+function deleteConfig(id, name) {
+    if (!confirm(`确定要删除配置 "${name}" 吗？`)) {
+        return;
+    }
+    
+    fetch(`/api/integration-config/delete/${id}`, {
+        method: 'DELETE'
+    })
+    .then(response => response.json())
+    .then(result => {
+        if (result.code === 200) {
+            alert('删除成功');
+            loadDockingConfigs(); // 重新加载列表
+        } else {
+            alert('删除失败: ' + (result.message || '未知错误'));
+        }
+    })
+    .catch(error => {
+        console.error('删除配置失败:', error);
+        alert('删除失败: ' + error.message);
+    });
+}
+
 // 筛选对接配置
 function filterDockingConfigs(searchTerm) {
     console.log('筛选对接配置:', searchTerm);
-    // 这里可以添加筛选对接配置的逻辑
+    
+    // 获取表格中的所有行
+    const table = document.querySelector('.data-table tbody');
+    if (!table) return;
+    
+    const rows = table.querySelectorAll('tr');
+    
+    rows.forEach(row => {
+        // 获取行中所有单元格的文本内容
+        const cells = row.querySelectorAll('td');
+        let rowText = '';
+        cells.forEach(cell => {
+            rowText += cell.textContent.toLowerCase() + ' ';
+        });
+        
+        // 如果搜索词为空或者行内容包含搜索词，显示该行
+        if (!searchTerm || rowText.includes(searchTerm)) {
+            row.style.display = '';
+        } else {
+            row.style.display = 'none';
+        }
+    });
 }
 
 // 刷新对接配置数据
@@ -227,11 +331,20 @@ function refreshDockingData() {
 function openAddDockingModal() {
     console.log('打开新增对接配置模态框');
     
+    // 清除编辑状态
+    window.editingConfigId = null;
+    
     // 清空表单
     const form = document.getElementById('dockingForm');
     if (form) {
         form.reset();
         clearAllFieldErrors();
+    }
+    
+    // 重置模态框标题
+    const modalTitle = document.querySelector('#addDockingModal h3');
+    if (modalTitle) {
+        modalTitle.textContent = '新增对接配置';
     }
     
     // 显示模态框
@@ -285,14 +398,47 @@ function saveDockingConfig() {
     
     console.log('对接配置数据:', configData);
     
-    // 这里可以添加保存对接配置的逻辑
+    // 构建后端需要的数据格式
+    const apiData = {
+        name: configData.dockingName,
+        integrationType: configData.dockingType,
+        dockingType: configData.dockingType,
+        dockingId: configData.dockingUrl,
+        username: configData.username || '',
+        password: configData.password || '',
+        description: configData.description || '',
+        status: 1
+    };
     
-    // 模拟保存成功
-    setTimeout(() => {
-        alert('对接配置保存成功');
-        closeModal();
-        refreshDockingData();
-    }, 500);
+    // 判断是新增还是编辑
+    const isEdit = window.editingConfigId != null;
+    const url = isEdit ? `/api/integration-config/update/${window.editingConfigId}` : '/api/integration-config/add';
+    const method = isEdit ? 'PUT' : 'POST';
+    
+    // 调用后端API保存
+    fetch(url, {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(apiData)
+    })
+    .then(response => response.json())
+    .then(result => {
+        console.log('保存结果:', result);
+        if (result.code === 200) {
+            alert(isEdit ? '对接配置更新成功' : '对接配置保存成功');
+            window.editingConfigId = null; // 清除编辑状态
+            closeModal();
+            loadDockingConfigs(); // 重新加载列表
+        } else {
+            alert('保存失败: ' + (result.message || '未知错误'));
+        }
+    })
+    .catch(error => {
+        console.error('保存对接配置失败:', error);
+        alert('保存失败: ' + error.message);
+    });
 }
 
 // 测试连接

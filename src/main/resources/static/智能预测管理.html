@@ -34,8 +34,18 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>智能预测管理 - 人工智能运维平台</title>
     <link rel="stylesheet" href="libs/fontawesome/6.0.0/css/all.min.css">
+    <!-- jQuery库 -->
+    <script src="https://cdn.jsdelivr.net/npm/jquery@3.6.0/dist/jquery.min.js"></script>
     <script src="chart.js"></script>
+
+    <!-- 预测数据展示相关脚本 -->
+    <script src="js/prediction-time-filter.js"></script>
+    <!-- <script src="js/prediction-report-data.js"></script> --> <!-- 已废弃，使用新版 -->
+    <!-- prediction-risk.js moved to bottom with other page scripts -->
+    <script src="js/prediction-analysis-data.js"></script>
+
     <link rel="stylesheet" href="智能预测管理.css">
+    <link rel="stylesheet" href="智能预测管理-model-service.css">
     <style>
         /* 子页面样式 */
         .sub-page {
@@ -444,6 +454,171 @@
         .view-details:hover, .view-more:hover {
             color: #764ba2;
             transform: translateX(4px);
+        }
+
+        /* 训练详情模态框样式 */
+        .training-details-card {
+            background: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            overflow: hidden;
+            border: 1px solid #f0f0f0;
+        }
+
+        .details-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 16px 20px;
+            border-bottom: none;
+        }
+
+        .details-header h4 {
+            margin: 0;
+            font-size: 16px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .details-content {
+            padding: 20px;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+        }
+
+        .info-item {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .info-item label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .info-item span {
+            font-size: 14px;
+            color: #333;
+            font-weight: 600;
+            padding: 8px 12px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 3px solid #667eea;
+        }
+
+        .training-history-timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 16px 0;
+            border-left: 2px solid #e9ecef;
+            padding-left: 24px;
+            margin-bottom: 16px;
+        }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 20px;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #667eea;
+            border: 2px solid #fff;
+            box-shadow: 0 0 0 2px #667eea;
+        }
+
+        .timeline-item.success::before {
+            background: #28a745;
+            box-shadow: 0 0 0 2px #28a745;
+        }
+
+        .timeline-item.failed::before {
+            background: #dc3545;
+            box-shadow: 0 0 0 2px #dc3545;
+        }
+
+        .timeline-content {
+            background: #fff;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            padding: 16px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .timeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .timeline-status {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .timeline-status.success {
+            color: #28a745;
+        }
+
+        .timeline-status.failed {
+            color: #dc3545;
+        }
+
+        .timeline-status.running {
+            color: #ffc107;
+        }
+
+        .timeline-time {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .timeline-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 12px;
+            margin-top: 12px;
+        }
+
+        .timeline-detail-item {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .timeline-detail-item label {
+            font-size: 11px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .timeline-detail-item span {
+            font-size: 13px;
+            color: #333;
+            font-weight: 600;
         }
 
         .filter-row {
@@ -1064,6 +1239,26 @@
         .status-badge.active::before {
             content: '●';
             margin-right: 5px;
+        }
+
+        .status-badge.status-success {
+            background: #d4edda;
+            color: #28a745;
+        }
+
+        .status-badge.status-error {
+            background: #f8d7da;
+            color: #dc3545;
+        }
+
+        .status-badge.status-warning {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.status-info {
+            background: #d1ecf1;
+            color: #0c5460;
         }
 
         /* 操作按钮 */
@@ -1720,6 +1915,27 @@
             background: #66b1ff;
         }
 
+        .btn-model-reset {
+            padding: 6px 16px;
+            border: none;
+            background: #f59e0b;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            margin-left: 8px;
+            white-space: nowrap;
+        }
+
+        .btn-model-reset:hover {
+            background: #d97706;
+        }
+
+        .btn-model-reset i {
+            margin-right: 4px;
+        }
+
         .btn-new-model {
             padding: 8px 20px;
             border: none;
@@ -1834,6 +2050,452 @@
             align-items: center;
             gap: 8px;
         }
+
+        /* 训练目标列表样式 */
+        .training-targets-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+
+        .training-target-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #e4e7ed;
+        }
+
+        .training-target-row .form-col-model {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .training-target-row .form-col-model label {
+            display: block;
+            font-size: 12px;
+            color: #606266;
+            margin-bottom: 5px;
+        }
+
+        .training-target-row select,
+        .training-target-row input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .btn-remove-target {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #f56c6c;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .btn-remove-target:hover {
+            background: #f78989;
+        }
+
+        .btn-add-target {
+            width: 100%;
+            padding: 10px;
+            border: 1px dashed #409eff;
+            background: white;
+            color: #409eff;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-add-target:hover {
+            background: #ecf5ff;
+            border-color: #66b1ff;
+        }
+
+        .btn-add-target i {
+            font-size: 16px;
+        }
+
+        /* 设备选择列表样式 */
+        .device-selection-section {
+            margin-top: 10px;
+        }
+
+        .device-selection-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-bottom: 10px;
+            margin-top: 10px;
+        }
+
+        .device-selection-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border: 1px solid #e4e7ed;
+        }
+
+        .device-selection-row .form-col-model {
+            flex: 1;
+            min-width: 0;
+        }
+
+        .device-selection-row select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #dcdfe6;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+
+        .btn-remove-device {
+            flex-shrink: 0;
+            width: 32px;
+            height: 32px;
+            border: none;
+            background: #f56c6c;
+            color: white;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+        }
+
+        .btn-remove-device:hover {
+            background: #f78989;
+        }
+
+        .btn-add-device {
+            width: 100%;
+            padding: 10px;
+            border: 1px dashed #67c23a;
+            background: white;
+            color: #67c23a;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+        }
+
+        .btn-add-device:hover {
+            background: #f0f9ff;
+            border-color: #85ce61;
+        }
+
+        .btn-add-device i {
+            font-size: 16px;
+        }
+
+        /* 全局时间过滤增强样式 */
+        .enhanced-filter {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .enhanced-select {
+            min-width: 120px;
+            padding: 6px 12px;
+            border: 1px solid #d1d5db;
+            border-radius: 6px;
+            background: white;
+            font-size: 14px;
+            transition: all 0.2s ease;
+        }
+
+        .enhanced-select:hover {
+            border-color: #6366f1;
+        }
+
+        .enhanced-select:focus {
+            outline: none;
+            border-color: #6366f1;
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+        }
+
+        .filter-info {
+            font-size: 12px;
+            color: #6b7280;
+            font-style: italic;
+        }
+
+        .time-badge {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 11px;
+            font-weight: 500;
+            margin-left: auto;
+        }
+
+        .card-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        /* 分类故障率样式 */
+        .category-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 12px;
+            margin: 8px 0;
+            background: #f9fafb;
+            border-radius: 8px;
+            border-left: 4px solid #e5e7eb;
+        }
+
+        .category-name {
+            font-weight: 500;
+            color: #374151;
+        }
+
+        .fault-rate {
+            font-weight: 600;
+            padding: 4px 8px;
+            border-radius: 4px;
+        }
+
+        .fault-rate.low-risk {
+            background: #dcfce7;
+            color: #166534;
+        }
+
+        .fault-rate.medium-risk {
+            background: #fef3c7;
+            color: #92400e;
+        }
+
+        .fault-rate.high-risk {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .device-count {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        .no-data {
+            text-align: center;
+            color: #9ca3af;
+            padding: 20px;
+            font-style: italic;
+        }
+
+        /* Toast消息样式 */
+        .toast {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 10000;
+            animation: slideInRight 0.3s ease;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        /* 加载状态样式 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+        }
+
+        .loading-content {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .spinner {
+            border: 3px solid #f3f4f6;
+            border-top: 3px solid #6366f1;
+            border-radius: 50%;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 10px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* ========================================
+           预测数据展示功能样式
+           ======================================== */
+
+        /* 风险项样式 */
+        .risk-item {
+            transition: all 0.3s ease;
+        }
+
+        .risk-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .risk-high {
+            background: #fff1f0;
+            border-left-color: #f5222d !important;
+        }
+
+        .risk-medium {
+            background: #fffbe6;
+            border-left-color: #faad14 !important;
+        }
+
+        .risk-low {
+            background: #f6ffed;
+            border-left-color: #52c41a !important;
+        }
+
+        /* 统计卡片样式 */
+        .stat-card {
+            transition: all 0.3s ease;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 20px rgba(0,0,0,0.2) !important;
+        }
+
+        /* 空状态样式 */
+        .empty-state {
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* 报告详情样式 */
+        .report-detail .detail-row {
+            display: flex;
+            padding: 12px 0;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .report-detail .detail-row label {
+            width: 120px;
+            font-weight: 500;
+            color: #666;
+        }
+
+        .report-detail .detail-row span {
+            flex: 1;
+            color: #333;
+        }
+
+        /* 时间筛选器样式 */
+        .time-filter-container {
+            background: #f5f5f5;
+            border-radius: 4px;
+            padding: 15px;
+            margin-bottom: 20px;
+        }
+
+        .time-filter-container .form-control {
+            height: 36px;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+        }
+
+        .time-filter-container .btn {
+            height: 36px;
+            padding: 0 20px;
+            border-radius: 4px;
+        }
+
+        /* 风险列表样式 */
+        .risk-list .risk-item {
+            border-radius: 8px;
+            border-left: 4px solid;
+        }
+
+        .risk-header h5 {
+            margin: 0;
+            font-size: 16px;
+        }
+
+        .risk-level-badge {
+            font-weight: 500;
+        }
+
+        /* 分析页面样式 */
+        .analysis-page {
+            padding: 20px;
+        }
+
+        .statistics-section h4,
+        .trend-section h4,
+        .risk-distribution-section h4,
+        .category-section h4 {
+            color: #333;
+            font-weight: 500;
+            margin-bottom: 20px;
+        }
     </style>
 </head>
 <body>
@@ -1867,9 +2529,13 @@
                 <i class="fas fa-chart-line"></i>
                 <span>统计报表</span>
             </div>
-            <div class="sidebar-item nav-tools">
+            <div class="sidebar-item">
                 <i class="fas fa-tools"></i>
                 <span>运维工具</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-desktop"></i>
+                <span>数字大屏</span>
             </div>
             <div class="sidebar-divider"></div>
             <div class="sidebar-group-title">拓展中心</div>
@@ -2000,14 +2666,15 @@
                                     <div class="overview-card">
                                         <div class="card-header">
                                             <h4>按设备分类统计</h4>
-                                            <div class="stats-filter">
-                                                <label>预测时间</label>
-                                                <select class="time-select" id="predictionTimeSelect" onchange="onPredictionTimeChange()">
-                                                    <option value="1" selected>1</option>
-                                                    <option value="7">7</option>
-                                                    <option value="30">30</option>
+                                            <div class="stats-filter enhanced-filter">
+                                                <label>数据时间范围</label>
+                                                <select class="time-select enhanced-select" id="predictionTimeSelect" onchange="onPredictionTimeChange()">
+                                                    <option value="1" selected>最近1天</option>
+                                                    <option value="7">最近7天</option>
+                                                    <option value="30">最近30天</option>
+                                                    <option value="90">最近3个月</option>
                                                 </select>
-                                                <span>天</span>
+                                                <span class="filter-info">影响所有预测相关数据</span>
                                             </div>
                                         </div>
                                         <div class="stats-section-title">智能分析能力统计</div>
@@ -2036,6 +2703,7 @@
                                     <div class="overview-card">
                                         <div class="card-header">
                                             <h4>各设备故障占比</h4>
+                                            <span class="time-badge">最近1天</span>
                                             <a href="#" class="view-details" onclick="switchStatsSubPage('stats-report'); return false;">查看预测报告 ></a>
                                         </div>
                                         <div class="device-fault-info">
@@ -2051,13 +2719,12 @@
                                     <div class="overview-card">
                                         <div class="card-header">
                                             <h4>预测告警</h4>
+                                            <span class="time-badge">最近1天</span>
                                             <a href="#" class="view-more" onclick="switchStatsSubPage('stats-risk'); return false;">更多 ></a>
                                         </div>
                                         <div class="alert-number" id="totalAlerts">0</div>
                                         <div class="mini-chart-container">
-                                            <div class="mini-chart-placeholder">
-                                                <i class="fas fa-chart-line"></i>
-                                            </div>
+                                            <div id="alertTrendChart" style="width: 100%; height: 120px;"></div>
                                         </div>
                                         <div class="alert-indicators">
                                             <span class="alert-badge critical">
@@ -2077,18 +2744,6 @@
                                     </div>
                                 </div>
 
-                                <!-- 设备分类故障率 -->
-                                <div class="device-status-section">
-                                    <div class="section-header">
-                                        <h4>设备分类故障率</h4>
-                                        <a href="#" class="view-more" onclick="switchStatsSubPage('stats-risk'); return false;">更多 ></a>
-                                    </div>
-                                    <div class="device-status-list" id="categoryFaultList">
-                                        <!-- 分类故障率列表将由JavaScript动态生成 -->
-                                        <div class="loading-placeholder">加载中...</div>
-                                    </div>
-                                </div>
-
                                 <!-- 底部两个设备类型的详细统计卡片 -->
                                 <div class="device-detail-cards">
                                     <!-- 服务器故障预测 -->
@@ -2097,35 +2752,35 @@
                                             <h5>服务器故障预测</h5>
                                         </div>
                                         <div class="detail-stats-row">
-                                            <div class="detail-stat-item status-normal">
+                                            <div class="detail-stat-item" id="serverStatusBadge">
                                                 <i class="fas fa-check-circle"></i>
                                                 <span class="status-label">正常</span>
                                             </div>
                                             <div class="detail-stat-item">
-                                                <div class="stat-value">1</div>
+                                                <div class="stat-value" id="serverTotalDevices">0</div>
                                                 <div class="stat-desc">总训练设备总数</div>
                                             </div>
                                             <div class="detail-stat-item">
-                                                <div class="stat-value">0</div>
-                                                <div class="stat-desc">选基次数</div>
+                                                <div class="stat-value" id="serverNormalCount">0</div>
+                                                <div class="stat-desc">运基次数</div>
                                             </div>
                                             <div class="detail-stat-item">
-                                                <div class="stat-value">0</div>
+                                                <div class="stat-value" id="serverWarningCount">0</div>
                                                 <div class="stat-desc">自动预测故障设备数</div>
                                             </div>
                                             <div class="detail-stat-item">
-                                                <div class="stat-value">0</div>
+                                                <div class="stat-value" id="serverFaultCount">0</div>
                                                 <div class="stat-desc">存在预测预故障设备数</div>
                                             </div>
                                         </div>
                                         <div class="detail-charts-row">
                                             <div class="detail-mini-chart">
                                                 <div class="chart-label">预测间隔最多的设备</div>
-                                                <div class="chart-number">1</div>
+                                                <div class="chart-number" id="serverTrainCount">0</div>
                                             </div>
                                             <div class="detail-mini-chart">
                                                 <div class="chart-label">预测间隔最多的指标</div>
-                                                <div class="chart-number">1</div>
+                                                <div class="chart-number" id="serverPredictionCount">0</div>
                                             </div>
                                         </div>
                                     </div>
@@ -2136,35 +2791,35 @@
                                             <h5>其他故障预测</h5>
                                         </div>
                                         <div class="detail-stats-row">
-                                            <div class="detail-stat-item status-normal">
+                                            <div class="detail-stat-item" id="otherStatusBadge">
                                                 <i class="fas fa-check-circle"></i>
                                                 <span class="status-label">正常</span>
                                             </div>
                                             <div class="detail-stat-item">
-                                                <div class="stat-value">1</div>
+                                                <div class="stat-value" id="otherTotalDevices">0</div>
                                                 <div class="stat-desc">总训练设备总数</div>
                                             </div>
                                             <div class="detail-stat-item">
-                                                <div class="stat-value">0</div>
-                                                <div class="stat-desc">选基次数</div>
+                                                <div class="stat-value" id="otherNormalCount">0</div>
+                                                <div class="stat-desc">运基次数</div>
                                             </div>
                                             <div class="detail-stat-item">
-                                                <div class="stat-value">0</div>
+                                                <div class="stat-value" id="otherWarningCount">0</div>
                                                 <div class="stat-desc">自动预测故障设备数</div>
                                             </div>
                                             <div class="detail-stat-item">
-                                                <div class="stat-value">0</div>
+                                                <div class="stat-value" id="otherFaultCount">0</div>
                                                 <div class="stat-desc">存在预测预故障设备数</div>
                                             </div>
                                         </div>
                                         <div class="detail-charts-row">
                                             <div class="detail-mini-chart">
                                                 <div class="chart-label">预测间隔最多的设备</div>
-                                                <div class="chart-number">1</div>
+                                                <div class="chart-number" id="otherTrainCount">0</div>
                                             </div>
                                             <div class="detail-mini-chart">
                                                 <div class="chart-label">预测间隔最多的指标</div>
-                                                <div class="chart-number">1</div>
+                                                <div class="chart-number" id="otherPredictionCount">0</div>
                                             </div>
                                         </div>
                                     </div>
@@ -2173,67 +2828,42 @@
 
                             <!-- 预测报告子页面 -->
                             <div class="stats-sub-page" id="page-stats-report">
-                                <div class="report-layout">
-                                    <!-- 左侧分类菜单 -->
-                                    <div class="report-sidebar">
-                                        <div class="sidebar-category">
-                                            <span class="category-text">当前分类</span>
+                                <!-- 左右布局容器 -->
+                                <div style="display: flex; gap: 20px; height: calc(100vh - 200px);">
+                                    <!-- 左侧分类栏 -->
+                                    <div class="prediction-category-sidebar" style="width: 220px; background: white; border-radius: 8px; padding: 15px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-y: auto;">
+                                        <div class="category-header" style="padding: 10px 0; border-bottom: 1px solid #eee; margin-bottom: 10px;">
+                                            <h4 style="margin: 0; font-size: 16px; color: #303133;">分类</h4>
                                         </div>
-                                        <div class="sidebar-category">
-                                            <span class="category-text">设备类别2</span>
-                                            <span class="category-count">(1)</span>
-                                        </div>
-                                        <div class="sidebar-category">
-                                            <span class="category-text">应用范式业务</span>
-                                        </div>
-                                        <div class="sidebar-category">
-                                            <span class="category-text">应用运维业务</span>
-                                        </div>
-                                        <div class="sidebar-category">
-                                            <span class="category-text">安全运维</span>
-                                        </div>
-                                        <div class="sidebar-category">
-                                            <span class="category-text">可用性监</span>
-                                            <span class="category-count">(1)</span>
-                                        </div>
-                                        <div class="sidebar-category">
-                                            <span class="category-text">物联网</span>
-                                        </div>
-                                        <div class="sidebar-category">
-                                            <span class="category-text">其他</span>
-                                            <span class="category-count">(1)</span>
+                                        <div id="predictionCategoryTree" class="category-tree">
+                                            <div style="text-align: center; padding: 20px; color: #909399; font-size: 14px;">加载中...</div>
                                         </div>
                                     </div>
 
-                                    <!-- 右侧主内容区 -->
-                                    <div class="report-main">
+                                    <!-- 右侧图表展示区 -->
+                                    <div class="prediction-chart-area" style="flex: 1; background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); overflow-y: auto;">
                                         <!-- 顶部工具栏 -->
-                                        <div class="report-toolbar">
-                                            <div class="toolbar-left">
-                                                <label>品牌</label>
-                                                <select class="toolbar-select">
-                                                    <option>全部</option>
+                                        <div class="chart-toolbar" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 15px; border-bottom: 1px solid #eee;">
+                                            <div class="chart-title" style="font-size: 18px; font-weight: 600; color: #303133;">
+                                                <span id="currentCategoryName">请选择分类</span>
+                                            </div>
+                                            <div class="chart-filters" style="display: flex; gap: 10px; align-items: center;">
+                                                <select id="reportPredictionTimeSelect" style="padding: 8px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px; cursor: pointer;">
+                                                    <option value="1">预测时间: 1天</option>
+                                                    <option value="3">预测时间: 3天</option>
+                                                    <option value="7">预测时间: 7天</option>
+                                                    <option value="30">预测时间: 30天</option>
                                                 </select>
                                             </div>
-                                            <div class="toolbar-right">
-                                                <span>预测时间：</span>
-                                                <input type="number" class="time-input" value="1" min="1" />
-                                                <span>天</span>
-                                                <button class="btn-close-toolbar">×</button>
-                                            </div>
                                         </div>
 
-                                        <!-- 状态切换 -->
-                                        <div class="status-toggle-bar">
-                                            <button class="status-btn active" data-status="normal">正常</button>
-                                            <button class="status-btn" data-status="abnormal">异常</button>
-                                        </div>
-
-                                        <!-- 图表区域 -->
-                                        <div class="report-chart-container">
-                                            <div class="chart-placeholder">
-                                                <i class="fas fa-chart-line"></i>
-                                                <p>按模型执分类年号使用分布</p>
+                                        <!-- 图表内容区域 -->
+                                        <div id="predictionChartContent" style="min-height: 400px;">
+                                            <div style="display: flex; align-items: center; justify-content: center; height: 400px; color: #909399;">
+                                                <div style="text-align: center;">
+                                                    <i class="fas fa-chart-line" style="font-size: 48px; opacity: 0.3; margin-bottom: 15px;"></i>
+                                                    <p style="font-size: 14px; margin: 0;">请从左侧选择分类查看预测报告</p>
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -2242,143 +2872,72 @@
 
                             <!-- 预测风险子页面 -->
                             <div class="stats-sub-page" id="page-stats-risk">
-                                <!-- 顶部工具栏 -->
-                                <div class="risk-toolbar">
-                                    <div class="toolbar-filters">
-                                        <div class="filter-item">
-                                            <label>预测时间：</label>
-                                            <select class="filter-select">
-                                                <option>1</option>
-                                                <option>7</option>
-                                                <option>30</option>
-                                            </select>
-                                            <span>天</span>
-                                        </div>
-                                        <div class="filter-item">
-                                            <select class="filter-select">
-                                                <option>全部风险时区</option>
-                                                <option>高风险</option>
-                                                <option>中风险</option>
-                                                <option>低风险</option>
+                                <!-- 筛选条件区 -->
+                                <div style="background: white; padding: 20px; border-radius: 8px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
+                                    <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <label style="font-size: 14px; color: #606266;">预测时间:</label>
+                                            <select id="riskTimeFilter" style="padding: 6px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                                                <option value="1">1 天</option>
+                                                <option value="3">3 天</option>
+                                                <option value="7">7 天</option>
+                                                <option value="15">15 天</option>
+                                                <option value="30">30 天</option>
                                             </select>
                                         </div>
-                                        <div class="filter-item">
-                                            <select class="filter-select">
-                                                <option>全部监控类别</option>
-                                                <option>设备监控</option>
-                                                <option>应用监控</option>
-                                                <option>网络监控</option>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <label style="font-size: 14px; color: #606266;">风险等级:</label>
+                                            <select id="riskLevelFilter" style="padding: 6px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                                                <option value="">全部等级</option>
+                                                <option value="critical">严重风险</option>
+                                                <option value="high">高风险</option>
+                                                <option value="medium">中风险</option>
+                                                <option value="low">低风险</option>
                                             </select>
                                         </div>
-                                        <div class="filter-item">
-                                            <input type="text" class="search-input" placeholder="输入关键字" />
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <label style="font-size: 14px; color: #606266;">风险状态:</label>
+                                            <select id="riskStatusFilter" style="padding: 6px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                                                <option value="">全部状态</option>
+                                                <option value="active">活跃</option>
+                                                <option value="resolved">已解决</option>
+                                                <option value="acknowledged">已确认</option>
+                                            </select>
                                         </div>
-                                        <button class="btn-search">
-                                            <i class="fas fa-search"></i> 搜索
-                                        </button>
-                                    </div>
-                                    <div class="toolbar-actions">
-                                        <button class="btn-history">预训风险历史</button>
+                                        <div style="display: flex; align-items: center; gap: 8px;">
+                                            <label style="font-size: 14px; color: #606266;">故障类型:</label>
+                                            <select id="riskTargetFilter" style="padding: 6px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                                                <option value="">全部故障类型</option>
+                                            </select>
+                                        </div>
+                                        <div style="display: flex; gap: 8px; align-items: center;">
+                                            <input type="text" id="riskKeyword" placeholder="输入关键字..." style="flex: 1; padding: 6px 12px; border: 1px solid #dcdfe6; border-radius: 4px; font-size: 14px;">
+                                            <button id="riskSearchBtn" style="padding: 6px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px;">
+                                                <i class="fas fa-search"></i> 搜索
+                                            </button>
+                                        </div>
                                     </div>
                                 </div>
-
-                                <!-- 数据表格 -->
-                                <div class="risk-table-container">
-                                    <table class="risk-table">
-                                        <thead>
-                                            <tr>
-                                                <th>状态</th>
-                                                <th>延时快捷</th>
-                                                <th>最近风险时间</th>
-                                                <th>风险描述</th>
-                                                <th>生成时间</th>
-                                            </tr>
-                                        </thead>
-                                        <tbody>
-                                            <!-- 空状态 -->
-                                            <tr class="empty-row">
-                                                <td colspan="5">
-                                                    <div class="empty-state">
-                                                        <i class="fas fa-inbox"></i>
-                                                        <p>暂无数据</p>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        </tbody>
-                                    </table>
-                                </div>
+                                
+                                <!-- 风险统计区 -->
+                                <div id="riskStatisticsContainer" style="margin-bottom: 20px;"></div>
+                                
+                                <!-- 风险列表区 -->
+                                <div id="riskListContainer"></div>
                             </div>
                         </div>
 
                         <!-- 智能分析页面 -->
                         <div class="sub-page" id="page-analysis">
-                            <div class="analysis-layout">
-                                <!-- 主内容区 -->
-                                <div class="analysis-main">
-                                    <!-- 顶部折线图 -->
-                                    <div class="analysis-chart-container">
-                                        <div class="chart-placeholder">
-                                            <i class="fas fa-chart-line"></i>
-                                            <p>时间序列数据图表</p>
-                                        </div>
-                                    </div>
-
-                                    <!-- 时间范围选择器 -->
-                                    <div class="time-range-selector">
-                                        <label>选择时间范围:</label>
-                                        <input type="text" class="time-range-input" placeholder="2025-11-11 09:00" />
-                                        <input type="number" class="time-value-input" value="50" />
-                                        <span>分钟</span>
-                                        <button class="btn-query">查询</button>
-                                    </div>
-
-                                    <!-- 数据表格 -->
-                                    <div class="analysis-table-container">
-                                        <table class="analysis-table">
-                                            <thead>
-                                                <tr>
-                                                    <th>监测点名称/指标名称</th>
-                                                    <th>设备名称</th>
-                                                    <th>数据类型</th>
-                                                    <th>选取值</th>
-                                                    <th>平均值</th>
-                                                    <th>最小值</th>
-                                                    <th>最大值</th>
-                                                    <th>求和值</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                <tr class="empty-row">
-                                                    <td colspan="8">
-                                                        <div class="empty-state">
-                                                            <i class="fas fa-inbox"></i>
-                                                            <p>暂无数据</p>
-                                                        </div>
-                                                    </td>
-                                                </tr>
-                                            </tbody>
-                                        </table>
-                                    </div>
-                                </div>
-
-                                <!-- 右侧操作面板 -->
-                                <div class="analysis-sidebar">
-                                    <div class="sidebar-section">
-                                        <div class="section-title">选择时段</div>
-                                        <input type="text" class="sidebar-input" placeholder="搜索时段" />
-                                    </div>
-                                    <div class="sidebar-section">
-                                        <div class="section-item">
-                                            <i class="fas fa-chart-bar"></i>
-                                            <span>发现新阈</span>
-                                        </div>
-                                        <div class="section-item">
-                                            <i class="fas fa-chart-line"></i>
-                                            <span>进阈阈调</span>
-                                        </div>
-                                    </div>
-                                </div>
+                            <div class="page-header" style="margin-bottom: 20px;">
+                                <h2>智能分析</h2>
                             </div>
+
+                            <!-- 时间筛选器容器 -->
+                            <div id="analysisTimeFilter"></div>
+
+                            <!-- 分析内容容器 -->
+                            <div id="analysisContainer"></div>
                         </div>
 
                         <!-- 算法模型服务页面 -->
@@ -2386,20 +2945,25 @@
                             <!-- 顶部工具栏 -->
                             <div class="model-toolbar">
                                 <div class="toolbar-left-filters">
-                                    <input type="text" class="model-input" placeholder="算法服务名" />
-                                    <select class="model-select">
-                                        <option>运行状态方案</option>
-                                        <option>启用</option>
-                                        <option>停用</option>
+                                    <select class="model-select" name="status">
+                                        <option value="" disabled selected>选择状态</option>
+                                        <option value="1">启用</option>
+                                        <option value="0">停用</option>
                                     </select>
-                                    <select class="model-select">
-                                        <option>运行对象及监控</option>
-                                        <option>所有设备</option>
-                                        <option>服务器</option>
+                                    <select class="model-select" name="algorithmTypeFilter">
+                                        <option value="" disabled selected>选择计算方法</option>
+                                        <option value="KNN">KNN多变量时间序列预测</option>
+                                        <option value="Prophet">Prophet时间序列预测</option>
+                                        <option value="LSTM">LSTM深度学习预测</option>
+                                        <option value="ARIMA">ARIMA统计预测</option>
+                                        <option value="XGBoost">XGBoost机器学习预测</option>
                                     </select>
-                                    <input type="text" class="model-search" placeholder="请输入关键字" />
                                     <button class="btn-model-search">
                                         <i class="fas fa-search"></i>
+                                    </button>
+                                    <button class="btn-model-reset">
+                                        <i class="fas fa-redo"></i>
+                                        重置
                                     </button>
                                 </div>
                                 <div class="toolbar-right-actions">
@@ -2416,10 +2980,9 @@
                                     <thead>
                                         <tr>
                                             <th>状态</th>
-                                            <th>算法模型服务名</th>
-                                            <th>预测方案</th>
+                                            <th>算法模型服务名称</th>
                                             <th>训练对象</th>
-                                            <th>全部状态</th>
+                                            <th>模型数量</th>
                                             <th>更新时间</th>
                                             <th>计算方法</th>
                                             <th>操作</th>
@@ -2431,11 +2994,6 @@
                                             <td>PropSet123对型</td>
                                             <td>对控读取数据</td>
                                             <td>所有加防</td>
-                                            <td>
-                                                <select class="status-select">
-                                                    <option>全部状态</option>
-                                                </select>
-                                            </td>
                                             <td>2025-01-02 05:00:00</td>
                                             <td>Prophet</td>
                                             <td>
@@ -2450,13 +3008,8 @@
                                             <td>123</td>
                                             <td>对控读取数据</td>
                                             <td>CpuOS利用率</td>
-                                            <td>
-                                                <select class="status-select">
-                                                    <option>0</option>
-                                                </select>
-                                            </td>
                                             <td>2025-11-05 23:07:52</td>
-                                            <td>KNN-复数模拟交换序列</td>
+                                            <td>KNN多变量时间序列预测</td>
                                             <td>
                                                 <div class="model-actions">
                                                     <button class="btn-link">停用</button>
@@ -2471,21 +3024,15 @@
                                 <!-- 分页器 -->
                                 <div class="model-pagination">
                                     <div class="pagination-info">
-                                        共计个条信，20条/页，第1页，总共1页
+                                        共计2条信息，20条/页，第1页，总共1页
                                     </div>
                                     <div class="pagination-controls">
-                                        <button class="page-btn">
-                                            <i class="fas fa-angle-double-left"></i>
-                                        </button>
                                         <button class="page-btn">
                                             <i class="fas fa-angle-left"></i>
                                         </button>
                                         <input type="text" class="page-input" value="1" />
                                         <button class="page-btn">
                                             <i class="fas fa-angle-right"></i>
-                                        </button>
-                                        <button class="page-btn">
-                                            <i class="fas fa-angle-double-right"></i>
                                         </button>
                                     </div>
                                 </div>
@@ -2537,48 +3084,26 @@
                     <div class="step-content-model">
                         <div class="data-source-section">
                             <div class="form-group-model">
-                                <label>监控对象:</label>
-                                <div class="form-row-model">
-                                    <div class="form-col-model">
-                                        <label class="sub-label">选择设备</label>
-                                        <select id="deviceSelection" name="deviceSelection">
-                                            <option value="">设备类型</option>
-                                            <option value="server">服务器</option>
-                                            <option value="network">网络设备</option>
-                                            <option value="storage">存储设备</option>
-                                        </select>
+                                <label><span style="color: red;">*</span> 配置训练目标:</label>
+                                <div class="device-selection-section">
+                                    <label class="sub-label">选择设备:</label>
+                                    <div id="deviceSelectionList" class="device-selection-list">
+                                        <!-- 动态添加的设备选择行 -->
                                     </div>
-                                    <div class="form-col-model">
-                                        <input type="text" placeholder="请输入关键字搜索设备类型" class="search-input">
-                                    </div>
+                                    <button type="button" class="btn-add-device" onclick="addDeviceSelectionRow()">
+                                        <i class="fas fa-plus-circle"></i> 添加设备
+                                    </button>
                                 </div>
                             </div>
                             
                             <div class="form-group-model">
-                                <label>选择监控指标:</label>
-                                <div class="form-row-model">
-                                    <div class="form-col-model">
-                                        <select id="metricCategory" name="metricCategory" onchange="updateSpecificMetrics()">
-                                            <option value="">选择监控类型</option>
-                                            <option value="cpu">CPU监控</option>
-                                            <option value="memory">内存监控</option>
-                                            <option value="disk">磁盘监控</option>
-                                            <option value="network">网络监控</option>
-                                            <option value="temperature">温度监控</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-col-model">
-                                        <select id="specificMetric" name="specificMetric">
-                                            <option value="">选择具体指标</option>
-                                        </select>
-                                    </div>
-                                    <div class="form-col-model">
-                                        <input type="text" placeholder="选择指标" class="metric-input">
-                                        <button type="button" class="add-metric-btn">
-                                            <i class="fas fa-plus"></i>
-                                        </button>
-                                    </div>
+                                <label><span style="color: red;">*</span> 选择训练指标:</label>
+                                <div id="trainingTargetsList" class="training-targets-list">
+                                    <!-- 动态添加的训练目标行 -->
                                 </div>
+                                <button type="button" class="btn-add-target" onclick="addTrainingTargetRow()">
+                                    <i class="fas fa-plus-circle"></i> 添加训练目标
+                                </button>
                             </div>
 
                         </div>
@@ -2593,7 +3118,7 @@
                     </div>
                     <div class="step-content-model">
                         <div class="form-group-model">
-                            <label>模型训练参数:</label>
+                            <label></label>
                             <div class="form-row-model">
                                 <div class="form-col-model">
                                     <label class="sub-label">模型更新周期:</label>
@@ -2639,7 +3164,7 @@
                             <div class="form-row-model">
                                 <div class="form-col-model">
                                     <div class="input-with-unit">
-                                        <input type="number" id="predictionDuration" name="predictionDuration" value="1" min="1">
+                                        <input type="number" id="predictionDuration" name="predictionDuration" value="1" min="1" max="30">
                                         <span class="unit">天</span>
                                     </div>
                                 </div>
@@ -2675,11 +3200,149 @@
         </div>
     </div>
 
+    <!-- 训练历史模态框 -->
+    <div id="trainingHistoryModal" class="modal-overlay-model" style="display: none;">
+        <div class="modal-content-model" style="max-width: 1200px;">
+            <div class="modal-header-model">
+                <h3 id="trainingHistoryTitle">模型组合列表</h3>
+            </div>
+            
+            <div class="modal-body-model" style="padding: 20px;">
+                <!-- 筛选区域 -->
+                <div style="display: flex; gap: 15px; margin-bottom: 20px; align-items: center;">
+                    <div style="flex: 1;">
+                        <label style="margin-right: 8px;">状态</label>
+                        <select id="trainStatusFilter" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 150px;">
+                            <option value="">全部</option>
+                            <option value="success">训练完成</option>
+                            <option value="failed">训练失败</option>
+                            <option value="running">训练中</option>
+                            <option value="pending">待训练</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="margin-right: 8px;">选择设备</label>
+                        <select id="trainDeviceFilter" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 150px;">
+                            <option value="">全部</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="margin-right: 8px;">选择监测指标</label>
+                        <select id="trainMetricFilter" style="padding: 8px; border: 1px solid #ddd; border-radius: 4px; width: 150px;">
+                            <option value="">全部</option>
+                        </select>
+                    </div>
+                    <div style="flex: 0; display: flex; gap: 10px;">
+                        <button onclick="searchTrainingHistory()" 
+                                style="padding: 8px 20px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); 
+                                       color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-search"></i> 搜索
+                        </button>
+                        <button onclick="resetTrainingHistoryFilters()" 
+                                style="padding: 8px 20px; background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); 
+                                       color: white; border: none; border-radius: 4px; cursor: pointer;">
+                            <i class="fas fa-redo"></i> 重置
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 训练历史表格 -->
+                <div style="overflow-x: auto;">
+                    <table class="data-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white;">
+                                <th style="padding: 12px; text-align: left;">当前状态</th>
+                                <th style="padding: 12px; text-align: left;">检测类型</th>
+                                <th style="padding: 12px; text-align: left;">设备名称</th>
+                                <th style="padding: 12px; text-align: left;">监测指标</th>
+                                <th style="padding: 12px; text-align: left;">备注</th>
+                                <th style="padding: 12px; text-align: left;">创建时间</th>
+                                <th style="padding: 12px; text-align: left;">最近一次训练时间</th>
+                                <th style="padding: 12px; text-align: left;">操作</th>
+                            </tr>
+                        </thead>
+                        <tbody id="trainingHistoryTableBody">
+                            <tr>
+                                <td colspan="8" style="text-align: center; padding: 40px;">
+                                    <div style="color: #999;">
+                                        <i class="fas fa-inbox" style="font-size: 48px; margin-bottom: 10px;"></i>
+                                        <p>暂无数据</p>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            
+            <div class="modal-footer-model">
+                <button type="button" class="btn-cancel-model" onclick="closeTrainingHistoryModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 训练详情模态框 -->
+    <div id="trainingDetailsModal" class="modal-overlay-model" style="display: none;">
+        <div class="modal-content-model" style="max-width: 1000px;">
+            <div class="modal-header-model">
+                <h3 id="trainingDetailsTitle">训练详情</h3>
+                <button type="button" class="modal-close-model" onclick="closeTrainingDetailsModal()">×</button>
+            </div>
+            
+            <div class="modal-body-model" style="max-height: 600px; overflow-y: auto;">
+                <!-- 模型基本信息 -->
+                <div class="training-details-card">
+                    <div class="details-header">
+                        <h4><i class="fas fa-info-circle"></i> 模型基本信息</h4>
+                    </div>
+                    <div class="details-content">
+                        <div class="info-grid">
+                            <div class="info-item">
+                                <label>设备名称</label>
+                                <span id="detailDeviceName">-</span>
+                            </div>
+                            <div class="info-item">
+                                <label>监控类型</label>
+                                <span id="detailMonitoringType">-</span>
+                            </div>
+                            <div class="info-item">
+                                <label>监控指标</label>
+                                <span id="detailMonitoringMetric">-</span>
+                            </div>
+                            <div class="info-item">
+                                <label>当前状态</label>
+                                <span id="detailStatus">-</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 训练历史记录 -->
+                <div class="training-details-card">
+                    <div class="details-header">
+                        <h4><i class="fas fa-history"></i> 训练历史记录</h4>
+                    </div>
+                    <div class="details-content">
+                        <div class="training-history-timeline" id="trainingHistoryTimeline">
+                            <!-- 动态加载训练历史 -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="modal-footer-model">
+                <button type="button" class="btn-cancel-model" onclick="closeTrainingDetailsModal()">关闭</button>
+            </div>
+        </div>
+    </div>
+
     <script src="js/navigation-fix.js"></script>
     <script src="js/user-dropdown-loader.js"></script>
     <script>
         // 子页面切换功能
         function switchSubPage(pageName) {
+            console.log('🔄 切换到页面:', pageName);
+            
             // 隐藏所有子页面
             document.querySelectorAll('.sub-page').forEach(page => {
                 page.classList.remove('active');
@@ -2689,13 +3352,10 @@
             const targetPage = document.getElementById('page-' + pageName);
             if (targetPage) {
                 targetPage.classList.add('active');
+                console.log('✅ 页面切换成功:', pageName);
+            } else {
+                console.error('❌ 未找到页面:', 'page-' + pageName);
             }
-            
-            // 更新树形菜单选中状态
-            document.querySelectorAll('.node-item').forEach(item => {
-                item.classList.remove('selected');
-            });
-            document.querySelector(`.node-item[data-page="${pageName}"]`)?.classList.add('selected');
             
             // 更新面包屑
             const pageNames = {
@@ -2703,7 +3363,34 @@
                 'analysis': '智能分析',
                 'model-service': '算法模型服务'
             };
-            document.getElementById('currentSubPage').textContent = pageNames[pageName] || '算法模型服务';
+            const breadcrumbElement = document.getElementById('currentSubPage');
+            if (breadcrumbElement) {
+                breadcrumbElement.textContent = pageNames[pageName] || '算法模型服务';
+            }
+            
+            // 初始化智能分析页面
+            if (pageName === 'analysis') {
+                setTimeout(function() {
+                    if (typeof initPredictionAnalysisPage === 'function') {
+                        console.log('🚀 初始化智能分析页面...');
+                        initPredictionAnalysisPage();
+                    } else {
+                        console.error('❌ initPredictionAnalysisPage 函数不存在');
+                    }
+                }, 300);
+            }
+            
+            // 初始化算法模型服务页面
+            if (pageName === 'model-service') {
+                setTimeout(function() {
+                    if (typeof window.initModelServicePage === 'function') {
+                        console.log('🚀 初始化算法模型服务页面...');
+                        window.initModelServicePage();
+                    } else {
+                        console.error('❌ initModelServicePage 函数不存在');
+                    }
+                }, 300);
+            }
         }
 
         // 使用事件委托绑定树形菜单点击事件（避免重复绑定）
@@ -2720,30 +3407,39 @@
             
             e.stopPropagation();
             
-            // 如果是父节点，处理展开/收起
+            // 如果是父节点，只处理展开/收起，不切换页面
             if (nodeItem.classList.contains('parent-node')) {
                 const treeNode = nodeItem.closest('.tree-node');
                 const wasExpanded = treeNode.classList.contains('expanded');
                 treeNode.classList.toggle('expanded');
                 
-                // 如果展开，同时切换到该页面
-                if (treeNode.classList.contains('expanded') && !wasExpanded) {
+                // 如果从收起变为展开，确保父页面显示并选中第一个子节点
+                if (!wasExpanded && treeNode.classList.contains('expanded')) {
                     const pageName = nodeItem.getAttribute('data-page');
-                    if (pageName) {
-                        switchSubPage(pageName);
-                        // 默认显示第一个子页面（直接调用函数，不用click）
-                        const firstSubPage = treeNode.querySelector('.sub-node');
-                        if (firstSubPage) {
-                            const subPageName = firstSubPage.getAttribute('data-sub-page');
+                    if (pageName === 'stats') {
+                        // 切换到智能统计页面
+                        switchSubPage('stats');
+                        
+                        // 默认选中第一个子页面
+                        const firstSubNode = treeNode.querySelector('.sub-node');
+                        if (firstSubNode) {
+                            const subPageName = firstSubNode.getAttribute('data-sub-page');
                             if (subPageName) {
                                 switchStatsSubPage(subPageName);
-                                // 更新选中状态
+                                
+                                // 清除所有子节点选中状态
                                 document.querySelectorAll('.sub-node').forEach(node => {
                                     node.classList.remove('selected');
                                 });
-                                firstSubPage.classList.add('selected');
+                                // 选中第一个子节点
+                                firstSubNode.classList.add('selected');
                             }
                         }
+                        
+                        // 清除父节点和其他普通节点的选中状态
+                        document.querySelectorAll('.node-item:not(.sub-node)').forEach(node => {
+                            node.classList.remove('selected');
+                        });
                     }
                 }
             } 
@@ -2751,20 +3447,45 @@
             else if (nodeItem.classList.contains('sub-node')) {
                 const subPageName = nodeItem.getAttribute('data-sub-page');
                 if (subPageName) {
+                    // 确保父节点展开
+                    const treeNode = nodeItem.closest('.tree-node');
+                    if (treeNode && !treeNode.classList.contains('expanded')) {
+                        treeNode.classList.add('expanded');
+                    }
+                    
+                    // 确保在智能统计页面
+                    switchSubPage('stats');
+                    
+                    // 切换子页面
                     switchStatsSubPage(subPageName);
                     
-                    // 更新子节点选中状态
-                    document.querySelectorAll('.sub-node').forEach(node => {
+                    // 清除所有节点选中状态
+                    document.querySelectorAll('.node-item').forEach(node => {
                         node.classList.remove('selected');
                     });
+                    // 选中当前子节点
                     nodeItem.classList.add('selected');
                 }
             }
-            // 普通节点
+            // 普通节点（智能分析、算法模型服务）
             else {
                 const pageName = nodeItem.getAttribute('data-page');
                 if (pageName) {
+                    // 切换页面
                     switchSubPage(pageName);
+                    
+                    // 清除所有节点选中状态
+                    document.querySelectorAll('.node-item').forEach(node => {
+                        node.classList.remove('selected');
+                    });
+                    // 选中当前节点
+                    nodeItem.classList.add('selected');
+                    
+                    // 收起智能统计的展开状态
+                    const statsTreeNode = document.querySelector('.parent-node[data-page="stats"]')?.closest('.tree-node');
+                    if (statsTreeNode) {
+                        statsTreeNode.classList.remove('expanded');
+                    }
                 }
             }
         });
@@ -2822,199 +3543,125 @@
 
         // ==================== 算法模型服务管理功能 ====================
 
-        // 监控类型与具体指标的映射关系
-        const metricMapping = {
-            'cpu': [
-                { value: 'cpu_usage', text: 'CPU使用率' },
-                { value: 'cpu_load', text: 'CPU负载' },
-                { value: 'cpu_idle', text: 'CPU空闲率' },
-                { value: 'cpu_iowait', text: 'CPU等待IO时间' }
-            ],
-            'memory': [
-                { value: 'memory_usage', text: '内存使用率' },
-                { value: 'memory_available', text: '可用内存' },
-                { value: 'memory_swap', text: '交换内存使用率' },
-                { value: 'memory_buffer', text: '缓冲区内存' }
-            ],
-            'disk': [
-                { value: 'disk_usage', text: '磁盘使用率' },
-                { value: 'disk_io', text: '磁盘IO' },
-                { value: 'disk_read', text: '磁盘读取速度' },
-                { value: 'disk_write', text: '磁盘写入速度' }
-            ],
-            'network': [
-                { value: 'network_in', text: '网络入流量' },
-                { value: 'network_out', text: '网络出流量' },
-                { value: 'network_packets', text: '网络包数' },
-                { value: 'network_errors', text: '网络错误数' }
-            ],
-            'temperature': [
-                { value: 'cpu_temp', text: 'CPU温度' },
-                { value: 'gpu_temp', text: 'GPU温度' },
-                { value: 'motherboard_temp', text: '主板温度' },
-                { value: 'hard_disk_temp', text: '硬盘温度' }
-            ]
-        };
+        // 全局变量存储检测模板数据
+        let detectionTemplatesCache = null;
 
-        // 更新具体指标下拉框
-        function updateSpecificMetrics() {
-            const categorySelect = document.getElementById('metricCategory');
-            const specificSelect = document.getElementById('specificMetric');
-            
-            if (!categorySelect || !specificSelect) return;
-            
-            const selectedCategory = categorySelect.value;
-            
-            // 清空具体指标选项
-            specificSelect.innerHTML = '<option value="">选择具体指标</option>';
-            
-            // 如果选择了监控类型，添加对应的具体指标
-            if (selectedCategory && metricMapping[selectedCategory]) {
-                metricMapping[selectedCategory].forEach(metric => {
-                    const option = document.createElement('option');
-                    option.value = metric.value;
-                    option.textContent = metric.text;
-                    specificSelect.appendChild(option);
-                });
-            }
-        }
-
-        // 从检测模板加载具体指标（用于关联检测模板）
+        // 从检测模板加载数据（关联设置页面的检测模板设置）
         function loadDetectionTemplates() {
+            // 如果已有缓存，直接返回
+            if (detectionTemplatesCache) {
+                return Promise.resolve(detectionTemplatesCache);
+            }
+
             // 从后端API获取检测模板数据
             return fetch('/api/detection-templates')
                 .then(response => response.json())
                 .then(result => {
                     if (result.code === 200) {
-                        return result.data.map(template => ({
+                        detectionTemplatesCache = result.data.map(template => ({
                             id: template.id,
                             templateName: template.templateName || template.template_name,
-                            detectionType: template.detectionType || template.detection_type
+                            detectionType: template.detectionType || template.detection_type,
+                            status: template.status
                         }));
+                        return detectionTemplatesCache;
                     } else {
                         throw new Error(result.message || 'API调用失败');
                     }
                 })
                 .catch(error => {
                     console.error('加载检测模板失败:', error);
-                    // 如果API调用失败，返回模拟数据作为后备
-                    return [
-                        { id: 1, templateName: 'CPU高使用率检测', detectionType: 'cpu' },
-                        { id: 2, templateName: '内存泄漏检测', detectionType: 'memory' },
-                        { id: 3, templateName: '磁盘空间不足检测', detectionType: 'disk' },
-                        { id: 4, templateName: '网络异常流量检测', detectionType: 'network' },
-                        { id: 5, templateName: '设备过热检测', detectionType: 'temperature' }
-                    ];
+                    // 严格遵守“数据来自数据库”的原则：API失败时不返回模拟业务数据
+                    detectionTemplatesCache = [];
+                    return detectionTemplatesCache;
                 });
+        }
+
+        // 监控类型显示名称映射（使用全局定义或本地定义）
+        var localDetectionTypeNames = window.detectionTypeNames || {
+            'cpu': 'CPU监控',
+            'memory': '内存监控',
+            'disk': '磁盘监控',
+            'network': '网络监控',
+            'temperature': '温度监控',
+            'performance': '性能监控',
+            'capacity': '容量监控',
+            'fault': '故障检测',
+            'health': '健康检查'
+        };
+
+        // 加载监控类型下拉框（从检测模板中提取唯一的检测类型）
+        function loadMonitoringTypes() {
+            loadDetectionTemplates().then(templates => {
+                const categorySelect = document.getElementById('metricCategory');
+                if (!categorySelect) return;
+
+                // 提取唯一的检测类型
+                const uniqueTypes = [...new Set(templates.map(t => t.detectionType))];
+
+                // 清空并重新填充选项
+                categorySelect.innerHTML = '<option value="">选择监控类型</option>';
+
+                uniqueTypes.forEach(type => {
+                    const option = document.createElement('option');
+                    option.value = type;
+                    option.textContent = localDetectionTypeNames[type] || type;
+                    categorySelect.appendChild(option);
+                });
+
+                console.log('✅ 监控类型已加载:', uniqueTypes);
+            });
+        }
+
+        // 根据选择的监控类型更新具体指标下拉框（从检测模板的模板名称中加载）
+        function updateSpecificMetricsFromTemplates() {
+            const categorySelect = document.getElementById('metricCategory');
+            const specificSelect = document.getElementById('specificMetric');
+
+            if (!categorySelect || !specificSelect) return;
+
+            const selectedCategory = categorySelect.value;
+
+            // 清空具体指标选项
+            specificSelect.innerHTML = '<option value="">选择具体指标</option>';
+
+            if (!selectedCategory) return;
+
+            // 从检测模板中筛选出对应监控类型的模板
+            loadDetectionTemplates().then(templates => {
+                const filteredTemplates = templates.filter(t =>
+                    t.detectionType === selectedCategory && t.status === 1
+                );
+
+                // 将模板名称作为具体指标选项
+                filteredTemplates.forEach(template => {
+                    const option = document.createElement('option');
+                    option.value = template.id;
+                    option.textContent = template.templateName;
+                    option.dataset.templateId = template.id;
+                    specificSelect.appendChild(option);
+                });
+
+                console.log(`✅ 已加载 ${selectedCategory} 的具体指标:`, filteredTemplates.length, '个');
+            });
         }
 
         // 根据监控类型获取对应的检测模板
         function getTemplatesByMonitoringType(monitoringType) {
             return loadDetectionTemplates().then(templates => {
-                return templates.filter(template => template.detectionType === monitoringType);
+                return templates.filter(template =>
+                    template.detectionType === monitoringType && template.status === 1
+                );
             });
         }
 
-        // 新建算法模型服务按钮点击事件
+        // 新建算法模型服务按钮点击事件（逻辑已迁移到 js/prediction-model-service.js）
         document.addEventListener('DOMContentLoaded', function() {
-            const newModelBtn = document.querySelector('.btn-new-model');
-            if (newModelBtn) {
-                newModelBtn.addEventListener('click', function() {
-                    showModelServiceModal();
-                });
-            }
+            // 这里只保留占位，实际按钮绑定由 prediction-model-service.js 完成
         });
 
-        // 显示新建算法模型服务弹窗
-        function showModelServiceModal() {
-            const modal = document.getElementById('modelServiceModal');
-            const title = document.getElementById('modelServiceModalTitle');
-            const form = document.getElementById('modelServiceForm');
-            
-            if (title) title.textContent = '新建算法模型服务';
-            if (form) form.reset();
-            
-            // 清空隐藏的ID字段
-            const serviceId = document.getElementById('modelServiceId');
-            if (serviceId) serviceId.value = '';
-            
-            // 设置默认值
-            const autoPrediction = document.getElementById('autoPrediction');
-            if (autoPrediction) autoPrediction.checked = true;
-            
-            const updateCycle = document.getElementById('updateCycle');
-            if (updateCycle) updateCycle.value = '7';
-            
-            const predictionCycle = document.getElementById('predictionCycle');
-            if (predictionCycle) predictionCycle.value = '1';
-            
-            const predictionDuration = document.getElementById('predictionDuration');
-            if (predictionDuration) predictionDuration.value = '1';
-            
-            if (modal) {
-                modal.style.display = 'flex';
-                
-                // 聚焦到服务名称输入框
-                const serviceNameInput = document.getElementById('serviceName');
-                if (serviceNameInput) {
-                    setTimeout(() => serviceNameInput.focus(), 100);
-                }
-            }
-        }
 
-        // 关闭算法模型服务弹窗
-        function closeModelServiceModal() {
-            const modal = document.getElementById('modelServiceModal');
-            if (modal) {
-                modal.style.display = 'none';
-            }
-        }
-
-        // 保存算法模型服务
-        function saveModelService() {
-            const form = document.getElementById('modelServiceForm');
-            const formData = new FormData(form);
-            
-            // 验证表单
-            if (!validateModelServiceForm()) {
-                return;
-            }
-            
-            const serviceData = {
-                id: formData.get('id') || null,
-                // 步骤1: 计算方式
-                algorithmType: 'KNN',
-                
-                // 步骤2: 数据源
-                deviceSelection: formData.get('deviceSelection'),
-                metricCategory: formData.get('metricCategory'),
-                specificMetric: formData.get('specificMetric'),
-                
-                // 步骤3: 模型参数
-                updateCycle: parseInt(formData.get('updateCycle')) || 7,
-                
-                // 步骤4: 预测策略
-                autoPrediction: formData.get('autoPrediction') === 'on',
-                predictionCycle: parseInt(formData.get('predictionCycle')) || 1,
-                predictionDuration: parseInt(formData.get('predictionDuration')) || 1,
-                
-                // 步骤5: 基本信息
-                serviceName: formData.get('serviceName'),
-                serviceNotes: formData.get('serviceNotes')
-            };
-            
-            console.log('保存算法模型服务:', serviceData);
-            
-            // 这里应该调用后端API保存数据
-            // 模拟保存成功
-            alert('算法模型服务创建成功！');
-            
-            // 关闭弹窗
-            closeModelServiceModal();
-            
-            // 刷新表格数据（这里可以调用刷新函数）
-            // refreshModelServiceTable();
-        }
+        // 模态框函数已移至 prediction-model-service.js
 
         // 验证算法模型服务表单
         function validateModelServiceForm() {
@@ -3042,8 +3689,8 @@
             }
             
             const predictionDuration = document.getElementById('predictionDuration').value;
-            if (predictionDuration && (isNaN(predictionDuration) || parseInt(predictionDuration) < 1)) {
-                alert('预测时长必须是大于0的数字');
+            if (predictionDuration && (isNaN(predictionDuration) || parseInt(predictionDuration) < 1 || parseInt(predictionDuration) > 30)) {
+                alert('预测时长必须是1-30天之间的数字');
                 document.getElementById('predictionDuration').focus();
                 return false;
             }
@@ -3072,9 +3719,443 @@
     <script src="js/prediction-overview.js"></script>
     
     <!-- 预测报告页面逻辑 -->
-    <script src="js/prediction-report.js"></script>
+    <!-- <script src="js/prediction-report.js"></script> --> <!-- 已废弃，使用新版 -->
+    
+    <!-- 预测报告页面逻辑 - 新版 -->
+    <script src="js/device-report-helper.js"></script>
+    <script src="js/prediction-report-new.js"></script>
+    
+    <!-- 预测报告增强功能 -->
+    <!-- <link rel="stylesheet" href="css/prediction-report-enhanced.css"> --> <!-- 已废弃 -->
+    <!-- <script src="js/prediction-report-enhanced.js"></script> --> <!-- 已废弃 -->
+    
+    <!-- ECharts图表库 -->
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
     
     <!-- 预测风险页面逻辑 -->
     <script src="js/prediction-risk.js"></script>
+
+    <!-- 算法模型服务页面逻辑 -->
+    <script src="js/prediction-model-service.js"></script>
+
+    <!-- 预测数据展示页面初始化 -->
+    <script>
+    $(document).ready(function() {
+        console.log('预测数据展示功能初始化...');
+
+        // 标记页面是否已初始化
+        window.reportPageInitialized = false;
+        window.riskPageInitialized = false;
+        window.analysisPageInitialized = false;
+
+        // 监听子页面切换事件（智能统计下的子页面）
+        // ========== 旧的预测报告代码已废弃，使用 prediction-report-new.js ==========
+        /* 已注释掉旧代码，避免覆盖新的JS文件
+        // 预测报告页面功能
+        let reportCurrentCategoryId = null;
+        let reportCurrentPredictionTime = 1;
+        let reportChartInstances = {};
+
+        // 将函数设置为全局函数
+        window.initPredictionReportPage = function() {
+            console.log('=== 初始化预测报告页面 ===');
+            loadReportCategories();
+
+            // 绑定预测时间筛选器事件
+            const timeFilter = document.getElementById('reportPredictionTimeFilter');
+            if (timeFilter) {
+                // 移除旧的事件监听器
+                const newTimeFilter = timeFilter.cloneNode(true);
+                timeFilter.parentNode.replaceChild(newTimeFilter, timeFilter);
+
+                newTimeFilter.addEventListener('change', function() {
+                    reportCurrentPredictionTime = this.value;
+                    loadReportData();
+                });
+            }
+        };
+
+        async function loadReportCategories() {
+            try {
+                // 使用分类树API获取完整的分类结构
+                const response = await fetch('/api/prediction/enhanced-reports/categories/tree');
+                const result = await response.json();
+
+                if (result.code === 200 && result.data) {
+                    renderReportCategoryTree(result.data);
+                } else {
+                    showReportError('加载分类失败: ' + (result.message || '未知错误'));
+                }
+            } catch (error) {
+                console.error('加载分类失败:', error);
+                showReportError('加载分类失败: ' + error.message);
+            }
+        }
+
+        function renderReportCategoryTree(categoryTree) {
+            const categoryList = document.getElementById('reportCategoryList');
+            if (!categoryList) return;
+
+            categoryList.innerHTML = '';
+
+            // 渲染分类树
+            categoryTree.forEach(parentCategory => {
+                // 创建父分类容器
+                const parentContainer = document.createElement('div');
+                parentContainer.style.cssText = 'margin-bottom: 8px;';
+
+                // 创建父分类项
+                const parentItem = document.createElement('div');
+                parentItem.className = 'category-parent-item';
+                parentItem.style.cssText = 'padding: 10px 12px; cursor: pointer; border-radius: 6px; background: #ecf5ff; display: flex; justify-content: space-between; align-items: center; transition: all 0.3s;';
+
+                const hasChildren = parentCategory.children && parentCategory.children.length > 0;
+                const expandIcon = hasChildren ? '▼' : '';
+
+                parentItem.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span class="expand-icon" style="font-size: 10px; transition: transform 0.3s; ${!hasChildren ? 'visibility: hidden;' : ''}">${expandIcon}</span>
+                        <span style="font-size: 14px; font-weight: 500;">${parentCategory.categoryName}</span>
+                    </div>
+                `;
+
+                // 创建子分类容器
+                const childrenContainer = document.createElement('div');
+                childrenContainer.className = 'children-container';
+                childrenContainer.style.cssText = 'margin-left: 20px; margin-top: 5px; display: block;';
+
+                // 渲染子分类
+                if (hasChildren) {
+                    parentCategory.children.forEach(childCategory => {
+                        const childItem = document.createElement('div');
+                        childItem.className = 'category-child-item';
+                        childItem.style.cssText = 'padding: 8px 12px; cursor: pointer; border-radius: 4px; margin-bottom: 3px; font-size: 13px; transition: all 0.3s;';
+                        childItem.textContent = childCategory.categoryName;
+                        childItem.dataset.categoryId = childCategory.id;
+                        childItem.dataset.categoryName = childCategory.categoryName;
+
+                        // 子分类点击事件
+                        childItem.onclick = function(e) {
+                            e.stopPropagation();
+                            selectReportCategory(childCategory.id, childCategory.categoryName, this);
+                        };
+
+                        // 子分类hover效果
+                        childItem.onmouseenter = function() {
+                            if (!this.classList.contains('active')) {
+                                this.style.background = '#f5f7fa';
+                            }
+                        };
+                        childItem.onmouseleave = function() {
+                            if (!this.classList.contains('active')) {
+                                this.style.background = '';
+                            }
+                        };
+
+                        childrenContainer.appendChild(childItem);
+                    });
+                }
+
+                // 父分类点击事件（展开/折叠）
+                if (hasChildren) {
+                    parentItem.onclick = function(e) {
+                        e.stopPropagation();
+                        const icon = this.querySelector('.expand-icon');
+                        const isExpanded = childrenContainer.style.display !== 'none';
+
+                        if (isExpanded) {
+                            childrenContainer.style.display = 'none';
+                            icon.style.transform = 'rotate(-90deg)';
+                        } else {
+                            childrenContainer.style.display = 'block';
+                            icon.style.transform = 'rotate(0deg)';
+                        }
+                    };
+                }
+
+                parentContainer.appendChild(parentItem);
+                if (hasChildren) {
+                    parentContainer.appendChild(childrenContainer);
+                }
+                categoryList.appendChild(parentContainer);
+            });
+
+            // 默认选中第一个子分类
+            const firstChild = categoryList.querySelector('.category-child-item');
+            if (firstChild) {
+                const categoryId = parseInt(firstChild.dataset.categoryId);
+                const categoryName = firstChild.dataset.categoryName;
+                selectReportCategory(categoryId, categoryName, firstChild);
+            }
+        }
+
+        function selectReportCategory(categoryId, categoryName, element) {
+            // 更新选中状态 - 清除所有子分类的选中状态
+            document.querySelectorAll('#reportCategoryList .category-child-item').forEach(item => {
+                item.classList.remove('active');
+                item.style.background = '';
+                item.style.color = '';
+                item.style.borderLeft = '';
+            });
+
+            // 设置当前选中项的样式
+            element.classList.add('active');
+            element.style.background = '#ecf5ff';
+            element.style.color = '#409eff';
+            element.style.borderLeft = '3px solid #409eff';
+
+            // 更新当前分类
+            reportCurrentCategoryId = categoryId;
+            const titleElement = document.getElementById('reportContentTitle');
+            if (titleElement) {
+                titleElement.textContent = categoryName;
+            }
+
+            // 加载报告
+            loadReportData();
+        }
+
+        async function loadReportData() {
+            const reportsGrid = document.getElementById('reportCardsGrid');
+            if (!reportsGrid) return;
+
+            reportsGrid.innerHTML = '<div style="text-align: center; padding: 40px; color: #909399;">加载中...</div>';
+
+            try {
+                let url = `/api/prediction/enhanced-reports/category-reports?predictionTime=${reportCurrentPredictionTime}`;
+                if (reportCurrentCategoryId) {
+                    url += `&categoryId=${reportCurrentCategoryId}`;
+                }
+
+                const response = await fetch(url);
+                const result = await response.json();
+
+                if (result.code === 200 && result.data) {
+                    renderReportCards(result.data);
+                    updateReportStats(result.data);
+                } else {
+                    showReportError('加载报告失败: ' + (result.message || '未知错误'));
+                }
+            } catch (error) {
+                console.error('加载报告失败:', error);
+                showReportError('加载报告失败: ' + error.message);
+            }
+        }
+
+        function renderReportCards(reports) {
+            const reportsGrid = document.getElementById('reportCardsGrid');
+            if (!reportsGrid) return;
+
+            if (!reports || reports.length === 0) {
+                reportsGrid.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px; color: #909399; grid-column: 1 / -1;">
+                        <div style="font-size: 64px; margin-bottom: 20px;">📊</div>
+                        <div style="font-size: 16px;">暂无报告数据</div>
+                    </div>
+                `;
+                return;
+            }
+
+            reportsGrid.innerHTML = '';
+
+            reports.forEach(report => {
+                const card = createReportCard(report);
+                reportsGrid.appendChild(card);
+            });
+
+            // 渲染图表
+            setTimeout(() => {
+                reports.forEach(report => {
+                    renderReportChart(report);
+                });
+            }, 100);
+        }
+
+        function createReportCard(report) {
+            const card = document.createElement('div');
+            card.style.cssText = 'background: white; border-radius: 8px; padding: 20px; box-shadow: 0 2px 12px rgba(0,0,0,0.1); transition: all 0.3s;';
+
+            const statusClass = report.status === 'NORMAL' ? 'normal' : report.status === 'WARNING' ? 'warning' : 'critical';
+            const statusText = report.status === 'NORMAL' ? '正常' : report.status === 'WARNING' ? '警告' : '严重';
+            const statusColor = report.status === 'NORMAL' ? '#67c23a' : report.status === 'WARNING' ? '#e6a23c' : '#f56c6c';
+            const statusBg = report.status === 'NORMAL' ? '#f0f9ff' : report.status === 'WARNING' ? '#fdf6ec' : '#fef0f0';
+
+            card.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;">
+                    <div style="font-size: 16px; font-weight: 600;">${report.reportName || '设备健康度报告'}</div>
+                    <div style="padding: 4px 12px; border-radius: 12px; font-size: 12px; background: ${statusBg}; color: ${statusColor};">${statusText}</div>
+                </div>
+                <div style="height: 200px; margin-bottom: 15px;">
+                    <canvas id="report-chart-${report.id}"></canvas>
+                </div>
+                <div style="display: flex; justify-content: space-between; align-items: center; padding-top: 15px; border-top: 1px solid #e4e7ed;">
+                    <div style="font-size: 12px; color: #909399;">更新: ${formatReportTime(report.updatedAt)}</div>
+                    <button onclick="viewReportDetail(${report.id})" style="padding: 6px 16px; background: #409eff; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 14px; transition: all 0.3s;">查看</button>
+                </div>
+            `;
+
+            // 添加hover效果
+            card.onmouseenter = function() {
+                this.style.boxShadow = '0 4px 16px rgba(0,0,0,0.15)';
+                this.style.transform = 'translateY(-2px)';
+            };
+            card.onmouseleave = function() {
+                this.style.boxShadow = '0 2px 12px rgba(0,0,0,0.1)';
+                this.style.transform = 'translateY(0)';
+            };
+
+            return card;
+        }
+
+        function renderReportChart(report) {
+            const canvas = document.getElementById(`report-chart-${report.id}`);
+            if (!canvas) return;
+
+            // 销毁旧图表
+            if (reportChartInstances[report.id]) {
+                reportChartInstances[report.id].destroy();
+            }
+
+            // 解析图表数据
+            let chartData = { type: 'line', data: [65, 68, 70, 72, 69] };
+            if (report.chartData) {
+                try {
+                    chartData = JSON.parse(report.chartData);
+                } catch (e) {
+                    console.error('解析图表数据失败:', e);
+                }
+            }
+
+            // 创建新图表
+            const ctx = canvas.getContext('2d');
+            reportChartInstances[report.id] = new Chart(ctx, {
+                type: chartData.type || 'line',
+                data: {
+                    labels: ['20:00', '13:00', '04:00', '08:00', '12:00'],
+                    datasets: [{
+                        label: '本机设备-健康评分',
+                        data: chartData.data || [65, 68, 70, 72, 69],
+                        borderColor: '#409eff',
+                        backgroundColor: 'rgba(64, 158, 255, 0.1)',
+                        tension: 0.4,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            display: false
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            max: 100
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateReportStats(reports) {
+            const statsCard = document.getElementById('reportStatsCard');
+            if (!statsCard) return;
+
+            const normalCount = reports.filter(r => r.status === 'NORMAL').length;
+            const abnormalCount = reports.length - normalCount;
+
+            document.getElementById('reportNormalCount').textContent = normalCount;
+            document.getElementById('reportAbnormalCount').textContent = abnormalCount;
+
+            statsCard.style.display = reports.length > 0 ? 'block' : 'none';
+        }
+
+        function viewReportDetail(reportId) {
+            alert('查看报告详情: ' + reportId + '\n\n此功能将显示更详细的预测信息，包括：\n- 详细的健康度评分\n- 历史趋势分析\n- 异常检测结果\n- 预测建议');
+        }
+
+        function formatReportTime(timeStr) {
+            if (!timeStr) return '-';
+            const date = new Date(timeStr);
+            return date.toLocaleString('zh-CN', {
+                year: 'numeric',
+                month: '2-digit',
+                day: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit'
+            });
+        }
+
+        function showReportError(message) {
+            const reportsGrid = document.getElementById('reportCardsGrid');
+            if (reportsGrid) {
+                reportsGrid.innerHTML = `
+                    <div style="text-align: center; padding: 60px 20px; color: #909399; grid-column: 1 / -1;">
+                        <div style="font-size: 64px; margin-bottom: 20px;">⚠️</div>
+                        <div style="font-size: 16px;">${message}</div>
+                    </div>
+                `;
+            }
+        }
+        */ // ========== 旧代码注释结束 ==========
+
+        window.switchStatsSubPageOriginal = window.switchStatsSubPage;
+        window.switchStatsSubPage = function(subPageId) {
+            console.log('切换智能统计子页面:', subPageId);
+
+            // 调用原始函数
+            if (window.switchStatsSubPageOriginal) {
+                window.switchStatsSubPageOriginal(subPageId);
+            }
+
+            // 根据页面ID初始化对应的功能
+            setTimeout(function() {
+                if (subPageId === 'stats-report') {
+                    // 初始化预测报告页面
+                    if (!window.reportPageInitialized && typeof initPredictionReportPage === 'function') {
+                        console.log('初始化预测报告页面...');
+                        initPredictionReportPage();
+                        window.reportPageInitialized = true;
+                    }
+                } else if (subPageId === 'stats-risk') {
+                    // 初始化预测风险页面
+                    if (!window.riskPageInitialized && typeof initPredictionRiskPage === 'function') {
+                        console.log('初始化预测风险页面...');
+                        initPredictionRiskPage();
+                        window.riskPageInitialized = true;
+                    }
+                }
+            }, 100);
+        };
+
+        // 监听主页面切换事件
+        window.switchToPageOriginal = window.switchToPage;
+        window.switchToPage = function(pageId) {
+            console.log('切换主页面:', pageId);
+
+            // 调用原始函数
+            if (window.switchToPageOriginal) {
+                window.switchToPageOriginal(pageId);
+            }
+
+            // 根据页面ID初始化对应的功能
+            setTimeout(function() {
+                if (pageId === 'page-analysis') {
+                    // 初始化智能分析页面（每次切换都重新初始化）
+                    if (typeof initPredictionAnalysisPage === 'function') {
+                        console.log('🚀 初始化智能分析页面...');
+                        initPredictionAnalysisPage();
+                    } else {
+                        console.error('❌ initPredictionAnalysisPage 函数不存在');
+                    }
+                }
+            }, 300);
+        };
+
+        console.log('预测数据展示功能初始化完成');
+    });
+    </script>
 </body>
 </html>

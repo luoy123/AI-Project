@@ -76,6 +76,10 @@
                 <i class="fas fa-tools"></i>
                 <span>运维工具</span>
             </div>
+            <div class="sidebar-item">
+                <i class="fas fa-desktop"></i>
+                <span>数字大屏</span>
+            </div>
             <div class="sidebar-divider"></div>
             <div class="sidebar-group-title">拓展中心</div>
             <div class="sidebar-item">
@@ -571,19 +575,10 @@
                                 
                                 <select class="filter-select" id="myTypeFilter">
                                     <option value="">全部类型</option>
-                                    <option value="incident">故障</option>
-                                    <option value="change">变更</option>
-                                    <option value="service">服务</option>
-                                    <option value="consultation">咨询</option>
-                                    <option value="maintenance">维护</option>
                                 </select>
                                 
                                 <select class="filter-select" id="myPriorityFilter">
                                     <option value="">全部优先级</option>
-                                    <option value="urgent">P1</option>
-                                    <option value="high">P2</option>
-                                    <option value="medium">P3</option>
-                                    <option value="low">P4</option>
                                 </select>
                                 
                                 <div class="search-container">
@@ -603,25 +598,7 @@
                             </div>
                         </div>
                         
-                        <!-- 操作工具栏 -->
-                        <div class="ticket-toolbar">
-                            <div class="toolbar-left">
-                                <button class="btn btn-success" id="batchCompleteBtn" disabled>
-                                    <i class="fas fa-check-double"></i>
-                                    批量完成
-                                </button>
-                            </div>
-                            <div class="toolbar-right">
-                                <button class="btn btn-outline" id="exportMyTicketsBtn">
-                                    <i class="fas fa-download"></i>
-                                    导出
-                                </button>
-                                <button class="btn btn-outline" id="refreshMyTicketsBtn">
-                                    <i class="fas fa-sync-alt"></i>
-                                    刷新
-                                </button>
-                            </div>
-                        </div>
+                        <!-- 操作工具栏已移除（功能未实现） -->
                         
                         <!-- 工单列表 -->
                         <div class="ticket-list-container">
@@ -836,6 +813,13 @@
                                 <select class="filter-select" id="unassignedPriorityFilter">
                                     <option value="">全部优先级</option>
                                     <!-- 动态加载 -->
+                                </select>
+                                
+                                <select class="filter-select" id="unassignedStatusFilter">
+                                    <option value="">全部状态</option>
+                                    <option value="pending">待处理</option>
+                                    <option value="processing">处理中</option>
+                                    <option value="resolved">已解决</option>
                                 </select>
                                 
                                 <input type="date" class="filter-input" id="unassignedDateFilter" placeholder="创建日期">

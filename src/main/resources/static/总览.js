@@ -8,6 +8,13 @@ const Dashboard = {
         Dashboard.initCharts();
         Dashboard.initSidebar();
         Dashboard.loadDashboardData();  // 从后端加载数据
+        
+        // 初始化自动刷新（根据系统配置）
+        if (typeof initAutoRefresh === 'function') {
+            initAutoRefresh(function() {
+                Dashboard.loadDashboardData();
+            });
+        }
     },
 
     // 存储图表实例
@@ -293,8 +300,8 @@ const Dashboard = {
         // 更新设备类型进度条和计数
         if (totalDevices > 0) {
             // 网络设备
-            const networkCount = stats.networkCount || 0;
-            const onlineNetworkCount = stats.onlineNetworkCount || 0;
+            const networkCount = stats.networkDevices || stats.networkCount || 0;
+            const onlineNetworkCount = stats.networkOnlineDevices || stats.onlineNetworkCount || 0;
             const networkPercentage = (onlineNetworkCount / networkCount) * 100;
             
             const networkProgress = document.getElementById('networkProgress');
@@ -307,8 +314,8 @@ const Dashboard = {
             }
 
             // 服务器
-            const serverCount = stats.serverCount || 0;
-            const onlineServerCount = stats.onlineServerCount || 0;
+            const serverCount = stats.serverDevices || stats.serverCount || 0;
+            const onlineServerCount = stats.serverOnlineDevices || stats.onlineServerCount || 0;
             const serverPercentage = (onlineServerCount / serverCount) * 100;
             
             const serverProgress = document.getElementById('serverProgress');
@@ -321,8 +328,8 @@ const Dashboard = {
             }
 
             // 存储设备
-            const storageCount = stats.storageCount || 0;
-            const onlineStorageCount = stats.onlineStorageCount || 0;
+            const storageCount = stats.storageDevices || stats.storageCount || 0;
+            const onlineStorageCount = stats.storageOnlineDevices || stats.onlineStorageCount || 0;
             const storagePercentage = (onlineStorageCount / storageCount) * 100;
             
             const storageProgress = document.getElementById('storageProgress');
@@ -652,6 +659,7 @@ const Dashboard = {
             '网络拓扑': '网络拓扑.html',
             '统计报表': '统计报表.html',
             '运维工具': '运维工具.html',
+            '数字大屏': '大屏展示.html',
             '业务管理': '业务管理.html',
             '网络管理': '网络管理.html',
             '视频管理': '视频管理.html',

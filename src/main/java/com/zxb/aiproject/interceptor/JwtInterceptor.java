@@ -25,8 +25,12 @@ public class JwtInterceptor implements HandlerInterceptor {
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+        // 添加调试日志
+        log.info("JWT拦截器被调用: {} {}", request.getMethod(), request.getRequestURI());
+        
         // 1. 从请求中获取token
         String token = getTokenFromRequest(request);
+        log.info("从请求中获取到的token: {}", token != null ? "存在" : "不存在");
 
         // 2. 验证token是否存在
         if (!StringUtils.hasText(token)) {

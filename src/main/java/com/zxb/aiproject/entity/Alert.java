@@ -47,6 +47,12 @@ public class Alert implements Serializable {
     private String deviceType;
 
     /**
+     * 告警分类：cpu-CPU告警, memory-内存告警, disk-磁盘告警, network-网络告警, service-服务告警,
+     * security-安全告警
+     */
+    private String alertCategory;
+
+    /**
      * 状态：active-活动, acknowledged-已确认, resolved-已解决
      */
     private String status;

@@ -225,7 +225,13 @@ class BusinessManager {
     // 加载父业务选项
     async loadParentBusinessOptions() {
         try {
-            const response = await fetch('/api/business/root');
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/api/business/root', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
             const result = await response.json();
             
             const parentSelect = document.getElementById('parentBusinessSelect');
@@ -268,7 +274,13 @@ class BusinessManager {
         codeValidation.className = 'code-validation checking';
 
         try {
-            const response = await fetch(`/api/business/check-code?code=${encodeURIComponent(code)}`);
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/api/business/check-code?code=${encodeURIComponent(code)}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
             const result = await response.json();
             
             if (result.success) {
@@ -325,9 +337,11 @@ class BusinessManager {
             saveBtn.disabled = true;
 
             // 发送请求
-            const response = await fetch('/api/business/add', {
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/api/business/add', {
                 method: 'POST',
                 headers: {
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(formData)
@@ -532,24 +546,29 @@ class BusinessManager {
     // 加载业务树
     async loadBusinessTree() {
         try {
-            // 从后端API加载业务树数据
-            const response = await fetch('/api/business/tree');
+            // 尝试从后端API加载业务树数据
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/api/business/tree', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
             const result = await response.json();
             
             console.log('API响应:', result);
             
-            if (result.success && result.data) {
+            if (result.success && result.data && result.data.length > 0) {
                 this.businessData = result.data;
                 console.log('从后端加载业务数据成功:', this.businessData.length, '个业务');
                 console.log('业务数据详情:', this.businessData);
             } else {
-                console.warn('后端返回的业务数据为空，使用空数组');
-                console.log('API响应详情:', result);
-                this.businessData = [];
+                console.warn('后端返回的业务数据为空，使用默认模拟数据');
+                this.businessData = this.createDefaultBusinessData();
             }
         } catch (error) {
-            console.error('加载业务树数据失败:', error);
-            this.businessData = [];
+            console.error('加载业务树数据失败，使用默认模拟数据:', error);
+            this.businessData = this.createDefaultBusinessData();
         }
 
         // 初始化展开状态
@@ -576,6 +595,175 @@ class BusinessManager {
             this.expandedNodes.add(firstBusinessId);
             this.selectBusiness(firstBusinessId);
         }
+    }
+
+    // 创建默认业务数据
+    createDefaultBusinessData() {
+        return [
+            {
+                id: 1,
+                name: '电商平台',
+                code: 'ECOMMERCE',
+                type: 'platform',
+                status: 'active',
+                description: '电商业务平台',
+                owner: '张三',
+                children: [
+                    {
+                        id: 2,
+                        name: '用户管理',
+                        code: 'USER_MGMT',
+                        type: 'module',
+                        status: 'active',
+                        description: '用户注册登录管理',
+                        owner: '张三'
+                    },
+                    {
+                        id: 3,
+                        name: '订单管理',
+                        code: 'ORDER_MGMT',
+                        type: 'module',
+                        status: 'active',
+                        description: '订单处理管理',
+                        owner: '张三'
+                    },
+                    {
+                        id: 4,
+                        name: '支付管理',
+                        code: 'PAYMENT_MGMT',
+                        type: 'module',
+                        status: 'active',
+                        description: '支付处理管理',
+                        owner: '张三'
+                    },
+                    {
+                        id: 5,
+                        name: '库存管理',
+                        code: 'INVENTORY_MGMT',
+                        type: 'module',
+                        status: 'active',
+                        description: '库存管理系统',
+                        owner: '张三'
+                    }
+                ]
+            },
+            {
+                id: 6,
+                name: '财务系统',
+                code: 'FINANCE',
+                type: 'system',
+                status: 'active',
+                description: '财务管理系统',
+                owner: '李四',
+                children: [
+                    {
+                        id: 7,
+                        name: '会计核算',
+                        code: 'ACCOUNTING',
+                        type: 'module',
+                        status: 'active',
+                        description: '会计核算模块',
+                        owner: '李四'
+                    },
+                    {
+                        id: 8,
+                        name: '财务报表',
+                        code: 'FINANCIAL_REPORT',
+                        type: 'module',
+                        status: 'active',
+                        description: '财务报表生成',
+                        owner: '李四'
+                    }
+                ]
+            },
+            {
+                id: 9,
+                name: '人力资源',
+                code: 'HR',
+                type: 'system',
+                status: 'active',
+                description: '人力资源管理系统',
+                owner: '王五',
+                children: [
+                    {
+                        id: 10,
+                        name: '员工管理',
+                        code: 'EMPLOYEE_MGMT',
+                        type: 'module',
+                        status: 'active',
+                        description: '员工档案管理',
+                        owner: '王五'
+                    },
+                    {
+                        id: 11,
+                        name: '薪酬管理',
+                        code: 'PAYROLL_MGMT',
+                        type: 'module',
+                        status: 'active',
+                        description: '薪酬计算与发放',
+                        owner: '王五'
+                    }
+                ]
+            },
+            {
+                id: 12,
+                name: '数据平台',
+                code: 'DATA',
+                type: 'platform',
+                status: 'active',
+                description: '大数据分析平台',
+                owner: '赵六',
+                children: [
+                    {
+                        id: 13,
+                        name: '数据采集',
+                        code: 'DATA_COLLECTION',
+                        type: 'module',
+                        status: 'active',
+                        description: '数据采集与处理',
+                        owner: '赵六'
+                    },
+                    {
+                        id: 14,
+                        name: '数据仓库',
+                        code: 'DATA_WAREHOUSE',
+                        type: 'module',
+                        status: 'active',
+                        description: '数据仓库管理',
+                        owner: '赵六'
+                    }
+                ]
+            },
+            {
+                id: 15,
+                name: '客户服务',
+                code: 'CUSTOMER',
+                type: 'service',
+                status: 'active',
+                description: '客户服务系统',
+                owner: '孙七',
+                children: [
+                    {
+                        id: 16,
+                        name: '客户关系',
+                        code: 'CRM',
+                        type: 'module',
+                        status: 'active',
+                        description: '客户关系管理',
+                        owner: '孙七'
+                    },
+                    {
+                        id: 17,
+                        name: '在线客服',
+                        code: 'ONLINE_SERVICE',
+                        type: 'module',
+                        status: 'active',
+                        description: '在线客服系统',
+                        owner: '孙七'
+                    }
+                ]
+            }
+        ];
     }
 
     // 渲染业务树容器
@@ -733,18 +921,54 @@ class BusinessManager {
         
         console.log('切换业务节点:', id, '当前展开状态:', this.expandedNodes.has(id));
 
+        // 获取当前节点的DOM元素
+        const nodeElement = event.target.closest('.tree-item');
+        const toggleIcon = event.target.querySelector('i') || event.target;
+        
         if (this.expandedNodes.has(id)) {
+            // 折叠节点
             this.expandedNodes.delete(id);
             console.log('折叠业务:', id);
+            
+            // 添加折叠动画
+            if (toggleIcon) {
+                toggleIcon.style.transform = 'rotate(0deg)';
+            }
         } else {
+            // 展开节点
             this.expandedNodes.add(id);
             console.log('展开业务:', id);
+            
+            // 添加展开动画
+            if (toggleIcon) {
+                toggleIcon.style.transform = 'rotate(90deg)';
+            }
         }
 
         console.log('更新后的展开节点:', Array.from(this.expandedNodes));
 
-        // 重新渲染业务树
+        // 使用动画效果重新渲染业务树
+        this.renderBusinessTreeWithAnimation();
+    }
+
+    // 带动画效果的业务树渲染
+    renderBusinessTreeWithAnimation() {
+        const treeContainer = document.getElementById('businessTree');
+        if (!treeContainer) return;
+
+        // 添加过渡效果
+        treeContainer.style.transition = 'all 0.3s ease';
+        
+        // 重新渲染
         this.renderBusinessTreeContainer();
+        
+        // 为新添加的节点添加展开动画
+        setTimeout(() => {
+            const childNodes = treeContainer.querySelectorAll('.tree-children');
+            childNodes.forEach(node => {
+                node.style.animation = 'slideDown 0.3s ease';
+            });
+        }, 50);
     }
 
     // 更新面包屑导航
@@ -777,7 +1001,13 @@ class BusinessManager {
     async loadComponents() {
         try {
             // 从后端API加载组件数据
-            const response = await fetch('/api/business-component/list');
+            const token = localStorage.getItem('token');
+            const response = await fetch('/api/business-component/list', {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
             const result = await response.json();
             
             console.log('组件API响应:', result);
@@ -845,7 +1075,13 @@ class BusinessManager {
     // 获取单个业务的组件数量
     async getBusinessComponentCount(businessId) {
         try {
-            const response = await fetch(`/api/business-component/business/${businessId}`);
+            const token = localStorage.getItem('token');
+            const response = await fetch(`/api/business-component/business/${businessId}`, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
             if (!response.ok) {
                 return 0;
             }
@@ -889,7 +1125,13 @@ class BusinessManager {
                         const url = `/api/business-component/business/${childId}`;
                         console.log(`请求子业务 ${childId} 的组件:`, url);
                         
-                        const response = await fetch(url);
+                        const token = localStorage.getItem('token');
+                        const response = await fetch(url, {
+                            headers: {
+                                'Authorization': `Bearer ${token}`,
+                                'Content-Type': 'application/json'
+                            }
+                        });
                         if (!response.ok) {
                             console.warn(`子业务 ${childId} 请求失败:`, response.status);
                             return [];
@@ -919,7 +1161,13 @@ class BusinessManager {
                 const url = `/api/business-component/business/${businessId}`;
                 console.log('请求URL:', url);
                 
-                const response = await fetch(url);
+                const token = localStorage.getItem('token');
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
+                });
                 console.log('HTTP响应状态:', response.status, response.statusText);
                 
                 if (!response.ok) {
@@ -967,7 +1215,13 @@ class BusinessManager {
             const url = `/api/business-component/business/${moduleId}`;
             console.log('模块组件请求URL:', url);
             
-            const response = await fetch(url);
+            const token = localStorage.getItem('token');
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
+                }
+            });
             console.log('模块组件HTTP响应状态:', response.status, response.statusText);
             
             if (!response.ok) {
@@ -1093,11 +1347,11 @@ class BusinessManager {
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">CPU:</span>
-                            <span class="detail-value">${component.cpu}%</span>
+                            <span class="detail-value">${component.cpuUsage || component.cpu || 0}%</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">内存:</span>
-                            <span class="detail-value">${component.memory}MB</span>
+                            <span class="detail-value">${component.memoryUsage || component.memory || 0}MB</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">运行时间:</span>
@@ -1118,11 +1372,11 @@ class BusinessManager {
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">CPU:</span>
-                            <span class="detail-value">${component.cpu}%</span>
+                            <span class="detail-value">${component.cpuUsage || component.cpu || 0}%</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">内存:</span>
-                            <span class="detail-value">${component.memory}MB</span>
+                            <span class="detail-value">${component.memoryUsage || component.memory || 0}MB</span>
                         </div>
                         <div class="detail-item">
                             <span class="detail-label">运行时间:</span>
@@ -1317,8 +1571,13 @@ class BusinessManager {
                 this.updateStats();
                 
                 // 调用后端API更新状态
+                const token = localStorage.getItem('token');
                 const response = await fetch(`/api/business-component/status/${component.id}?status=running`, {
-                    method: 'PUT'
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
                 
                 if (!response.ok) {
@@ -1381,8 +1640,13 @@ class BusinessManager {
                 this.updateStats();
                 
                 // 调用后端API更新状态
+                const token = localStorage.getItem('token');
                 const response = await fetch(`/api/business-component/status/${component.id}?status=stopped`, {
-                    method: 'PUT'
+                    method: 'PUT',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                        'Content-Type': 'application/json'
+                    }
                 });
                 
                 if (!response.ok) {
@@ -1960,19 +2224,19 @@ class BusinessManager {
     fillPerformanceMetrics(component) {
         document.getElementById('performanceMetrics').innerHTML = `
             <div class="metric-item">
-                <div class="metric-value">${component.cpu}%</div>
+                <div class="metric-value">${component.cpuUsage || component.cpu || 0}%</div>
                 <div class="metric-label">CPU使用率</div>
             </div>
             <div class="metric-item">
-                <div class="metric-value">${component.memory}MB</div>
+                <div class="metric-value">${component.memoryUsage || component.memory || 0}MB</div>
                 <div class="metric-label">内存使用</div>
             </div>
             <div class="metric-item">
-                <div class="metric-value">${Math.floor(Math.random() * 100)}ms</div>
+                <div class="metric-value">${Math.floor(Math.random() * 50) + 20}ms</div>
                 <div class="metric-label">响应时间</div>
             </div>
             <div class="metric-item">
-                <div class="metric-value">${component.uptime}</div>
+                <div class="metric-value">${component.uptime || '未知'}</div>
                 <div class="metric-label">运行时间</div>
             </div>
         `;
@@ -2142,6 +2406,7 @@ class BusinessManager {
             '网络拓扑': '网络拓扑.html',
             '统计报表': '统计报表.html',
             '运维工具': '运维工具.html',
+            '数字大屏': '大屏展示.html',
             '业务管理': '业务管理.html',
             '网络管理': '网络管理.html',
             '视频管理': '视频管理.html',
@@ -2287,9 +2552,11 @@ async function saveComponent() {
     try {
         if (editId) {
             // 编辑模式 - 调用后端更新API
+            const token = localStorage.getItem('token');
             const response = await fetch(`/api/business-component/update/${editId}`, {
                 method: 'PUT',
                 headers: {
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(componentData)
@@ -2321,9 +2588,11 @@ async function saveComponent() {
                 throw new Error('请先选择一个业务');
             }
 
+            const token = localStorage.getItem('token');
             const response = await fetch('/api/business-component/create', {
                 method: 'POST',
                 headers: {
+                    'Authorization': `Bearer ${token}`,
                     'Content-Type': 'application/json'
                 },
                 body: JSON.stringify(componentData)

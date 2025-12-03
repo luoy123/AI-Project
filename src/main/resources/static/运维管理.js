@@ -50,7 +50,14 @@ function initializeTicketStatusGauge() {
 
 // 初始化优先级分析仪表盘
 function initializePriorityGauge() {
-    const ctx = document.getElementById('priorityGauge').getContext('2d');
+    const canvas = document.getElementById('priorityGauge');
+    // 某些页面布局中可能不存在该图表容器，避免空指针错误
+    if (!canvas || typeof Chart === 'undefined') {
+        console.warn('优先级仪表盘容器不存在或图表库未加载，跳过渲染');
+        return;
+    }
+
+    const ctx = canvas.getContext('2d');
     new Chart(ctx, {
         type: 'doughnut',
         data: {
@@ -286,8 +293,14 @@ function updateMyTickets() {
     // 使用统一的页面切换函数
     switchToPage('myTicketsPage');
     
-    // 初始化我的工单管理页面
-    initMyTicketManagePage();
+    // 初始化我的工单管理页面（避免重复初始化）
+    if (!window.myTicketsPageInitialized) {
+        initMyTicketManagePage();
+        window.myTicketsPageInitialized = true;
+    } else {
+        // 如果已经初始化过，只重新加载数据
+        loadMyTicketData();
+    }
 }
 
 // 更新上传数据
@@ -695,10 +708,78 @@ function saveTicketTypesConfig() {
     alert('工单类型配置保存成功！');
 }
 
-// 显示添加优先级模态框
-function showAddPriorityModal() {
-    console.log('显示添加优先级模态框');
-    alert('添加优先级功能开发中...');
+// 旧版showAddPriorityModal已移至底部统一定义
+
+async function submitAddPriority() {
+	console.log('开始提交新增优先级');
+	
+	// 使用唯一的add_前缀ID
+	const priorityKey = document.getElementById('add_priorityKey')?.value?.trim();
+	const priorityName = document.getElementById('add_priorityName')?.value?.trim();
+	const priorityDesc = document.getElementById('add_priorityDesc')?.value?.trim();
+	const priorityLevel = document.getElementById('add_priorityLevel')?.value;
+	const priorityColor = document.getElementById('add_priorityColor')?.value;
+	
+	console.log('新增优先级表单数据:', {
+		priorityKey, priorityName, priorityDesc, priorityLevel, priorityColor
+	});
+	
+	if (!priorityKey) {
+		showErrorMessage('请输入优先级Key');
+		return;
+	}
+	if (!priorityName) {
+		showErrorMessage('请输入优先级名称');
+		return;
+	}
+	if (!priorityLevel) {
+		showErrorMessage('请输入优先级等级');
+		return;
+	}
+	
+	const createData = {
+		priorityKey: priorityKey,
+		priorityName: priorityName,
+		priorityDesc: priorityDesc,
+		priorityLevel: parseInt(priorityLevel),
+		colorCode: priorityColor,
+		isActive: true
+	};
+	
+	console.log('发送到后端的新增数据:', createData);
+	
+	try {
+		const response = await fetch('/api/ticket/config/priority', {
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json'
+			},
+			body: JSON.stringify(createData)
+		});
+		
+		console.log('新增优先级API响应状态:', response.status);
+		
+		if (!response.ok) {
+			const errorText = await response.text();
+			console.error('新增优先级API错误响应:', errorText);
+			showErrorMessage(`服务器错误 (${response.status}): ${errorText}`);
+			return;
+		}
+		
+		const result = await response.json();
+		console.log('新增优先级API响应结果:', result);
+		
+		if (result.success || result.code === 200) {
+			showSuccessMessage('优先级创建成功！');
+			closeAddPriorityModal();
+			await loadPriorityConfig();
+		} else {
+			showErrorMessage(result.message || '创建优先级失败');
+		}
+	} catch (error) {
+		console.error('创建优先级失败:', error);
+		showErrorMessage('创建优先级失败，请重试');
+	}
 }
 
 // 保存优先级配置
@@ -733,85 +814,45 @@ function savePrioritiesConfig() {
 }
 
 // 编辑优先级
-function editPriority(priorityKey) {
+async function editPriority(priorityKey) {
     console.log('编辑优先级:', priorityKey);
     
-    // 获取当前优先级数据
-    const priorityItem = document.querySelector(`[data-priority="${priorityKey}"]`);
-    if (!priorityItem) {
-        showErrorMessage('未找到优先级数据');
-        return;
-    }
-    
-    // 从DOM中提取数据
-    const priorityName = priorityItem.querySelector('.priority-name').textContent;
-    const priorityDesc = priorityItem.querySelector('.priority-desc').textContent;
-    
-    // 移除SLA相关代码，因为新的渲染中没有这个字段
-    const slaHours = '24'; // 默认值
-    
-    // 获取颜色值 - 从style属性中提取
-    const colorElement = priorityItem.querySelector('.priority-color');
-    const computedStyle = window.getComputedStyle(colorElement);
-    const backgroundColor = computedStyle.backgroundColor;
-    
-    // 将RGB颜色转换为十六进制
-    let colorCode = '#3498db'; // 默认颜色
-    if (backgroundColor && backgroundColor.startsWith('rgb')) {
-        const rgbMatch = backgroundColor.match(/rgb\((\d+),\s*(\d+),\s*(\d+)\)/);
-        if (rgbMatch) {
-            const r = parseInt(rgbMatch[1]);
-            const g = parseInt(rgbMatch[2]);
-            const b = parseInt(rgbMatch[3]);
-            colorCode = '#' + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-        }
-    }
-    
-    // 从优先级名称中提取等级 (P1, P2, etc.)
-    const levelMatch = priorityName.match(/P(\d+)/);
-    const priorityLevel = levelMatch ? levelMatch[1] : '3';
-    
-    // 尝试获取ID，兼容两种属性名
-    let dbId = priorityItem.getAttribute('data-db-id');
-    if (!dbId || dbId === 'null') {
-        // 如果data-db-id不存在或为null，尝试从data-db-value获取
-        const dbValue = priorityItem.getAttribute('data-db-value');
-        console.log('data-db-id为空，尝试使用data-db-value:', dbValue);
+    try {
+        // 直接从后端API获取准确的优先级数据
+        const response = await fetch('/api/ticket/config/priority');
+        const result = await response.json();
         
-        // 如果是静态HTML元素，需要根据priorityKey查找对应的ID
-        if (dbValue) {
-            // 从后端数据中查找对应的ID
-            fetch('/api/ticket/config/priority')
-                .then(response => response.json())
-                .then(result => {
-                    if (result.success && result.data) {
-                        const matchedPriority = result.data.find(p => p.priorityKey === priorityKey);
-                        if (matchedPriority) {
-                            dbId = matchedPriority.id;
-                            console.log('从后端数据中找到匹配的ID:', dbId);
-                            // 更新DOM元素的属性
-                            priorityItem.setAttribute('data-db-id', dbId);
-                        }
-                    }
-                });
+        if (!result || (result.code !== 200 && !result.success)) {
+            showErrorMessage('获取优先级数据失败');
+            return;
         }
+        
+        const priorityData = result.data.find(p => p.priorityKey === priorityKey);
+        if (!priorityData) {
+            showErrorMessage('未找到指定的优先级数据');
+            return;
+        }
+        
+        console.log('从后端获取的优先级数据:', priorityData);
+        
+        // 构造编辑数据
+        const editData = {
+            key: priorityData.priorityKey,
+            name: priorityData.priorityName,
+            desc: priorityData.description || '',
+            level: priorityData.priorityLevel,
+            sla: '24', // 默认值
+            color: priorityData.colorCode || '#3498db',
+            dbId: priorityData.id
+        };
+        
+        console.log('构造的编辑数据:', editData);
+        showEditPriorityModal(editData);
+        
+    } catch (error) {
+        console.error('获取优先级数据失败:', error);
+        showErrorMessage('获取优先级数据失败，请重试');
     }
-    
-    console.log('DOM元素的data-db-id属性:', dbId);
-    console.log('priorityItem元素:', priorityItem);
-    
-    const priorityData = {
-        key: priorityKey,
-        name: priorityName,
-        desc: priorityDesc,
-        level: priorityLevel,
-        sla: slaHours,
-        color: colorCode,
-        dbId: dbId
-    };
-    
-    console.log('提取的优先级数据:', priorityData);
-    showEditPriorityModal(priorityData);
 }
 
 // 显示编辑优先级模态框
@@ -946,10 +987,11 @@ async function submitEditPriority() {
         id: priorityDbId ? parseInt(priorityDbId) : null,
         priorityKey: priorityKey,
         priorityName: priorityName,
-        priorityDesc: priorityDesc,
+        description: priorityDesc,
         priorityLevel: parseInt(priorityLevel),
         colorCode: priorityColor,
-        isActive: true
+        isActive: true,  // 使用isActive字段，布尔值
+        enabled: 1       // 同时保留enabled字段以兼容
     };
     
     console.log('发送到后端的数据:', updateData);
@@ -986,7 +1028,7 @@ async function submitEditPriority() {
         const result = await response.json();
         console.log('API响应结果:', result);
         
-        if (result.success) {
+        if (result.success || result.code === 200) {
             showSuccessMessage('优先级更新成功！');
             closeEditPriorityModal();
             
@@ -1857,8 +1899,97 @@ function initMyTicketManagePage() {
     // 绑定列表事件
     bindTicketListEvents();
     
+    // 加载类型、优先级筛选下拉选项
+    console.log('开始加载筛选下拉选项...');
+    loadTypeFilterOptions();
+    loadPriorityFilterOptions();
+    
     // 加载我的工单数据
     loadMyTicketData();
+}
+
+// 加载“我的工单”页的类型筛选下拉选项
+async function loadTypeFilterOptions() {
+    console.log('🔄 开始加载类型筛选下拉选项...');
+    try {
+        const selectEl = document.getElementById('myTypeFilter');
+        if (!selectEl) {
+            console.warn('未找到 myTypeFilter 下拉框');
+            return;
+        }
+
+        // 保留第一个"全部类型"选项，其余清空
+        selectEl.innerHTML = '<option value="">全部类型</option>';
+
+        console.log('📡 调用类型配置API...');
+        const response = await fetch('/api/ticket/config/type');
+        const result = await response.json();
+        console.log('📋 类型API响应:', result);
+
+        const isSuccess = result.success === true || result.code === 200;
+        const data = result.data || [];
+
+        if (!isSuccess || !Array.isArray(data)) {
+            console.error('加载类型筛选数据失败:', result);
+            return;
+        }
+
+        data
+            .filter(t => t && t.typeKey && (t.isActive === undefined || t.isActive === true || t.isActive === 1) && (t.deleted !== 1 && t.deleted !== true))
+            .forEach(t => {
+                const option = document.createElement('option');
+                option.value = t.typeKey;
+                option.textContent = t.typeName || t.typeKey;
+                selectEl.appendChild(option);
+            });
+    } catch (error) {
+        console.error('加载类型筛选下拉选项出错:', error);
+    }
+}
+
+// 加载“我的工单”页的优先级筛选下拉选项
+async function loadPriorityFilterOptions() {
+    console.log('🔄 开始加载优先级筛选下拉选项...');
+    try {
+        const selectEl = document.getElementById('myPriorityFilter');
+        if (!selectEl) {
+            console.warn('未找到 myPriorityFilter 下拉框');
+            return;
+        }
+
+        // 保留第一个"全部优先级"选项，其余清空
+        selectEl.innerHTML = '<option value="">全部优先级</option>';
+
+        console.log('📡 调用优先级配置API...');
+        const response = await fetch('/api/ticket/config/priority');
+        const result = await response.json();
+        console.log('📋 优先级API响应:', result);
+
+        const isSuccess = result.success === true || result.code === 200;
+        const data = result.data || [];
+
+        if (!isSuccess || !Array.isArray(data)) {
+            console.error('加载优先级筛选数据失败:', result);
+            return;
+        }
+
+        data
+            .filter(p => p && p.priorityKey && (p.isActive === undefined || p.isActive === true || p.isActive === 1) && (p.deleted !== 1 && p.deleted !== true))
+            .sort((a, b) => {
+                const la = typeof a.priorityLevel === 'number' ? a.priorityLevel : 999;
+                const lb = typeof b.priorityLevel === 'number' ? b.priorityLevel : 999;
+                return la - lb;
+            })
+            .forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.priorityKey;
+                // 文本优先使用 priorityName，例如 P1、P2
+                option.textContent = p.priorityName || p.priorityKey;
+                selectEl.appendChild(option);
+            });
+    } catch (error) {
+        console.error('加载优先级筛选下拉选项出错:', error);
+    }
 }
 
 // 初始化工单管理页面（通用）
@@ -2038,14 +2169,31 @@ async function loadMyTicketData(page = 1, size = 20, filters = {}) {
         console.log('我的工单API响应:', result);
         
         if (result.success || result.code === 200) {
-            const tickets = result.data?.records || [];
+            const data = result.data;
+            let tickets = [];
+            
+            // 兼容不同的数据结构
+            if (Array.isArray(data)) {
+                // 如果data直接是数组
+                tickets = data;
+            } else if (data && Array.isArray(data.records)) {
+                // 如果data是对象且包含records数组
+                tickets = data.records;
+            } else if (data && Array.isArray(data.list)) {
+                // 如果data是对象且包含list数组
+                tickets = data.list;
+            } else {
+                console.warn('⚠️ 我的工单数据结构未知:', data);
+                tickets = [];
+            }
+            
             console.log(`成功加载 ${tickets.length} 条我的工单`);
             
             // 渲染工单列表
             renderMyTicketList(tickets);
             
             // 更新分页信息（如果需要）
-            updateMyTicketPagination(result.data);
+            updateMyTicketPagination(data);
         } else {
             console.error('加载我的工单失败:', result.message);
             showErrorMessage(result.message || '加载工单失败');
@@ -2454,10 +2602,21 @@ function toggleAllTickets(checked) {
 
 // 获取选中的工单
 function getSelectedTickets() {
-    const checkboxes = document.querySelectorAll('.ticket-checkbox:checked');
-    return Array.from(checkboxes).map(checkbox => {
-        return checkbox.closest('.ticket-list-item').getAttribute('data-ticket-id');
-    });
+    console.log('🔍 获取选中的工单...');
+    
+    // 修正选择器：使用实际的复选框类名和工单行结构
+    const checkboxes = document.querySelectorAll('table tbody tr input[type="checkbox"]:checked');
+    console.log('📋 找到选中的复选框数量:', checkboxes.length);
+    
+    const ticketIds = Array.from(checkboxes).map(checkbox => {
+        const row = checkbox.closest('tr');
+        const ticketId = row ? row.getAttribute('data-ticket-id') : null;
+        console.log('📋 获取到工单ID:', ticketId);
+        return ticketId;
+    }).filter(id => id !== null); // 过滤掉null值
+    
+    console.log('📋 最终工单ID数组:', ticketIds);
+    return ticketIds;
 }
 
 // 更新批量操作按钮状态
@@ -2951,6 +3110,7 @@ async function loadUnassignedTicketData(page = 1, size = 50, filters = {}) {
         // 添加筛选参数
         if (filters.typeKey) params.append('typeKey', filters.typeKey);
         if (filters.priorityKey) params.append('priorityKey', filters.priorityKey);
+        if (filters.status) params.append('status', filters.status);
         if (filters.createdDate) params.append('createdDate', filters.createdDate);
         if (filters.keyword) params.append('keyword', filters.keyword);
         
@@ -2969,7 +3129,22 @@ async function loadUnassignedTicketData(page = 1, size = 50, filters = {}) {
         
         if (result.success || result.code === 200) {
             const data = result.data;
-            const records = data.records || [];
+            let records = [];
+            
+            // 兼容不同的数据结构
+            if (Array.isArray(data)) {
+                // 如果data直接是数组
+                records = data;
+            } else if (data && Array.isArray(data.records)) {
+                // 如果data是对象且包含records数组
+                records = data.records;
+            } else if (data && Array.isArray(data.list)) {
+                // 如果data是对象且包含list数组
+                records = data.list;
+            } else {
+                console.warn('⚠️ 未知的数据结构:', data);
+                records = [];
+            }
             
             console.log(`✅ 接收到 ${records.length} 个工单（所有状态）`);
             
@@ -3032,6 +3207,7 @@ function applyUnassignedFilter() {
     const filters = {
         typeKey: document.getElementById('unassignedTypeFilter')?.value || '',
         priorityKey: document.getElementById('unassignedPriorityFilter')?.value || '',
+        status: document.getElementById('unassignedStatusFilter')?.value || '',
         createdDate: document.getElementById('unassignedDateFilter')?.value || '',
         keyword: document.getElementById('unassignedKeywordFilter')?.value?.trim() || ''
     };
@@ -3044,6 +3220,7 @@ function applyUnassignedFilter() {
 function resetUnassignedFilter() {
     document.getElementById('unassignedTypeFilter').value = '';
     document.getElementById('unassignedPriorityFilter').value = '';
+    document.getElementById('unassignedStatusFilter').value = '';
     document.getElementById('unassignedDateFilter').value = '';
     document.getElementById('unassignedKeywordFilter').value = '';
     
@@ -3074,10 +3251,29 @@ function toggleAllUnassignedTickets(checked) {
 
 // 获取选中的未派发工单
 function getSelectedUnassignedTickets() {
+    console.log('🔍 获取选中的未派发工单...');
+    
     const checkboxes = document.querySelectorAll('.unassigned-checkbox:checked');
-    return Array.from(checkboxes).map(checkbox => {
-        return checkbox.closest('.ticket-list-item').getAttribute('data-ticket-id');
-    });
+    console.log('📋 找到选中的复选框数量:', checkboxes.length);
+    
+    const ticketIds = Array.from(checkboxes).map(checkbox => {
+        console.log('📋 处理复选框:', checkbox);
+        
+        // 派发页面使用表格结构，查找最近的tr元素
+        const ticketRow = checkbox.closest('tr');
+        console.log('📋 找到的工单行:', ticketRow);
+        
+        if (ticketRow) {
+            const ticketId = ticketRow.getAttribute('data-ticket-id') || checkbox.value;
+            console.log('📋 获取到工单ID:', ticketId);
+            return ticketId;
+        }
+        console.log('📋 未找到工单行，返回null');
+        return null;
+    }).filter(id => id !== null); // 过滤掉null值
+    
+    console.log('📋 最终未派发工单ID数组:', ticketIds);
+    return ticketIds;
 }
 
 // 更新未派发批量操作按钮状态
@@ -3137,9 +3333,16 @@ function renderUnassignedTickets(tickets) {
                 <i class="fas fa-trash"></i>
             </button>` : '';
         
+        // 已解决或已关闭的工单不显示派发按钮
+        const isCompleted = ['resolved', 'closed', 'completed'].includes(ticket.status);
+        const assignButton = isCompleted ? '' :
+            `<button class="btn-icon btn-assign" onclick="assignSingleTicket(${ticket.id})" title="派发">
+                <i class="fas fa-user-plus"></i>
+            </button>`;
+        
         return `
         <tr data-ticket-id="${ticket.id}">
-            <td><input type="checkbox" class="unassigned-checkbox" value="${ticket.id}"></td>
+            <td><input type="checkbox" class="unassigned-checkbox" value="${ticket.id}" ${isCompleted ? 'disabled title="已完成的工单无需派发"' : ''}></td>
             <td><span class="ticket-number">${ticket.ticketNo || '#' + ticket.id}</span></td>
             <td><span class="ticket-title">${ticket.title}</span></td>
             <td>
@@ -3170,9 +3373,7 @@ function renderUnassignedTickets(tickets) {
                     <button class="btn-icon btn-edit" onclick="editUnassignedTicket(${ticket.id})" title="编辑">
                         <i class="fas fa-edit"></i>
                     </button>
-                    <button class="btn-icon btn-assign" onclick="assignSingleTicket(${ticket.id})" title="派发">
-                        <i class="fas fa-user-plus"></i>
-                    </button>
+                    ${assignButton}
                     ${deleteButton}
                 </div>
             </td>
@@ -3204,16 +3405,22 @@ function getTypeInfo(key) {
     return typeMap[key] || { name: '服务请求', color: '#1890ff' };
 }
 
-// 获取来源信息（包括颜色）
+// 获取来源信息（包括颜色和图标）
 function getSourceInfo(key) {
     const sourceMap = {
-        'user_report': { name: '用户报告', color: '#1890ff' },
-        'system_monitor': { name: '系统监控', color: '#722ed1' },
-        'email': { name: '邮件', color: '#13c2c2' },
-        'phone': { name: '电话', color: '#52c41a' },
-        'web': { name: 'Web端', color: '#fa8c16' }
+        // 数据库中的来源
+        'alert': { name: '告警触发', color: '#f5222d', icon: 'fas fa-bell' },
+        'manual': { name: '人工创建', color: '#1890ff', icon: 'fas fa-user-edit' },
+        'scheduled': { name: '计划任务', color: '#722ed1', icon: 'fas fa-clock' },
+        'user': { name: '用户报告', color: '#52c41a', icon: 'fas fa-user' },
+        // 兼容旧数据
+        'user_report': { name: '用户报告', color: '#1890ff', icon: 'fas fa-user' },
+        'system_monitor': { name: '系统监控', color: '#722ed1', icon: 'fas fa-desktop' },
+        'email': { name: '邮件', color: '#13c2c2', icon: 'fas fa-envelope' },
+        'phone': { name: '电话', color: '#52c41a', icon: 'fas fa-phone' },
+        'web': { name: 'Web端', color: '#fa8c16', icon: 'fas fa-globe' }
     };
-    return sourceMap[key] || { name: '用户报告', color: '#1890ff' };
+    return sourceMap[key] || { name: key || '未知', color: '#d9d9d9', icon: 'fas fa-question' };
 }
 
 // 获取状态信息（包括颜色）
@@ -3358,7 +3565,7 @@ function batchAssignUnassignedTickets() {
     }
     
     // 保存要批量派发的工单ID列表
-    window.currentAssignTicketIds = selectedTickets.map(t => t.id);
+    window.currentAssignTicketIds = selectedTickets;
     
     // 显示派发模态框
     showAssignModal();
@@ -3546,34 +3753,54 @@ async function confirmAssign() {
     }
     
     try {
+        console.log('🔍 === 派发工单调试信息 ===');
+        console.log('工单ID数组:', ticketIds);
+        console.log('工单数量:', ticketIds.length);
+        console.log('处理人ID:', assigneeId, '类型:', typeof assigneeId);
+        console.log('处理人姓名:', assigneeName);
+        console.log('派发备注:', note);
+        console.log('当前用户:', currentUser);
+        
         let response;
         
         if (ticketIds.length === 1) {
+            console.log('📋 执行单个派发');
             // 单个派发：POST /api/tickets/{ticketId}/assign
+            const requestData = {
+                assigneeId: parseInt(assigneeId),
+                assigneeName: assigneeName,
+                assignNote: note,
+                operatorId: currentUser.id
+            };
+            console.log('单个派发请求数据:', requestData);
+            
             response = await fetch(`/api/tickets/${ticketIds[0]}/assign`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    assigneeId: parseInt(assigneeId),
-                    assigneeName: assigneeName,
-                    assignNote: note,
-                    operatorId: currentUser.id
-                })
+                body: JSON.stringify(requestData)
             });
         } else {
+            console.log('📋 执行批量派发');
             // 批量派发：POST /api/tickets/batch-assign
+            const requestData = {
+                ticketIds,
+                assigneeId: parseInt(assigneeId),
+                assigneeName: assigneeName,
+                assignNote: note,
+                operatorId: currentUser.id
+            };
+            console.log('批量派发请求数据:', requestData);
+            console.log('请求URL: /api/tickets/batch-assign');
+            
             response = await fetch('/api/tickets/batch-assign', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    ticketIds,
-                    assigneeId: parseInt(assigneeId),
-                    assigneeName: assigneeName,
-                    assignNote: note,
-                    operatorId: currentUser.id
-                })
+                body: JSON.stringify(requestData)
             });
         }
+        
+        console.log('📥 API响应状态:', response.status);
+        console.log('📥 API响应头:', response.headers.get('content-type'));
         
         const result = await response.json();
         
@@ -3591,9 +3818,157 @@ async function confirmAssign() {
 }
 
 // 导出未派发工单
-function exportUnassignedTickets() {
-    console.log('导出未派发工单');
-    alert('导出未派发工单功能开发中...');
+async function exportUnassignedTickets() {
+    console.log('导出工单数据');
+    
+    try {
+        // 获取当前筛选条件
+        const filters = {};
+        const typeFilter = document.getElementById('unassignedTypeFilter');
+        const priorityFilter = document.getElementById('unassignedPriorityFilter');
+        const statusFilter = document.getElementById('unassignedStatusFilter');
+        const keywordFilter = document.getElementById('unassignedKeywordFilter');
+        
+        if (typeFilter && typeFilter.value) filters.typeKey = typeFilter.value;
+        if (priorityFilter && priorityFilter.value) filters.priorityKey = priorityFilter.value;
+        if (statusFilter && statusFilter.value) filters.status = statusFilter.value;
+        if (keywordFilter && keywordFilter.value) filters.keyword = keywordFilter.value;
+        
+        // 构建查询参数，获取所有数据
+        const params = new URLSearchParams();
+        params.append('current', 1);
+        params.append('size', 1000); // 获取最多1000条
+        
+        if (filters.typeKey) params.append('typeKey', filters.typeKey);
+        if (filters.priorityKey) params.append('priorityKey', filters.priorityKey);
+        if (filters.status) params.append('status', filters.status);
+        if (filters.keyword) params.append('keyword', filters.keyword);
+        
+        showSuccessMessage('正在导出数据...');
+        
+        const response = await fetch(`/api/tickets/list?${params.toString()}`);
+        const result = await response.json();
+        
+        if (!result.success && result.code !== 200) {
+            showErrorMessage('获取数据失败');
+            return;
+        }
+        
+        // 获取工单数据
+        let records = [];
+        const data = result.data;
+        if (Array.isArray(data)) {
+            records = data;
+        } else if (data && Array.isArray(data.records)) {
+            records = data.records;
+        } else if (data && Array.isArray(data.list)) {
+            records = data.list;
+        }
+        
+        if (records.length === 0) {
+            showErrorMessage('没有可导出的数据');
+            return;
+        }
+        
+        // 状态映射
+        const statusMap = {
+            'pending': '待处理',
+            'assigned': '已分配',
+            'processing': '处理中',
+            'resolved': '已解决',
+            'completed': '已完成',
+            'closed': '已关闭'
+        };
+        
+        // 优先级映射
+        const priorityMap = {
+            'urgent': '紧急',
+            'high': '高',
+            'medium': '中',
+            'low': '低'
+        };
+        
+        // 类型映射
+        const typeMap = {
+            'fault': '故障',
+            'incident': '故障',
+            'change': '变更',
+            'request': '服务请求',
+            'service': '服务',
+            'consultation': '咨询',
+            'maintenance': '维护'
+        };
+        
+        // 来源映射
+        const sourceMap = {
+            'alert': '告警触发',
+            'manual': '人工创建',
+            'scheduled': '计划任务',
+            'user': '用户报告'
+        };
+        
+        // 构建CSV内容
+        const headers = ['工单编号', '标题', '描述', '类型', '优先级', '状态', '来源', '创建人', '处理人', '关联设备', '创建时间', '更新时间'];
+        
+        const csvRows = [headers.join(',')];
+        
+        records.forEach(ticket => {
+            const row = [
+                ticket.ticketNo || '',
+                `"${(ticket.title || '').replace(/"/g, '""')}"`,
+                `"${(ticket.description || '').replace(/"/g, '""')}"`,
+                typeMap[ticket.typeKey] || ticket.typeKey || '',
+                priorityMap[ticket.priorityKey] || ticket.priorityKey || '',
+                statusMap[ticket.status] || ticket.status || '',
+                sourceMap[ticket.sourceKey] || ticket.sourceKey || '',
+                ticket.creatorName || '',
+                ticket.assigneeName || '',
+                ticket.deviceName || '',
+                formatDateTime(ticket.createdAt) || '',
+                formatDateTime(ticket.updatedAt) || ''
+            ];
+            csvRows.push(row.join(','));
+        });
+        
+        // 添加BOM以支持中文
+        const BOM = '\uFEFF';
+        const csvContent = BOM + csvRows.join('\n');
+        
+        // 创建Blob并下载
+        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        
+        // 生成文件名
+        const now = new Date();
+        const fileName = `工单列表_${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}_${String(now.getHours()).padStart(2, '0')}${String(now.getMinutes()).padStart(2, '0')}.csv`;
+        
+        link.setAttribute('href', url);
+        link.setAttribute('download', fileName);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        URL.revokeObjectURL(url);
+        
+        showSuccessMessage(`成功导出 ${records.length} 条工单数据`);
+        
+    } catch (error) {
+        console.error('导出工单失败:', error);
+        showErrorMessage('导出失败：' + error.message);
+    }
+}
+
+// 格式化日期时间
+function formatDateTime(dateStr) {
+    if (!dateStr) return '';
+    try {
+        const date = new Date(dateStr);
+        if (isNaN(date.getTime())) return dateStr;
+        return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')} ${String(date.getHours()).padStart(2, '0')}:${String(date.getMinutes()).padStart(2, '0')}:${String(date.getSeconds()).padStart(2, '0')}`;
+    } catch (e) {
+        return dateStr;
+    }
 }
 
 // 刷新未派发工单
@@ -4551,10 +4926,17 @@ function deletePriority(priorityKey) {
     const priorityItem = document.querySelector(`[data-priority="${priorityKey}"]`);
     if (priorityItem) {
         const name = priorityItem.querySelector('.priority-name').textContent;
+        const priorityId = priorityItem.getAttribute('data-db-id'); // 获取数据库ID
+        
+        if (!priorityId) {
+            console.error('无法获取优先级ID');
+            showErrorMessage('删除失败：无法获取优先级ID');
+            return;
+        }
         
         if (confirm(`确定要删除 ${name} 吗？\n删除后将从数据库中移除该优先级选项。`)) {
-            // 调用后端API删除
-            fetch(`/api/ticket/config/priority/${priorityKey}`, {
+            // 调用后端API删除，使用数据库ID而不是key
+            fetch(`/api/ticket/config/priority/${priorityId}`, {
                 method: 'DELETE',
                 headers: {
                     'Content-Type': 'application/json'
@@ -4611,8 +4993,8 @@ function showAddPriorityModal() {
                 <div class="modal-body">
                     <form id="addPriorityForm">
                         <div class="form-group">
-                            <label for="priorityKey">优先级Key *</label>
-                            <input type="text" id="priorityKey" name="priorityKey" 
+                            <label for="add_priorityKey">优先级Key *</label>
+                            <input type="text" id="add_priorityKey" name="priorityKey" 
                                    placeholder="例如：urgent, high, custom_p${nextPriorityNumber}" 
                                    pattern="[a-z0-9_]+" 
                                    title="只能包含小写字母、数字和下划线"
@@ -4621,30 +5003,30 @@ function showAddPriorityModal() {
                         </div>
                         
                         <div class="form-group">
-                            <label for="priorityName">优先级名称 *</label>
-                            <input type="text" id="priorityName" name="priorityName" 
+                            <label for="add_priorityName">优先级名称 *</label>
+                            <input type="text" id="add_priorityName" name="priorityName" 
                                    placeholder="例如：P${nextPriorityNumber}-紧急" required>
                         </div>
                         
                         <div class="form-group">
-                            <label for="priorityDesc">优先级描述 *</label>
-                            <input type="text" id="priorityDesc" name="priorityDesc" 
+                            <label for="add_priorityDesc">优先级描述 *</label>
+                            <input type="text" id="add_priorityDesc" name="priorityDesc" 
                                    placeholder="请输入优先级描述" required>
                         </div>
                         
                         <div class="form-group">
-                            <label for="priorityLevel">优先级等级 *</label>
-                            <input type="number" id="priorityLevel" name="priorityLevel" 
-                                   value="${nextPriorityNumber}" min="1" max="999" 
+                            <label for="add_priorityLevel">优先级等级 *</label>
+                            <input type="number" id="add_priorityLevel" name="priorityLevel" 
+                                   value="${nextPriorityNumber}" min="0" max="999" 
                                    placeholder="请输入优先级等级（数字越小优先级越高）" required>
-                            <small class="form-text text-muted">建议：1-最高，2-高，3-中，4-低，5-最低</small>
+                            <small class="form-text text-muted">建议：0-最高，1-紧急，2-高，3-中，4-低</small>
                         </div>
                         
                         
                         <div class="form-group">
-                            <label for="priorityColor">优先级颜色 *</label>
+                            <label for="add_priorityColor">优先级颜色 *</label>
                             <div class="color-picker">
-                                <input type="color" id="priorityColor" name="priorityColor" 
+                                <input type="color" id="add_priorityColor" name="priorityColor" 
                                        value="${getNextAvailableColor()}" required>
                                 <span class="color-preview"></span>
                             </div>
@@ -4666,9 +5048,9 @@ function showAddPriorityModal() {
     const modal = document.getElementById('addPriorityModal');
     modal.style.display = 'flex';
     
-    // 聚焦到描述输入框
+    // 聚焦到Key输入框
     setTimeout(() => {
-        document.getElementById('priorityDesc').focus();
+        document.getElementById('add_priorityKey').focus();
     }, 100);
 }
 
@@ -4678,78 +5060,7 @@ function closeAddPriorityModal() {
     if (modal) {
         modal.remove();
     }
-}
-
-// 提交新增优先级
-async function submitAddPriority() {
-    const form = document.getElementById('addPriorityForm');
-    const formData = new FormData(form);
-    
-    // 验证表单
-    if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
-    }
-    
-    // 构造优先级数据
-    const priorityKey = formData.get('priorityKey').toLowerCase().trim();
-    
-    // 验证priorityKey格式
-    if (!/^[a-z0-9_]+$/.test(priorityKey)) {
-        showErrorMessage('优先级Key格式不正确，只能包含小写字母、数字和下划线');
-        return;
-    }
-    
-    const priorityData = {
-        priorityKey: priorityKey,
-        priorityName: formData.get('priorityName'),
-        priorityDesc: formData.get('priorityDesc'),
-        priorityLevel: parseInt(formData.get('priorityLevel')),
-        colorCode: formData.get('priorityColor'),
-        isDefault: false,
-        isActive: true
-    };
-    
-    try {
-        // 调用后端API创建优先级
-        const response = await fetch('/api/ticket/config/priority', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(priorityData)
-        });
-        
-        // 检查HTTP状态码
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const result = await response.json();
-        
-        if (result && result.success) {
-            // 关闭模态框
-            closeAddPriorityModal();
-            
-            // 重新加载优先级配置
-            await loadPriorityConfig();
-            showSuccessMessage(`新优先级 ${priorityData.priorityName} 添加成功！`);
-        } else {
-            showErrorMessage(result?.message || '添加优先级失败：服务器返回失败状态');
-        }
-        
-    } catch (error) {
-        console.error('添加优先级失败:', error);
-        
-        // 更详细的错误信息
-        if (error.name === 'TypeError' && error.message.includes('fetch')) {
-            showErrorMessage('无法连接到服务器，请检查网络连接');
-        } else if (error.message.includes('HTTP')) {
-            showErrorMessage(`服务器错误：${error.message}`);
-        } else {
-            showErrorMessage('添加优先级失败，请重试');
-        }
-    }
+    document.body.style.overflow = 'auto';
 }
 
 // 获取下一个可用的颜色
@@ -4816,8 +5127,8 @@ setInterval(updateTicketData, 30000); // 每30秒更新一次
 document.addEventListener('DOMContentLoaded', function() {
     console.log('页面加载完成，初始化页面');
     
-    // 绑定主标签页事件
-    bindMainTabEvents();
+    // 绑定主标签页事件（已在initializeEventListeners中处理，避免重复绑定）
+    // bindMainTabEvents();
     
     // 初始化配置功能（因为默认显示配置工单页面）
     setTimeout(() => {
@@ -4878,6 +5189,7 @@ function navigateToPage(menuItem) {
         '网络拓扑': '网络拓扑.html',
         '统计报表': '统计报表.html',
         '运维工具': '运维工具.html',
+        '数字大屏': '大屏展示.html',
         '业务管理': '业务管理.html',
         '网络管理': '网络管理.html',
         '视频管理': '视频管理.html',
@@ -5385,9 +5697,11 @@ function createTicketListItem(ticket) {
     
     // 状态映射
     const statusMap = {
+        'pending': { text: '待处理', class: 'pending' },
         'assigned': { text: '已分配', class: 'assigned' },
         'processing': { text: '处理中', class: 'processing' },
         'resolved': { text: '已解决', class: 'resolved' },
+        'completed': { text: '已完成', class: 'completed' },
         'closed': { text: '已关闭', class: 'closed' }
     };
     
@@ -5405,8 +5719,10 @@ function createTicketListItem(ticket) {
     
     // 类型映射
     const typeMap = {
+        'fault': { text: '故障', class: 'fault' },
         'incident': { text: '故障', class: 'incident' },
         'change': { text: '变更', class: 'change' },
+        'request': { text: '服务请求', class: 'request' },
         'service': { text: '服务', class: 'service' },
         'consultation': { text: '咨询', class: 'consultation' },
         'maintenance': { text: '维护', class: 'maintenance' }
@@ -5416,6 +5732,12 @@ function createTicketListItem(ticket) {
     
     // 来源映射
     const sourceMap = {
+        // 数据库中的来源
+        'alert': { text: '告警触发', icon: 'fa-bell' },
+        'manual': { text: '人工创建', icon: 'fa-user-edit' },
+        'scheduled': { text: '计划任务', icon: 'fa-clock' },
+        'user': { text: '用户报告', icon: 'fa-user' },
+        // 兼容旧数据
         'user_report': { text: '用户报告', icon: 'fa-user' },
         'system_monitor': { text: '系统监控', icon: 'fa-desktop' },
         'email': { text: '邮件', icon: 'fa-envelope' },
@@ -5441,7 +5763,6 @@ function createTicketListItem(ticket) {
         </div>
         <div class="list-item-cell title-col">
             <div class="ticket-title">${ticket.title || '无标题'}</div>
-            ${ticket.description ? `<div class="ticket-desc">${ticket.description}</div>` : ''}
         </div>
         <div class="list-item-cell type-col">
             <span class="type-badge ${type.class}">${type.text}</span>
@@ -5489,7 +5810,43 @@ function updateMyTicketPagination(pageData) {
         pages: pageData.pages
     });
     
-    // 这里可以添加分页UI更新逻辑
+    // 更新分页UI
+    const paginationInfo = document.querySelector('#myTicketsPage .pagination-info');
+    if (paginationInfo && pageData) {
+        const current = pageData.current || 1;
+        const size = pageData.size || 20;
+        const total = pageData.total || 0;
+        const start = total === 0 ? 0 : ((current - 1) * size + 1);
+        const end = Math.min(current * size, total);
+        paginationInfo.textContent = `显示 ${start}-${end} 条，共 ${total} 条记录`;
+    }
+    
+    // 更新分页按钮
+    const paginationControls = document.querySelector('#myTicketsPage .pagination-controls');
+    if (paginationControls && pageData) {
+        const pages = pageData.pages || 1;
+        const current = pageData.current || 1;
+        
+        let buttonsHTML = `
+            <button class="btn-pagination" ${current <= 1 ? 'disabled' : ''} onclick="loadMyTicketData(${current - 1})">
+                <i class="fas fa-chevron-left"></i>
+            </button>
+        `;
+        
+        for (let i = 1; i <= Math.min(pages, 5); i++) {
+            buttonsHTML += `
+                <button class="btn-pagination ${i === current ? 'active' : ''}" onclick="loadMyTicketData(${i})">${i}</button>
+            `;
+        }
+        
+        buttonsHTML += `
+            <button class="btn-pagination" ${current >= pages ? 'disabled' : ''} onclick="loadMyTicketData(${current + 1})">
+                <i class="fas fa-chevron-right"></i>
+            </button>
+        `;
+        
+        paginationControls.innerHTML = buttonsHTML;
+    }
 }
 
 // 查看工单详情
@@ -6462,204 +6819,4 @@ async function batchCompleteTickets() {
 window.batchCompleteTickets = batchCompleteTickets;
 window.updateBatchCompleteButton = updateBatchCompleteButton;
 
-// ==================== 上传历史功能 ====================
 
-// 模拟上传历史数据（实际应从后端API获取）
-const mockUploadHistory = [
-    {
-        id: 1,
-        fileName: 'test.csv',
-        fileSize: '1.52 KB',
-        uploadTime: '2025-11-04 15:30',
-        progress: 100,
-        status: 'success', // success, failed, uploading
-        errorMsg: '',
-        successCount: 5,
-        failCount: 0
-    },
-    {
-        id: 2,
-        fileName: '1234.xlsx',
-        fileSize: '10.54 KB',
-        uploadTime: '2025-11-04 15:05',
-        progress: 100,
-        status: 'success',
-        errorMsg: '',
-        successCount: 4,
-        failCount: 0
-    },
-    {
-        id: 3,
-        fileName: '1234.xlsx',
-        fileSize: '10.54 KB',
-        uploadTime: '2025-11-04 15:05',
-        progress: 100,
-        status: 'success',
-        errorMsg: '',
-        successCount: 4,
-        failCount: 0
-    },
-    {
-        id: 4,
-        fileName: '1234.xlsx',
-        fileSize: '10.34 KB',
-        uploadTime: '2025-11-04 15:00',
-        progress: 0,
-        status: 'failed',
-        errorMsg: '文件格式错误',
-        successCount: 0,
-        failCount: 4
-    },
-    {
-        id: 5,
-        fileName: '工单批量导入模板 (5).csv',
-        fileSize: '1.04 KB',
-        uploadTime: '2025-11-04 14:08',
-        progress: 0,
-        status: 'failed',
-        errorMsg: '数据验证失败',
-        successCount: 0,
-        failCount: 4
-    },
-    {
-        id: 6,
-        fileName: '工单批量导入模板 (5).csv',
-        fileSize: '1.33 KB',
-        uploadTime: '2025-11-04 14:56',
-        progress: 0,
-        status: 'failed',
-        errorMsg: '缺少必填字段',
-        successCount: 0,
-        failCount: 5
-    }
-];
-
-// 加载上传历史
-function loadUploadHistory() {
-    console.log('加载上传历史');
-    renderUploadHistory();
-}
-
-// 渲染上传历史列表
-function renderUploadHistory() {
-    const historyList = document.getElementById('uploadHistoryList');
-    
-    if (!historyList) {
-        console.error('找不到上传历史列表容器');
-        return;
-    }
-    
-    if (mockUploadHistory.length === 0) {
-        historyList.innerHTML = `
-            <div class="empty-state">
-                <i class="fas fa-inbox"></i>
-                <p>暂无上传记录</p>
-                <span>上传文件后，记录将显示在这里</span>
-            </div>
-        `;
-        return;
-    }
-    
-    let html = '';
-    
-    mockUploadHistory.forEach(item => {
-        let statusHtml = '';
-        let progressHtml = '';
-        
-        // 根据状态生成不同的HTML
-        if (item.status === 'success') {
-            statusHtml = `
-                <div class="upload-status">
-                    <span class="upload-status-badge success">
-                        <i class="fas fa-check-circle"></i>
-                        完成
-                    </span>
-                </div>
-            `;
-            progressHtml = `
-                <div class="upload-progress">
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: 100%;"></div>
-                    </div>
-                    <div class="progress-info">
-                        <span>100%</span>
-                        <span>成功:${item.successCount} / 失败:${item.failCount}</span>
-                    </div>
-                </div>
-            `;
-        } else if (item.status === 'failed') {
-            statusHtml = `
-                <div class="upload-status">
-                    <span class="upload-status-badge failed">
-                        <i class="fas fa-times-circle"></i>
-                        失败
-                    </span>
-                </div>
-            `;
-            progressHtml = `
-                <div class="upload-progress">
-                    <div class="progress-bar-container">
-                        <div class="progress-bar failed" style="width: ${item.progress}%;"></div>
-                    </div>
-                    <div class="progress-info error">
-                        <span>${item.progress}%</span>
-                        <span>${item.errorMsg} - 成功:${item.successCount} / 失败:${item.failCount}</span>
-                    </div>
-                </div>
-            `;
-        } else {
-            statusHtml = `
-                <div class="upload-status">
-                    <span class="upload-status-badge uploading">
-                        <i class="fas fa-spinner fa-spin"></i>
-                        上传中
-                    </span>
-                </div>
-            `;
-            progressHtml = `
-                <div class="upload-progress">
-                    <div class="progress-bar-container">
-                        <div class="progress-bar" style="width: ${item.progress}%;"></div>
-                    </div>
-                    <div class="progress-info">
-                        <span>${item.progress}%</span>
-                        <span>正在上传...</span>
-                    </div>
-                </div>
-            `;
-        }
-        
-        html += `
-            <div class="upload-history-item">
-                <div class="file-info">
-                    <div class="file-icon">
-                        <i class="fas fa-file-${item.fileName.endsWith('.csv') ? 'csv' : 'excel'}"></i>
-                    </div>
-                    <div class="file-details">
-                        <div class="file-name">${item.fileName}</div>
-                        <div class="file-size">${item.fileSize}</div>
-                        <div class="file-time">${item.uploadTime}</div>
-                    </div>
-                </div>
-                ${progressHtml}
-                ${statusHtml}
-            </div>
-        `;
-    });
-    
-    historyList.innerHTML = html;
-}
-
-// 页面加载时自动渲染上传历史
-document.addEventListener('DOMContentLoaded', function() {
-    // 检查是否在上传页面
-    const uploadPage = document.getElementById('uploadPage');
-    if (uploadPage) {
-        console.log('初始化上传历史');
-        renderUploadHistory();
-    }
-});
-
-// 暴露到全局
-window.loadUploadHistory = loadUploadHistory;
-window.renderUploadHistory = renderUploadHistory;

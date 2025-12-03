@@ -11,7 +11,7 @@ spring:
   datasource:
     driver-class-name: com.mysql.cj.jdbc.Driver
     url: jdbc:mysql://localhost:3306/aiops_db?useUnicode=true&characterEncoding=utf8&useSSL=false&serverTimezone=Asia/Shanghai&allowPublicKeyRetrieval=true
-    username: zxb
+    username: root
     password: 2004
     hikari:
       minimum-idle: 5
@@ -93,6 +93,7 @@ knife4j:
 # 日志配置
 logging:
   level:
+    com.zxb.aiproject: debug
     com.aiops: debug
     org.springframework.security: debug
   pattern:

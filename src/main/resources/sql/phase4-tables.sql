@@ -236,25 +236,22 @@ CREATE TABLE `report_data` (
 -- 5. 智能预测模块
 -- ====================================
 
--- 预测模型表
+-- 预测模型表（设备+指标组合）
 DROP TABLE IF EXISTS `prediction_model`;
 CREATE TABLE `prediction_model` (
     `id` BIGINT(20) NOT NULL AUTO_INCREMENT COMMENT '主键ID',
-    `model_name` VARCHAR(100) NOT NULL COMMENT '模型名称',
-    `model_type` VARCHAR(50) NOT NULL COMMENT '模型类型：regression,classification,timeseries',
-    `algorithm` VARCHAR(50) DEFAULT NULL COMMENT '算法：lstm,arima,rf',
-    `target_metric` VARCHAR(50) DEFAULT NULL COMMENT '目标指标',
-    `features` TEXT DEFAULT NULL COMMENT '特征列表(JSON)',
-    `parameters` TEXT DEFAULT NULL COMMENT '模型参数(JSON)',
-    `accuracy` DECIMAL(5,2) DEFAULT NULL COMMENT '准确率(%)',
-    `status` VARCHAR(20) DEFAULT 'training' COMMENT '状态：training,active,archived',
-    `train_time` DATETIME DEFAULT NULL COMMENT '训练时间',
-    `description` TEXT DEFAULT NULL COMMENT '描述',
+    `service_id` BIGINT(20) NOT NULL COMMENT '服务ID',
+    `device_category` VARCHAR(100) NOT NULL COMMENT '设备小类',
+    `monitoring_type` VARCHAR(50) NOT NULL COMMENT '监控类型',
+    `monitoring_metric` VARCHAR(100) NOT NULL COMMENT '监控指标',
+    `model_version` VARCHAR(50) DEFAULT NULL COMMENT '模型版本',
+    `status` TINYINT(1) DEFAULT 1 COMMENT '状态: 1-启用, 0-停用',
     `create_time` DATETIME DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间',
     `update_time` DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP COMMENT '更新时间',
     `deleted` TINYINT(1) DEFAULT 0 COMMENT '逻辑删除',
-    PRIMARY KEY (`id`)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='预测模型表';
+    PRIMARY KEY (`id`),
+    KEY `idx_prediction_model_service_id` (`service_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='预测模型表（设备+指标组合）';
 
 -- 预测结果表
 DROP TABLE IF EXISTS `prediction_result`;

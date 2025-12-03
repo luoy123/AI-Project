@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="zh-CN">
 <head>
 <style>
@@ -546,6 +546,10 @@
         <div class="sidebar-item">
             <i class="fas fa-tools"></i>
             <span>运维工具</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-desktop"></i>
+            <span>数字大屏</span>
         </div>
         <div class="sidebar-divider"></div>
         <div class="sidebar-group-title">拓展中心</div>
@@ -2045,9 +2049,84 @@
             }
         });
         
-        // 时间过滤器变化时自动搜索
-        document.getElementById('configTimeFilter').addEventListener('change', function() {
+        // 搜索配置列表
+        function searchConfigList() {
+            // 查找配置管理页面的搜索框
+            let keywordInput = null;
+            const allInputs = document.querySelectorAll('input');
+            for (let input of allInputs) {
+                if (input.placeholder && input.placeholder.includes('搜索设备名称')) {
+                    keywordInput = input;
+                    break;
+                }
+            }
+            
+            // 查找时间筛选下拉框
+            let timeSelect = null;
+            const allSelects = document.querySelectorAll('select');
+            for (let select of allSelects) {
+                const options = Array.from(select.options).map(opt => opt.textContent);
+                if (options.includes('全部时间')) {
+                    timeSelect = select;
+                    break;
+                }
+            }
+            
+            const keyword = keywordInput ? keywordInput.value.trim() : '';
+            const timeFilter = timeSelect ? timeSelect.options[timeSelect.selectedIndex].textContent : '';
+            
+            console.log('🔍 搜索配置列表:', { keyword, timeFilter, keywordInput: !!keywordInput, timeSelect: !!timeSelect });
+            loadConfigList(keyword, timeFilter);
+        }
+        
+        // 重置搜索条件
+        function resetConfigSearch() {
+            // 查找配置管理页面的搜索框
+            let keywordInput = null;
+            const allInputs = document.querySelectorAll('input');
+            for (let input of allInputs) {
+                if (input.placeholder && input.placeholder.includes('搜索设备名称')) {
+                    keywordInput = input;
+                    break;
+                }
+            }
+            
+            // 查找时间筛选下拉框
+            let timeSelect = null;
+            const allSelects = document.querySelectorAll('select');
+            for (let select of allSelects) {
+                const options = Array.from(select.options).map(opt => opt.textContent);
+                if (options.includes('全部时间')) {
+                    timeSelect = select;
+                    break;
+                }
+            }
+            
+            if (keywordInput) keywordInput.value = '';
+            if (timeSelect) timeSelect.selectedIndex = 0;
+            
+            console.log('🔄 重置搜索条件');
             loadConfigList();
+        }
+        
+        // 绑定搜索和重置按钮事件
+        document.addEventListener('click', function(e) {
+            if (e.target.closest('button') && e.target.textContent.includes('搜索')) {
+                e.preventDefault();
+                searchConfigList();
+            }
+            if (e.target.closest('button') && e.target.textContent.includes('重置')) {
+                e.preventDefault();
+                resetConfigSearch();
+            }
+        });
+        
+        // 搜索框回车事件
+        document.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter' && e.target.placeholder && e.target.placeholder.includes('搜索设备名称')) {
+                e.preventDefault();
+                searchConfigList();
+            }
         });
 
         // 加载配置管理统计数据（已删除图表功能）
@@ -2062,55 +2141,37 @@
         let allConfigs = [];
 
         // 加载配置管理列表 - 从数据库读取
-        function loadConfigList() {
-            console.log('🔄 从数据库加载配置管理列表...');
+        function loadConfigList(keyword = '', timeFilter = '') {
+            console.log('🔄 从数据库加载配置管理列表...', { keyword, timeFilter });
             
-            const keyword = document.getElementById('configKeywordSearch').value.trim();
-            const timeFilter = document.getElementById('configTimeFilter').value;
-            
-            // 根据时间过滤器计算日期范围
-            let startDate = '';
-            let endDate = '';
-            const today = new Date();
-            
-            if (timeFilter === 'today') {
-                startDate = today.toISOString().split('T')[0];
-                endDate = startDate;
-            } else if (timeFilter === 'week') {
-                const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
-                startDate = weekAgo.toISOString().split('T')[0];
-                endDate = today.toISOString().split('T')[0];
-            } else if (timeFilter === 'month') {
-                const monthAgo = new Date(today.getTime() - 30 * 24 * 60 * 60 * 1000);
-                startDate = monthAgo.toISOString().split('T')[0];
-                endDate = today.toISOString().split('T')[0];
+            // 获取token
+            const token = localStorage.getItem('token');
+            if (!token) {
+                console.error('❌ 未找到认证token');
+                allConfigs = [];
+                currentConfigPage = 1;
+                renderConfigTable();
+                updateConfigPagination();
+                return;
             }
-            
-            // 调试信息
-            console.log('🔍 搜索参数:', {
-                keyword: keyword || '(空)',
-                timeFilter: timeFilter || '(空)',
-                startDate: startDate || '(空)',
-                endDate: endDate || '(空)'
-            });
             
             // 构建查询参数
             const params = new URLSearchParams();
-            if (keyword) params.append('keyword', keyword);
-            if (startDate) params.append('startDate', startDate);
-            if (endDate) params.append('endDate', endDate);
+            if (keyword) {
+                params.append('keyword', keyword);
+            }
+            if (timeFilter) {
+                params.append('timeFilter', timeFilter);
+            }
             
-            const queryString = params.toString();
-            const url = `/api/config-backup/list${queryString ? '?' + queryString : ''}`;
+            const url = `/api/network/config/devices${params.toString() ? '?' + params.toString() : ''}`;
             
-            console.log('📡 请求URL:', url);
-            
+            // 调用网络配置设备API
             fetch(url, {
                 method: 'GET',
-                credentials: 'include',
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Cache-Control': 'no-cache'
+                    'Authorization': `Bearer ${token}`,
+                    'Content-Type': 'application/json'
                 }
             })
             .then(response => {
@@ -2123,8 +2184,25 @@
             .then(result => {
                 console.log('📊 配置列表API结果:', result);
                 
-                if (result.success) {
-                    allConfigs = result.data || [];
+                if (result.success && result.data) {
+                    // 转换数据格式为配置管理页面需要的格式
+                    allConfigs = result.data.map(device => ({
+                        id: device.deviceId,
+                        deviceName: device.deviceName,
+                        deviceIp: device.deviceIp || '未配置',
+                        deviceType: getDeviceTypeFromModel(device.model),
+                        manufacturer: device.manufacturer,
+                        model: device.model,
+                        version: device.version || '未备份',
+                        lastBackupTime: device.lastBackupTime || '从未备份',
+                        backupStatus: device.backupStatus === 'success' ? 'success' : 
+                                     device.backupStatus === 'no_backup' ? 'pending' : 'failed',
+                        backupSize: device.backupSize || '-',
+                        location: device.location,
+                        status: device.status,
+                        hasBackup: device.hasBackup
+                    }));
+                    
                     console.log('📋 从数据库获取的配置列表:', allConfigs.length, '条记录');
                     
                     currentConfigPage = 1;
@@ -2147,6 +2225,63 @@
                 renderConfigTable();
                 updateConfigPagination();
             });
+        }
+        
+        // 根据设备型号判断设备类型
+        function getDeviceTypeFromModel(model) {
+            if (!model) return 'unknown';
+            
+            const modelLower = model.toLowerCase();
+            if (modelLower.includes('switch') || modelLower.includes('catalyst')) {
+                return 'switch';
+            } else if (modelLower.includes('router') || modelLower.includes('isr')) {
+                return 'router';
+            } else if (modelLower.includes('firewall') || modelLower.includes('fortigate')) {
+                return 'firewall';
+            } else if (modelLower.includes('ap') || modelLower.includes('wifi')) {
+                return 'ap';
+            } else if (modelLower.includes('gateway') || modelLower.includes('big-ip')) {
+                return 'gateway';
+            } else {
+                return 'unknown';
+            }
+        }
+        
+        // 修复设备名称编码问题
+        function fixDeviceName(deviceName, assetCode) {
+            // 根据资产编码映射正确的设备名称
+            const deviceNameMap = {
+                'NET-000001': '核心交换机',
+                'NET-000002': '监控专用交换机', 
+                'NET-000003': '边界路由器',
+                'NET-000004': '安全防火墙',
+                'NET-000005': '无线AP',
+                'NET-000006': 'VPN网关',
+                'NET-000007': '备用交换机'
+            };
+            
+            // 如果有映射，使用映射的名称，否则使用原名称
+            return deviceNameMap[assetCode] || deviceName || '未知设备';
+        }
+        
+        // 格式化备份时间
+        function formatBackupTime(timeStr) {
+            if (!timeStr || timeStr === '从未备份') {
+                return '从未备份';
+            }
+            
+            try {
+                const date = new Date(timeStr);
+                return date.toLocaleString('zh-CN', {
+                    year: 'numeric',
+                    month: '2-digit',
+                    day: '2-digit',
+                    hour: '2-digit',
+                    minute: '2-digit'
+                });
+            } catch (e) {
+                return timeStr;
+            }
         }
         
         // 获取每个设备的最新备份记录
@@ -2241,12 +2376,12 @@
                     <tr>
                         <td>${config.deviceName}</td>
                         <td>${config.deviceIp}</td>
-                        <td>${config.baselineVersion || '-'}</td>
-                        <td>${config.lastBackupTime || '-'}</td>
+                        <td>${config.version || '-'}</td>
+                        <td>${formatBackupTime(config.lastBackupTime)}</td>
                         <td><span class="status-badge ${backupStatusClass}">${backupStatusText}</span></td>
                         <td>
                             <div style="display: flex; gap: 5px; flex-wrap: wrap;">
-                                <button class="btn-detail" onclick="viewConfigHistory(${config.deviceId}, '${config.deviceName}')">
+                                <button class="btn-detail" onclick="viewConfigHistory(${config.id}, '${config.deviceName}')">
                                     <i class="fas fa-history"></i> 版本历史
                                 </button>
                             </div>
@@ -2553,7 +2688,7 @@
                                         text-align: center;
                                     ">
                                         <div style="font-size: 12px; opacity: 0.9; margin-bottom: 5px;">CPU使用率</div>
-                                        <div style="font-size: 28px; font-weight: bold;">${(snapshot.cpuUsage || 0).toFixed(1)}%</div>
+                                        <div style="font-size: 28px; font-weight: bold;">${(parseFloat(snapshot.cpuUsage) || 0).toFixed(1)}%</div>
                                     </div>
                                     <div style="
                                         background: linear-gradient(135deg, #4FACFE 0%, #00F2FE 100%);
@@ -2563,7 +2698,7 @@
                                         text-align: center;
                                     ">
                                         <div style="font-size: 12px; opacity: 0.9; margin-bottom: 5px;">内存使用率</div>
-                                        <div style="font-size: 28px; font-weight: bold;">${(snapshot.memoryUsage || 0).toFixed(1)}%</div>
+                                        <div style="font-size: 28px; font-weight: bold;">${(parseFloat(snapshot.memoryUsage) || 0).toFixed(1)}%</div>
                                     </div>
                                     <div style="
                                         background: linear-gradient(135deg, #43E97B 0%, #38F9D7 100%);
@@ -2573,7 +2708,7 @@
                                         text-align: center;
                                     ">
                                         <div style="font-size: 12px; opacity: 0.9; margin-bottom: 5px;">磁盘使用率</div>
-                                        <div style="font-size: 28px; font-weight: bold;">${(snapshot.diskUsage || 0).toFixed(1)}%</div>
+                                        <div style="font-size: 28px; font-weight: bold;">${(parseFloat(snapshot.diskUsage) || 0).toFixed(1)}%</div>
                                     </div>
                                     <div style="
                                         background: linear-gradient(135deg, #FA709A 0%, #FEE140 100%);
@@ -3009,19 +3144,7 @@
                                                     ${backup.backupTime}
                                                 </div>
                                             </div>
-                                            <div style="
-                                                background: #f8f9fa;
-                                                padding: 10px 15px;
-                                                border-radius: 6px;
-                                                border-left: 3px solid #9C27B0;
-                                            ">
-                                                <div style="color: #666; font-size: 12px; margin-bottom: 3px;">
-                                                    <i class="fas fa-server"></i> 设备状态
-                                                </div>
-                                                <div style="color: #333; font-size: 14px; font-weight: 500;">
-                                                    ${(backup.deviceSnapshot && backup.deviceSnapshot.deviceStatus === 'online') ? '🟢 在线' : '🔴 离线'}
-                                                </div>
-                                            </div>
+                                            <!-- 设备状态已隐藏 -->
                                         </div>
                                         
                                         <!-- 操作按钮 -->
@@ -3091,22 +3214,45 @@
                         // 详细调试信息
                         console.log('🔍 快照API返回结果:', result);
                         console.log('📊 设备数据详情:', data);
-                        console.log('🆔 设备ID:', data.deviceId);
-                        console.log('📛 设备名称:', data.deviceName);
-                        console.log('🌐 设备IP:', data.deviceIp);
-                        console.log('🏷️ 设备类型:', data.deviceType);
-                        console.log('🏭 厂商:', data.manufacturer);
-                        console.log('📱 型号:', data.model);
+                        console.log('🆔 基本信息:', data.basicInfo);
+                        console.log('📋 备份信息:', data.backupInfo);
                         console.log('📋 所有字段:', Object.keys(data));
                         
-                        // 快照数据（已包含所有字段）
-                        const snapshot = data;
+                        // 从API返回的结构化数据中提取信息
+                        const basicInfo = data.basicInfo || {};
+                        const backupInfo = data.backupInfo || {};
+                        const deviceStatus = data.deviceStatus || {};
+                        const networkConfig = data.networkConfig || {};
+                        
+                        // 构造快照数据对象
+                        const snapshot = {
+                            deviceId: basicInfo.deviceId,
+                            deviceName: basicInfo.deviceName,
+                            deviceIp: basicInfo.deviceIp,
+                            deviceType: basicInfo.deviceType,
+                            manufacturer: basicInfo.manufacturer,
+                            model: basicInfo.model,
+                            assetCode: basicInfo.assetCode,
+                            status: deviceStatus.status,
+                            uptime: deviceStatus.uptime,
+                            cpuUsage: deviceStatus.cpuUsage,
+                            memoryUsage: deviceStatus.memoryUsage,
+                            temperature: deviceStatus.temperature,
+                            macAddress: networkConfig.macAddress,
+                            subnetMask: networkConfig.subnetMask,
+                            gateway: networkConfig.gateway,
+                            dnsServers: networkConfig.dnsServers
+                        };
                         
                         // 构造backup对象（用于显示）
                         const backup = {
-                            version: data.version || '-',
-                            backupTime: data.backupTime || data.createdAt || '-',
-                            backupStatus: data.backupStatus || 'success'
+                            version: backupInfo.version || '-',
+                            backupTime: backupInfo.backupTime || '-',
+                            backupStatus: backupInfo.backupStatus || 'success',
+                            backupSize: backupInfo.backupSize || '-',
+                            operator: backupInfo.operator || '-',
+                            firmwareVersion: backupInfo.firmwareVersion || '-',
+                            configChecksum: backupInfo.configChecksum || '-'
                         };
                         
                         // 构造deviceBackup对象（用于显示统计信息）
@@ -3942,6 +4088,36 @@
                 });
             }
         });
+
+        // 获取设备状态显示
+        function getDeviceStatusDisplay(backup) {
+            // 直接显示设备状态：在线、离线、维护中
+            
+            // 尝试从changeDetails中解析备份时的设备状态
+            try {
+                if (backup.changeDetails) {
+                    const details = JSON.parse(backup.changeDetails);
+                    // 如果备份成功，说明备份时设备在线
+                    if (details.backupStatus === 'success') {
+                        return '🟢 在线';
+                    } else if (details.backupStatus === 'failed') {
+                        return '🔴 离线';
+                    }
+                }
+            } catch (e) {
+                // 解析失败，继续其他逻辑
+            }
+            
+            // 根据备份状态推断设备状态
+            if (backup.changeSummary && backup.changeSummary.includes('success')) {
+                return '🟢 在线';
+            } else if (backup.changeSummary && backup.changeSummary.includes('failed')) {
+                return '🔴 离线';
+            }
+            
+            // 默认显示离线状态
+            return '🔴 离线';
+        }
 
         // 跳转到设备管理页面的指定分组
         function navigateToDeviceGroup(groupId, groupName) {

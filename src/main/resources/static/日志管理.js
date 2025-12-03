@@ -153,8 +153,20 @@ function initializeMainNavigation() {
                     case '智能预测管理':
                         window.location.href = contextPath + '/智能预测管理.html';
                         break;
+                    case '云平台':
+                        window.location.href = contextPath + '/大屏展示.html';
+                        break;
                     case '设置':
                         window.location.href = contextPath + '/设置.html';
+                        break;
+                    case '对接配置':
+                        window.location.href = contextPath + '/对接配置.html';
+                        break;
+                    case '视图':
+                        window.location.href = contextPath + '/视图.html';
+                        break;
+                    case '业务管理':
+                        window.location.href = contextPath + '/业务管理.html';
                         break;
                     case '日志管理':
                         // 当前页面，不需要跳转
@@ -234,8 +246,8 @@ function loadSyslogContent() {
         <!-- 工具栏 -->
         <div class="toolbar-enhanced" style="background: #ffffff; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); padding: 20px; margin-bottom: 20px;">
             <!-- 第一行：筛选条件 -->
-            <div class="toolbar-row" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 16px;">
-                <div class="toolbar-filters" style="display: flex; align-items: flex-start; gap: 16px; flex: 1; flex-wrap: wrap;">
+            <div class="toolbar-row" style="display: flex; align-items: flex-end; justify-content: space-between; margin-bottom: 16px;">
+                <div class="toolbar-filters" style="display: flex; align-items: flex-end; gap: 16px; flex: 1; flex-wrap: wrap;">
                     <div class="filter-group" style="display: flex; flex-direction: column; gap: 8px; min-width: 140px;">
                         <label class="filter-label" style="display: flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; color: #475569;">
                             <i class="fas fa-clock" style="font-size: 12px; color: #64748b;"></i>
@@ -293,7 +305,7 @@ function loadSyslogContent() {
                     </div>
                 </div>
                 
-                <div class="toolbar-actions" style="display: flex; gap: 12px; align-items: center;">
+                <div class="toolbar-actions" style="display: flex; gap: 12px; align-items: center; align-self: flex-end; margin-bottom: 0;">
                     <button class="btn-modern btn-search" id="searchBtn" title="应用筛选条件" style="height: 38px; padding: 0 16px; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; display: flex; align-items: center; gap: 8px; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1);">
                         <i class="fas fa-search" style="font-size: 14px;"></i>
                         <span>搜索</span>
@@ -911,14 +923,12 @@ function buildQueryParams() {
         console.log('添加主机名过滤参数:', window.currentHostname);
     }
     
-    // 设备类型筛选
+    // 设备类型筛选（从UI下拉框获取）
     const deviceTypeEl = document.getElementById('deviceTypeFilter');
-    if (deviceTypeEl) {
-        const deviceType = deviceTypeEl.value;
-        if (deviceType) {
-            params.append('deviceType', deviceType);
-            console.log('添加设备类型过滤参数:', deviceType);
-        }
+    const uiDeviceTypes = [];
+    if (deviceTypeEl && deviceTypeEl.value) {
+        uiDeviceTypes.push(deviceTypeEl.value);
+        console.log('从UI获取设备类型过滤参数:', deviceTypeEl.value);
     }
     
     // 严重性（支持多选）
@@ -968,13 +978,27 @@ function buildQueryParams() {
         console.log('添加规则ID过滤参数:', currentRuleIds);
     }
     
-    // 设备类型过滤（优先使用window.currentDeviceTypes，用于从筛选页面传递的过滤条件）
-    const deviceTypesToUse = window.currentDeviceTypes || currentDeviceTypes;
-    if (deviceTypesToUse && deviceTypesToUse.length > 0) {
-        deviceTypesToUse.forEach(deviceType => {
+    // 设备类型过滤（合并UI选择和全局变量）
+    let finalDeviceTypes = [];
+    
+    // 优先使用UI下拉框的选择
+    if (uiDeviceTypes.length > 0) {
+        finalDeviceTypes = uiDeviceTypes;
+    }
+    // 其次使用全局变量（从筛选页面传递的过滤条件）
+    else if (window.currentDeviceTypes && window.currentDeviceTypes.length > 0) {
+        finalDeviceTypes = window.currentDeviceTypes;
+    }
+    // 最后使用当前设备类型变量
+    else if (currentDeviceTypes && currentDeviceTypes.length > 0) {
+        finalDeviceTypes = currentDeviceTypes;
+    }
+    
+    if (finalDeviceTypes.length > 0) {
+        finalDeviceTypes.forEach(deviceType => {
             params.append('deviceTypes', deviceType);
         });
-        console.log('添加设备类型过滤参数:', deviceTypesToUse);
+        console.log('添加设备类型过滤参数:', finalDeviceTypes);
     }
     
     console.log('构建的查询参数:', params.toString());
@@ -1170,8 +1194,8 @@ function resetFilters() {
     window.currentEventIds = [];
     window.currentSeverities = null;
     
-    // 注意：不删除localStorage中的持久化过滤器
-    // localStorage.removeItem('syslogPersistentFilter'); // 不执行这行
+    // 同步清除localStorage中的持久化过滤器，避免重置后仍被自动应用
+    localStorage.removeItem('syslogPersistentFilter');
     
     // 重置页码
     currentPage = 1;
@@ -1346,7 +1370,14 @@ function renderSyslogTable(logs) {
                 <td>${deviceTypeText}</td>
                 <td><span class="severity-badge ${severityClass}">${severityText}</span></td>
                 <td>${log.ruleName ? `<span class="rule-badge">${log.ruleName}</span>` : '-'}</td>
-                <td class="log-message" title="${log.message}">${truncateMessage(log.message)}</td>
+                <td class="log-message">
+                    <div class="log-content-wrapper">
+                        <span class="log-text" title="${log.message}">${truncateMessage(log.message)}</span>
+                        <button class="btn-view-log" onclick="showLogDetail('${escapeHtml(log.message)}', '${log.eventTime}', '${log.hostname || '-'}', '${log.sourceIp}')" title="查看完整日志">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </td>
             </tr>
         `;
     }).join('');
@@ -1397,6 +1428,17 @@ function formatLogTime(timeStr) {
 function truncateMessage(message, maxLength = 80) {
     if (!message) return '-';
     return message.length > maxLength ? message.substring(0, maxLength) + '...' : message;
+}
+
+// HTML转义函数，防止XSS攻击
+function escapeHtml(text) {
+    if (!text) return '';
+    return text
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
 }
 
 // 获取严重性文本
@@ -3611,5 +3653,216 @@ async function loadSavedFilters() {
     } catch (error) {
         console.error('加载过滤器失败:', error);
     }
+}
+
+// 显示日志详情弹窗
+function showLogDetail(message, eventTime, hostname, sourceIp) {
+    // 解码HTML实体
+    const decodedMessage = decodeHtml(message);
+    
+    // 创建弹窗HTML
+    const modalHtml = `
+        <div class="log-detail-modal" id="logDetailModal">
+            <div class="modal-overlay" onclick="closeLogDetail()"></div>
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-file-alt"></i> 日志详情</h3>
+                    <button class="modal-close" onclick="closeLogDetail()">
+                        <i class="fas fa-times"></i>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <div class="log-info-grid">
+                        <div class="log-info-item">
+                            <label><i class="fas fa-clock"></i> 事件时间:</label>
+                            <span>${formatLogTime(eventTime)}</span>
+                        </div>
+                        <div class="log-info-item">
+                            <label><i class="fas fa-server"></i> 主机名:</label>
+                            <span>${hostname}</span>
+                        </div>
+                        <div class="log-info-item">
+                            <label><i class="fas fa-network-wired"></i> 来源IP:</label>
+                            <span>${sourceIp}</span>
+                        </div>
+                    </div>
+                    <div class="log-content-section">
+                        <label><i class="fas fa-align-left"></i> 完整日志内容:</label>
+                        <div class="log-content-display">
+                            <pre>${decodedMessage}</pre>
+                        </div>
+                    </div>
+                    <div class="log-actions">
+                        <button class="btn-copy" onclick="copyLogContent('${escapeHtml(decodedMessage)}')" title="复制日志内容">
+                            <i class="fas fa-copy"></i> 复制内容
+                        </button>
+                        <button class="btn-export" onclick="exportLogDetail('${escapeHtml(decodedMessage)}', '${eventTime}', '${hostname}', '${sourceIp}')" title="导出日志">
+                            <i class="fas fa-download"></i> 导出日志
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // 添加到页面
+    document.body.insertAdjacentHTML('beforeend', modalHtml);
+    
+    // 显示弹窗
+    const modal = document.getElementById('logDetailModal');
+    modal.style.display = 'flex';
+    
+    // 添加键盘事件监听
+    document.addEventListener('keydown', handleModalKeydown);
+}
+
+// 关闭日志详情弹窗
+function closeLogDetail() {
+    const modal = document.getElementById('logDetailModal');
+    if (modal) {
+        modal.remove();
+    }
+    
+    // 移除键盘事件监听
+    document.removeEventListener('keydown', handleModalKeydown);
+}
+
+// 处理弹窗键盘事件
+function handleModalKeydown(event) {
+    if (event.key === 'Escape') {
+        closeLogDetail();
+    }
+}
+
+// HTML解码函数
+function decodeHtml(html) {
+    const txt = document.createElement('textarea');
+    txt.innerHTML = html;
+    return txt.value;
+}
+
+// 复制日志内容到剪贴板
+function copyLogContent(content) {
+    const decodedContent = decodeHtml(content);
+    
+    if (navigator.clipboard) {
+        navigator.clipboard.writeText(decodedContent).then(() => {
+            showSuccess('日志内容已复制到剪贴板');
+        }).catch(err => {
+            console.error('复制失败:', err);
+            fallbackCopyTextToClipboard(decodedContent);
+        });
+    } else {
+        fallbackCopyTextToClipboard(decodedContent);
+    }
+}
+
+// 备用复制方法
+function fallbackCopyTextToClipboard(text) {
+    const textArea = document.createElement('textarea');
+    textArea.value = text;
+    textArea.style.position = 'fixed';
+    textArea.style.left = '-999999px';
+    textArea.style.top = '-999999px';
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+    
+    try {
+        const successful = document.execCommand('copy');
+        if (successful) {
+            showSuccess('日志内容已复制到剪贴板');
+        } else {
+            showError('复制失败，请手动复制');
+        }
+    } catch (err) {
+        console.error('复制失败:', err);
+        showError('复制失败，请手动复制');
+    }
+    
+    document.body.removeChild(textArea);
+}
+
+// 导出单条日志
+function exportLogDetail(content, eventTime, hostname, sourceIp) {
+    const decodedContent = decodeHtml(content);
+    
+    const logText = `日志详情导出
+=====================================
+事件时间: ${formatLogTime(eventTime)}
+主机名: ${hostname}
+来源IP: ${sourceIp}
+=====================================
+日志内容:
+${decodedContent}
+=====================================
+导出时间: ${new Date().toLocaleString()}
+`;
+    
+    // 创建下载链接
+    const blob = new Blob([logText], { type: 'text/plain;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `log_${hostname}_${eventTime.replace(/[:\s]/g, '_')}.txt`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+    
+    showSuccess('日志已导出');
+}
+
+// 显示成功消息
+function showSuccess(message) {
+    console.log('成功:', message);
+    showToast(message, 'success');
+}
+
+// 显示错误消息
+function showError(message) {
+    console.error('错误:', message);
+    showToast(message, 'error');
+}
+
+// 简单的Toast通知
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    toast.innerHTML = `
+        <i class="fas fa-${type === 'success' ? 'check-circle' : type === 'error' ? 'exclamation-circle' : 'info-circle'}"></i>
+        <span>${message}</span>
+    `;
+    
+    // 添加样式
+    toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+        color: white;
+        padding: 12px 20px;
+        border-radius: 4px;
+        box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 14px;
+        max-width: 300px;
+        animation: slideInRight 0.3s ease-out;
+    `;
+    
+    document.body.appendChild(toast);
+    
+    // 3秒后自动移除
+    setTimeout(() => {
+        toast.style.animation = 'slideOutRight 0.3s ease-in';
+        setTimeout(() => {
+            if (toast.parentNode) {
+                toast.parentNode.removeChild(toast);
+            }
+        }, 300);
+    }, 3000);
 }
 

@@ -265,16 +265,64 @@ class DeviceManager {
             const response = await fetch('/api/asset/category/device-tree');
             const result = await response.json();
             
-            if (result.code === 200 && result.data) {
+            if (result.code === 200 && result.data && result.data.length > 0) {
                 console.log('从资产分类加载的分组数据:', result.data);
                 this.deviceGroups = this.transformGroupData(result.data);
                 console.log('转换后的分组数据:', this.deviceGroups);
-                // 不在这里渲染树，等待设备数据加载后再渲染（避免计数为0）
+            } else {
+                console.log('API返回空数据，使用默认分组数据');
+                this.deviceGroups = this.getDefaultDeviceGroups();
+                console.log('使用默认分组数据:', this.deviceGroups);
             }
         } catch (error) {
-            console.log('无法连接到后端API，使用本地分组数据');
+            console.log('无法连接到后端API，使用默认分组数据');
             console.error('错误详情:', error);
+            this.deviceGroups = this.getDefaultDeviceGroups();
         }
+    }
+
+    // 获取默认的设备分组数据
+    getDefaultDeviceGroups() {
+        return [
+            {
+                id: 1,
+                name: '服务器',
+                parentId: null,
+                level: 1,
+                type: 'server',
+                icon: 'fas fa-server',
+                children: [
+                    { id: 11, name: 'Web服务器', parentId: 1, level: 2, type: 'server', icon: 'fas fa-globe' },
+                    { id: 12, name: '数据库服务器', parentId: 1, level: 2, type: 'server', icon: 'fas fa-database' },
+                    { id: 13, name: '应用服务器', parentId: 1, level: 2, type: 'server', icon: 'fas fa-cogs' }
+                ]
+            },
+            {
+                id: 2,
+                name: '网络设备',
+                parentId: null,
+                level: 1,
+                type: 'network',
+                icon: 'fas fa-network-wired',
+                children: [
+                    { id: 21, name: '交换机', parentId: 2, level: 2, type: 'network', icon: 'fas fa-project-diagram' },
+                    { id: 22, name: '路由器', parentId: 2, level: 2, type: 'network', icon: 'fas fa-route' },
+                    { id: 23, name: '防火墙', parentId: 2, level: 2, type: 'network', icon: 'fas fa-shield-alt' }
+                ]
+            },
+            {
+                id: 3,
+                name: '存储设备',
+                parentId: null,
+                level: 1,
+                type: 'storage',
+                icon: 'fas fa-hdd',
+                children: [
+                    { id: 31, name: 'NAS存储', parentId: 3, level: 2, type: 'storage', icon: 'fas fa-archive' },
+                    { id: 32, name: 'SAN存储', parentId: 3, level: 2, type: 'storage', icon: 'fas fa-server' }
+                ]
+            }
+        ];
     }
 
     // 转换后端分组数据格式
@@ -897,6 +945,27 @@ class DeviceManager {
         modal.style.display = 'block';
     }
 
+    // 根据category_id获取设备类型
+    getCategoryTypeFromId(categoryId) {
+        if (!categoryId) return '';
+        
+        // 根据category_id范围判断设备类型
+        // 服务器类: 5-7 (Web服务器、数据库服务器、应用服务器)
+        if (categoryId >= 5 && categoryId <= 7) {
+            return 'server';
+        }
+        // 网络设备类: 8-12 (交换机、路由器、防火墙、无线AP、网关)
+        else if (categoryId >= 8 && categoryId <= 12) {
+            return 'network';
+        }
+        // 存储设备类: 13-14 (NAS存储、SAN存储)
+        else if (categoryId >= 13 && categoryId <= 14) {
+            return 'storage';
+        }
+        
+        return '';
+    }
+
     // 填充设备分组选项
     populateGroupOptions(deviceType = null) {
         const groupSelect = document.getElementById('deviceGroup');
@@ -956,14 +1025,22 @@ class DeviceManager {
         document.getElementById('macAddress').value = device.macAddress || '';
         document.getElementById('serialNumber').value = device.serialNumber || '';
         
-        // 分类信息
-        document.getElementById('deviceType').value = device.type || '';
+        // 分类信息 - 将category_id或groupId转换为设备类型
+        const categoryId = device.categoryId || device.groupId;
+        const deviceType = this.getCategoryTypeFromId(categoryId);
+        document.getElementById('deviceType').value = deviceType;
+        
+        console.log('设备分类信息:', {
+            categoryId: categoryId,
+            deviceType: deviceType,
+            originalType: device.type
+        });
         
         // 根据设备类型填充分组选项
-        this.populateGroupOptions(device.type);
+        this.populateGroupOptions(deviceType);
         
-        // 设置设备分组（使用groupId而不是group）
-        document.getElementById('deviceGroup').value = device.groupId || device.group || '';
+        // 设置设备分组（使用categoryId或groupId）
+        document.getElementById('deviceGroup').value = categoryId || '';
         
         // 状态信息（使用assetStatus字段）
         document.getElementById('assetStatus').value = device.assetStatus || device.status || 'offline';
@@ -1103,7 +1180,7 @@ class DeviceManager {
             console.log('删除设备 ID:', deviceId);
             console.log('删除前设备总数:', this.devices.length);
             
-            const response = await fetch(`/api/asset/${deviceId}`, {
+            const response = await fetch(`/api/device/${deviceId}`, {
                 method: 'DELETE'
             });
             
@@ -1162,8 +1239,12 @@ class DeviceManager {
     getStatusText(status) {
         const statuses = {
             'online': '在线',
+            'running': '在线',
             'offline': '离线',
-            'maintenance': '维护中'
+            'stopped': '离线',
+            'maintenance': '维护中',
+            'warning': '维护中',
+            'fault': '故障'
         };
         return statuses[status] || status;
     }
@@ -1269,46 +1350,71 @@ class DeviceManager {
 
     // 导入设备
     importDevices() {
+        console.log('📂 导入设备功能被调用');
+        
+        // 保存this引用
+        const self = this;
+        
+        // 创建隐藏的文件输入框
         const input = document.createElement('input');
         input.type = 'file';
-        input.accept = '.json,.csv';
-        input.onchange = (e) => {
+        input.accept = '.xlsx,.xls';
+        input.style.display = 'none';
+        
+        // 必须将元素添加到DOM才能在某些浏览器中正常工作
+        document.body.appendChild(input);
+        
+        input.onchange = async (e) => {
             const file = e.target.files[0];
+            console.log('📄 选择的文件:', file ? file.name : '无');
+            
             if (file) {
-                const reader = new FileReader();
-                reader.onload = (e) => {
-                    try {
-                        const data = JSON.parse(e.target.result);
-                        if (Array.isArray(data)) {
-                            data.forEach(device => {
-                                device.id = Date.now() + Math.random();
-                                this.devices.push(device);
-                            });
-                            this.updateGroupCounts();
-                            this.renderDeviceTree();
-                            this.renderDeviceTable();
-                            alert(`成功导入 ${data.length} 个设备`);
+                const formData = new FormData();
+                formData.append('file', file);
+                
+                try {
+                    console.log('📤 开始上传文件...');
+                    const response = await fetch('/api/device/import', {
+                        method: 'POST',
+                        body: formData
+                    });
+                    const result = await response.json();
+                    console.log('📥 服务器响应:', result);
+                    
+                    if (result.code === 200) {
+                        const data = result.data;
+                        alert(`导入完成！\n成功：${data.successCount} 条\n失败：${data.failCount} 条`);
+                        if (data.errors && data.errors.length > 0) {
+                            console.log('导入错误详情:', data.errors);
                         }
-                    } catch (error) {
-                        alert('文件格式错误，请选择正确的JSON文件');
+                        // 重新加载设备列表
+                        self.loadDevicesFromAsset();
+                    } else {
+                        alert('导入失败：' + result.message);
                     }
-                };
-                reader.readAsText(file);
+                } catch (error) {
+                    console.error('导入失败:', error);
+                    alert('导入失败：' + error.message);
+                }
             }
+            
+            // 清理：移除临时的input元素
+            document.body.removeChild(input);
         };
+        
+        // 触发文件选择对话框
+        console.log('🔘 触发文件选择对话框...');
         input.click();
     }
 
-    // 导出设备
+    // 导出设备（调用后端API下载Excel）
     exportDevices() {
-        const data = JSON.stringify(this.devices, null, 2);
-        const blob = new Blob([data], { type: 'application/json' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url;
-        a.download = `devices_${new Date().toISOString().split('T')[0]}.json`;
-        a.click();
-        URL.revokeObjectURL(url);
+        window.location.href = '/api/device/export';
+    }
+    
+    // 下载导入模板
+    downloadTemplate() {
+        window.location.href = '/api/device/template';
     }
 
     // 侧边栏导航功能
@@ -1321,6 +1427,7 @@ class DeviceManager {
             '网络拓扑': '网络拓扑.html',
             '统计报表': '统计报表.html',
             '运维工具': '运维工具.html',
+            '数字大屏': '大屏展示.html',
             '业务管理': '业务管理.html',
             '网络管理': '网络管理.html',
             '视频管理': '视频管理.html',
