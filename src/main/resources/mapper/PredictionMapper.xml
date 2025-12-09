@@ -1,0 +1,403 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zxb.aiproject.mapper.PredictionMapper">
+
+    <!-- ==================== 概览页面 ==================== -->
+
+    <!-- 统计启用的服务数量 -->
+    <select id="countEnabledServices" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM prediction_model_service
+        WHERE status = 1 AND deleted = 0
+    </select>
+
+    <!-- 统计总训练对象数（模型设备组合数） -->
+    <select id="countTotalTrainingObjects" resultType="java.lang.Integer">
+        SELECT COALESCE(COUNT(*), 0)
+        FROM prediction_model_device pmd
+        INNER JOIN prediction_model_service pms ON pmd.service_id = pms.id
+        WHERE (pmd.deleted = 0 OR pmd.deleted IS NULL)
+        AND pms.deleted = 0
+    </select>
+
+    <!-- 统计总训练记录数 -->
+    <select id="countTotalTrainingRecords" resultType="java.lang.Integer">
+        SELECT COALESCE(COUNT(*), 0)
+        FROM prediction_train_history
+        WHERE (deleted = 0 OR deleted IS NULL)
+    </select>
+
+    <!-- 统计总训练次数 -->
+    <select id="countTotalTrainCount" resultType="java.lang.Integer">
+        SELECT COALESCE(SUM(train_count), 0)
+        FROM prediction_model_service
+        WHERE deleted = 0
+    </select>
+
+    <!-- 统计总预测次数 -->
+    <select id="countTotalPredictionCount" resultType="java.lang.Integer">
+        SELECT COALESCE(SUM(prediction_count), 0)
+        FROM prediction_model_service
+        WHERE deleted = 0
+    </select>
+
+    <!-- 获取设备故障占比数据（基于预测报告表） -->
+    <select id="getDeviceFaultRatio" resultType="java.util.Map">
+        SELECT
+            COALESCE(ac.category_name, '未分类') as name,
+            COUNT(DISTINCT CASE WHEN pr.status = 'ABNORMAL' THEN pr.asset_id END) as value,
+            ROUND(COUNT(DISTINCT CASE WHEN pr.status = 'ABNORMAL' THEN pr.asset_id END) * 100.0 / NULLIF((
+                SELECT COUNT(DISTINCT asset_id)
+                FROM prediction_report
+                WHERE deleted = 0
+                AND DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL #{predictionTime} DAY)
+            ), 0), 2) as percentage
+        FROM prediction_report pr
+        LEFT JOIN asset_category ac ON pr.category_id = ac.id
+        WHERE pr.deleted = 0
+        AND DATE(pr.created_at) >= DATE_SUB(CURDATE(), INTERVAL #{predictionTime} DAY)
+        GROUP BY pr.category_id, ac.category_name
+        HAVING value > 0
+        ORDER BY value DESC
+        LIMIT 10
+    </select>
+
+    <!-- 获取设备总数（排除云平台和视频管理分类） -->
+    <select id="getTotalDeviceCount" resultType="java.lang.Integer">
+        SELECT COUNT(*)
+        FROM asset a
+        WHERE a.deleted = 0
+        AND a.category_id NOT IN (
+            SELECT id FROM asset_category 
+            WHERE category_code IN ('CLOUD', 'VIDEO') 
+            OR parent_id IN (4, 23)
+            OR id IN (4, 23)
+        )
+    </select>
+
+    <!-- 获取告警统计数据（基于统一的预测告警表） -->
+    <select id="getAlertStats" resultType="java.util.Map">
+        SELECT
+            COUNT(*) as total_alerts,
+            SUM(CASE WHEN alert_level = 'HIGH' THEN 1 ELSE 0 END) as critical_count,
+            SUM(CASE WHEN alert_level = 'MEDIUM' THEN 1 ELSE 0 END) as warning_count,
+            SUM(CASE WHEN alert_level = 'LOW' THEN 1 ELSE 0 END) as info_count,
+            SUM(CASE WHEN status = 'PENDING' THEN 1 ELSE 0 END) as pending_count,
+            SUM(CASE WHEN status = 'PROCESSING' THEN 1 ELSE 0 END) as confirmed_count,
+            SUM(CASE WHEN status = 'RESOLVED' THEN 1 ELSE 0 END) as resolved_count
+        FROM prediction_alert
+        WHERE deleted = 0
+        <if test="predictionTime != null">
+            AND DATE(created_at) >= DATE_SUB(CURDATE(), INTERVAL #{predictionTime} DAY)
+        </if>
+    </select>
+
+    <!-- 获取设备分类故障率列表（直接从预测报告表计算） -->
+    <select id="getCategoryFaultRates" resultType="java.util.Map">
+        SELECT
+            COALESCE(ac.category_name, '未分类') as category_name,
+            COUNT(DISTINCT pr.asset_id) as asset_count,
+            COUNT(DISTINCT CASE WHEN pr.status = 'ABNORMAL' THEN pr.asset_id END) as fault_device_count,
+            ROUND(
+                COUNT(DISTINCT CASE WHEN pr.status = 'ABNORMAL' THEN pr.asset_id END) * 100.0 / 
+                NULLIF(COUNT(DISTINCT pr.asset_id), 0),
+                2
+            ) as fault_rate,
+            SUM(CASE WHEN pr.status = 'ABNORMAL' THEN 1 ELSE 0 END) as abnormal_count,
+            SUM(CASE WHEN pr.status = 'NORMAL' THEN 1 ELSE 0 END) as normal_count
+        FROM prediction_report pr
+        LEFT JOIN asset_category ac ON pr.category_id = ac.id
+        WHERE pr.deleted = 0
+        <if test="predictionTime != null">
+            AND DATE(pr.created_at) >= DATE_SUB(CURDATE(), INTERVAL #{predictionTime} DAY)
+        </if>
+        GROUP BY pr.category_id, ac.category_name
+        HAVING COUNT(DISTINCT pr.asset_id) > 0
+        ORDER BY fault_rate DESC
+        LIMIT 10
+    </select>
+
+    <!-- 获取服务器故障预测统计（包含服务器、Web服务器、数据库服务器、应用服务器） -->
+    <select id="getServerFaultStats" resultType="java.util.Map">
+        SELECT
+            COUNT(DISTINCT pr.asset_id) as total_devices,
+            SUM(CASE WHEN pr.status = 'NORMAL' THEN 1 ELSE 0 END) as normal_count,
+            SUM(CASE WHEN pr.status = 'WARNING' THEN 1 ELSE 0 END) as warning_count,
+            SUM(CASE WHEN pr.status = 'FAULT' THEN 1 ELSE 0 END) as fault_count,
+            COUNT(DISTINCT CASE WHEN pr.status IN ('WARNING', 'FAULT') THEN pr.asset_id END) as fault_devices,
+            (SELECT COALESCE(SUM(train_count), 0) FROM prediction_model_service WHERE deleted = 0) as train_count,
+            (SELECT COALESCE(SUM(prediction_count), 0) FROM prediction_model_service WHERE deleted = 0) as prediction_count
+        FROM prediction_report pr
+        LEFT JOIN asset_category ac ON pr.category_id = ac.id
+        WHERE pr.deleted = 0
+        AND ac.category_name IN ('服务器', 'Web服务器', '数据库服务器', '应用服务器')
+        <if test="predictionTime != null">
+            AND DATE(pr.created_at) >= DATE_SUB(CURDATE(), INTERVAL #{predictionTime} DAY)
+        </if>
+    </select>
+
+    <!-- 获取其他设备故障预测统计（除服务器相关分类外的所有分类） -->
+    <select id="getOtherDeviceFaultStats" resultType="java.util.Map">
+        SELECT
+            COUNT(DISTINCT pr.asset_id) as total_devices,
+            SUM(CASE WHEN pr.status = 'NORMAL' THEN 1 ELSE 0 END) as normal_count,
+            SUM(CASE WHEN pr.status = 'WARNING' THEN 1 ELSE 0 END) as warning_count,
+            SUM(CASE WHEN pr.status = 'FAULT' THEN 1 ELSE 0 END) as fault_count,
+            COUNT(DISTINCT CASE WHEN pr.status IN ('WARNING', 'FAULT') THEN pr.asset_id END) as fault_devices,
+            0 as train_count,
+            0 as prediction_count
+        FROM prediction_report pr
+        LEFT JOIN asset_category ac ON pr.category_id = ac.id
+        WHERE pr.deleted = 0
+        AND ac.category_name NOT IN ('服务器', 'Web服务器', '数据库服务器', '应用服务器')
+        <if test="predictionTime != null">
+            AND DATE(pr.created_at) >= DATE_SUB(CURDATE(), INTERVAL #{predictionTime} DAY)
+        </if>
+    </select>
+
+    <!-- ==================== 预测报告页面 ==================== -->
+
+    <!-- 获取预测报告分类列表 -->
+    <select id="getReportCategories" resultType="java.util.Map">
+        SELECT
+            pms.device_category as name,
+            pms.device_type as type,
+            COUNT(DISTINCT pr.id) as count
+        FROM prediction_model_service pms
+        LEFT JOIN prediction_result pr ON pms.id = pr.service_id
+        WHERE pms.deleted = 0
+        GROUP BY pms.device_category, pms.device_type
+        ORDER BY count DESC
+    </select>
+
+    <!-- 获取预测报告列表 -->
+    <select id="getReports" resultType="java.util.Map">
+        SELECT
+            pr.id,
+            pr.device_name,
+            pr.metric_name,
+            pr.prediction_time,
+            pr.prediction_value,
+            pr.actual_value,
+            pr.threshold_value,
+            pr.risk_level,
+            pr.is_anomaly,
+            pr.confidence,
+            pms.service_name,
+            pms.algorithm_type,
+            pms.device_category,
+            pms.device_type,
+            CASE
+                WHEN pr.is_anomaly = 1 THEN '异常'
+                ELSE '正常'
+            END as status
+        FROM prediction_result pr
+        LEFT JOIN prediction_model_service pms ON pr.service_id = pms.id
+        WHERE pms.deleted = 0
+        <if test="categoryId != null">
+            AND pms.id = #{categoryId}
+        </if>
+        <if test="brand != null and brand != ''">
+            AND pr.device_name LIKE CONCAT('%', #{brand}, '%')
+        </if>
+        <if test="predictionTime != null">
+            AND pr.prediction_time >= DATE_SUB(NOW(), INTERVAL #{predictionTime} DAY)
+        </if>
+        <if test="status != null and status != ''">
+            <choose>
+                <when test="status == 'anomaly'">
+                    AND pr.is_anomaly = 1
+                </when>
+                <when test="status == 'normal'">
+                    AND pr.is_anomaly = 0
+                </when>
+            </choose>
+        </if>
+        ORDER BY pr.prediction_time DESC
+        LIMIT 100
+    </select>
+
+    <!-- 获取预测报告详情 -->
+    <select id="getReportDetail" resultType="java.util.Map">
+        SELECT
+            pr.*,
+            pms.service_name,
+            pms.algorithm_type,
+            pms.device_category,
+            pms.device_type,
+            pms.monitoring_type,
+            pa.alert_level,
+            pa.alert_title,
+            pa.alert_content,
+            pa.alert_status
+        FROM prediction_result pr
+        LEFT JOIN prediction_model_service pms ON pr.service_id = pms.id
+        LEFT JOIN prediction_alert pa ON pr.id = pa.result_id
+        WHERE pr.id = #{reportId}
+    </select>
+
+    <!-- ==================== 预测风险页面 ==================== -->
+
+    <!-- 获取预测风险列表（使用统一的prediction_alert表） -->
+    <select id="getRisks" resultType="java.util.Map">
+        SELECT
+            pa.id,
+            pa.alert_level,
+            pa.alert_title,
+            pa.alert_message,
+            pa.asset_name,
+            pa.metric_name,
+            pa.predicted_at,
+            pa.status,
+            pa.handle_user,
+            pa.handle_time,
+            pa.handle_notes,
+            pa.created_at,
+            pa.service_name,
+            pa.algorithm_type,
+            pa.category_name,
+            pa.predicted_value,
+            pa.threshold_value,
+            pa.confidence,
+            pa.risk_score,
+            pa.risk_description
+        FROM prediction_alert pa
+        WHERE pa.deleted = 0
+        <if test="predictionTime != null">
+            AND DATE(pa.created_at) >= DATE_SUB(CURDATE(), INTERVAL #{predictionTime} DAY)
+        </if>
+        <if test="riskLevel != null and riskLevel != ''">
+            AND pa.alert_level = #{riskLevel}
+        </if>
+        <if test="monitoringCategory != null and monitoringCategory != ''">
+            AND pa.category_name = #{monitoringCategory}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (
+                pa.asset_name LIKE CONCAT('%', #{keyword}, '%')
+                OR pa.alert_title LIKE CONCAT('%', #{keyword}, '%')
+                OR pa.alert_message LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        <if test="alertStatus != null and alertStatus != ''">
+            AND pa.status = #{alertStatus}
+        </if>
+        ORDER BY pa.created_at DESC
+        LIMIT 200
+    </select>
+
+    <!-- 获取预测风险历史 -->
+    <select id="getRiskHistory" resultType="java.util.Map">
+        SELECT
+            pa.id,
+            pa.alert_level,
+            pa.alert_title,
+            pa.alert_status,
+            pa.handle_user,
+            pa.handle_time,
+            pa.handle_notes,
+            pa.create_time,
+            pa.update_time
+        FROM prediction_alert pa
+        WHERE pa.device_name = (
+            SELECT device_name FROM prediction_alert WHERE id = #{alertId}
+        )
+        AND pa.metric_name = (
+            SELECT metric_name FROM prediction_alert WHERE id = #{alertId}
+        )
+        ORDER BY pa.create_time DESC
+        LIMIT 20
+    </select>
+
+    <!-- ==================== 智能分析页面 ==================== -->
+
+    <!-- 获取时间序列数据 -->
+    <select id="getTimeSeriesData" resultType="java.util.Map">
+        SELECT
+            pr.prediction_time as time,
+            pr.prediction_value,
+            pr.actual_value,
+            pr.threshold_value,
+            pr.is_anomaly,
+            pr.device_name,
+            pr.metric_name
+        FROM prediction_result pr
+        WHERE 1=1
+        <if test="deviceId != null">
+            AND pr.device_id = #{deviceId}
+        </if>
+        <if test="metricName != null and metricName != ''">
+            AND pr.metric_name = #{metricName}
+        </if>
+        <if test="startTime != null and startTime != ''">
+            AND pr.prediction_time >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND pr.prediction_time &lt;= #{endTime}
+        </if>
+        ORDER BY pr.prediction_time ASC
+        LIMIT 1000
+    </select>
+
+    <!-- 获取监测数据统计 -->
+    <select id="getMonitoringStats" resultType="java.util.Map">
+        SELECT
+            COUNT(*) as total_count,
+            AVG(prediction_value) as avg_value,
+            MIN(prediction_value) as min_value,
+            MAX(prediction_value) as max_value,
+            SUM(prediction_value) as sum_value,
+            SUM(CASE WHEN is_anomaly = 1 THEN 1 ELSE 0 END) as anomaly_count,
+            ROUND(SUM(CASE WHEN is_anomaly = 1 THEN 1 ELSE 0 END) * 100.0 / NULLIF(COUNT(*), 0), 2) as anomaly_rate
+        FROM prediction_result
+        WHERE 1=1
+        <if test="startTime != null and startTime != ''">
+            AND prediction_time >= #{startTime}
+        </if>
+        <if test="endTime != null and endTime != ''">
+            AND prediction_time &lt;= #{endTime}
+        </if>
+    </select>
+
+    <!-- ==================== 算法模型服务页面 ==================== -->
+
+    <!-- 获取算法模型服务列表（从 prediction_model_service 读取，并统计模型数量；其它统计字段暂时固定为 0） -->
+    <select id="getAlgorithmServices" resultType="java.util.Map">
+        SELECT
+            pms.*,
+            COALESCE(pm.model_count, 0) AS model_count,
+            COALESCE(pm.training_target_count, 0) AS training_target_count,
+            0 AS total_predictions,
+            0 AS anomaly_count,
+            0 AS alert_count
+        FROM prediction_model_service pms
+        LEFT JOIN (
+            SELECT
+                service_id,
+                COUNT(*) AS model_count,
+                COUNT(DISTINCT CONCAT(monitoring_type, '|', monitoring_metric)) AS training_target_count
+            FROM prediction_model_device
+            WHERE deleted = 0
+            GROUP BY service_id
+        ) pm ON pms.id = pm.service_id
+        WHERE pms.deleted = 0
+        <if test="serviceName != null and serviceName != ''">
+            AND pms.service_name LIKE CONCAT('%', #{serviceName}, '%')
+        </if>
+        <if test="status != null and status != ''">
+            AND pms.status = #{status}
+        </if>
+        <if test="algorithmType != null and algorithmType != ''">
+            AND pms.algorithm_type = #{algorithmType}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (
+                pms.service_name LIKE CONCAT('%', #{keyword}, '%')
+                OR pms.service_code LIKE CONCAT('%', #{keyword}, '%')
+                OR pms.device_category LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        ORDER BY pms.create_time DESC
+    </select>
+
+</mapper>

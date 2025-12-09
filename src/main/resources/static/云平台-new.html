@@ -1,0 +1,1309 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<style>
+/* 立即隐藏CMDB菜单项 - 防止闪烁 */
+.nav-cmdb { display: none !important; }
+.sidebar-item[data-page="CMDB"] { display: none !important; }
+</style>
+<script>
+// 立即执行：尽早隐藏CMDB，防止闪烁
+(function() {
+    function hideCMDB() {
+        var items = document.querySelectorAll('.sidebar-item');
+        items.forEach(function(item) {
+            var span = item.querySelector('span');
+            if (span && span.textContent.trim() === 'CMDB') {
+                item.style.display = 'none';
+                item.setAttribute('data-hidden', 'true');
+            }
+        });
+    }
+    
+    hideCMDB();
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideCMDB);
+    }
+    
+    setTimeout(hideCMDB, 10);
+    setTimeout(hideCMDB, 100);
+})();
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>云平台管理 - 人工智能运维平台</title>
+    <link rel="stylesheet" href="libs/fontawesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link rel="stylesheet" href="云平台.css">
+    <style>
+        /* 页面整体布局 */
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            margin: 0;
+            padding: 0;
+        }
+
+        .dashboard-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 侧边栏 - 与主系统保持一致 */
+        .sidebar {
+            width: 200px;
+            background: #000000;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            min-height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 20px 15px;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+        }
+
+        .sidebar-header h2 {
+            font-size: 16px;
+            margin: 0;
+            font-weight: bold;
+        }
+
+        .sidebar-item {
+            width: 100%;
+            padding: 12px 15px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .sidebar-item:hover {
+            background-color: #334155;
+        }
+
+        .sidebar-item.active {
+            background-color: #1e293b;
+            font-weight: bold;
+        }
+
+        .sidebar-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background-color: #3b82f6 !important;
+            z-index: 10;
+            display: block;
+        }
+
+        .sidebar-item i {
+            font-size: 16px;
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-item span {
+            font-size: 14px;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background-color: #334155;
+            margin: 10px 0;
+        }
+
+        .sidebar-group-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #64748b;
+            padding: 10px 15px;
+            letter-spacing: 1px;
+        }
+
+        /* 主内容区域 */
+        .main-content {
+            flex: 1;
+            margin-left: 200px;
+            background-color: #f5f7fa;
+            padding: 20px;
+            overflow-y: auto;
+            height: 100vh;
+        }
+
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+
+        /* 树形导航样式 */
+        .tree-node {
+            margin-bottom: 5px;
+        }
+
+        .node-item {
+            padding: 12px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            transition: all 0.3s;
+            font-size: 14px;
+            color: #333;
+        }
+
+        .node-item:hover {
+            background: #f5f7fa;
+        }
+
+        .node-item.selected {
+            background: #e6f7ff;
+            color: #1890ff;
+            font-weight: 500;
+        }
+
+        .node-icon {
+            margin-right: 8px;
+            width: 16px;
+            text-align: center;
+        }
+
+        .node-text {
+            flex: 1;
+        }
+
+        .expand-icon {
+            margin-right: 8px;
+            font-size: 12px;
+            transition: transform 0.3s;
+        }
+
+        .tree-node.expanded > .node-item > .expand-icon {
+            transform: rotate(90deg);
+        }
+
+        .sub-nodes {
+            display: none;
+            padding-left: 30px;
+            margin-top: 5px;
+        }
+
+        .tree-node.expanded > .sub-nodes {
+            display: block;
+        }
+
+        .sub-node {
+            padding: 10px 15px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            font-size: 13px;
+            color: #666;
+            transition: all 0.3s;
+            border-radius: 4px;
+            margin-bottom: 3px;
+        }
+
+        .sub-node:hover {
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .sub-node.selected {
+            background: #e6f7ff;
+            color: #1890ff;
+            font-weight: 500;
+        }
+
+        .sub-node i {
+            margin-right: 8px;
+            width: 14px;
+            text-align: center;
+            font-size: 12px;
+        }
+
+        /* 统计卡片 */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+        }
+
+        .stat-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 15px;
+        }
+
+        .stat-title {
+            font-size: 14px;
+            color: #7f8c8d;
+        }
+
+        .stat-icon {
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            color: white;
+        }
+
+        .stat-value {
+            font-size: 28px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+        .stat-footer {
+            font-size: 12px;
+            color: #95a5a6;
+        }
+
+        /* 内容页面 */
+        .content-page {
+            display: none;
+        }
+
+        .content-page.active {
+            display: block;
+        }
+
+        /* 图表容器 */
+        .chart-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 20px;
+        }
+
+        /* 表格样式 */
+        .data-table-container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .table-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .table-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .data-table thead {
+            background: #f8f9fa;
+        }
+
+        .data-table th {
+            padding: 12px;
+            text-align: left;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .data-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            color: #555;
+        }
+
+        .data-table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-running {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-stopped {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* 按钮样式 */
+        .btn-primary {
+            padding: 8px 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            padding: 6px 12px;
+            background: white;
+            color: #666;
+            border: 1px solid #d9d9d9;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .btn-secondary:hover {
+            color: #1890ff;
+            border-color: #1890ff;
+        }
+
+        .btn-danger {
+            padding: 6px 12px;
+            background: #ff4d4f;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .btn-danger:hover {
+            background: #ff7875;
+        }
+
+        .btn-success {
+            padding: 6px 12px;
+            background: #52c41a;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 13px;
+            transition: all 0.3s;
+        }
+
+        .btn-success:hover {
+            background: #73d13d;
+        }
+
+        /* 状态标签 */
+        .status-badge {
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-running {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-stopped {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-error {
+            background: #fff3cd;
+            color: #856404;
+        }
+    </style>
+</head>
+<body>
+    <div class="dashboard-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>人工智能运维平台</h2>
+            </div>
+            
+            <div class="sidebar-group-title">拓展中心</div>
+            <div class="sidebar-item" onclick="navigateToPage('总览')">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>总览</span>
+            </div>
+            <div class="sidebar-item" onclick="navigateToPage('视图')">
+                <i class="fas fa-eye"></i>
+                <span>视图</span>
+            </div>
+            <div class="sidebar-item" onclick="navigateToPage('告警中心')">
+                <i class="fas fa-bell"></i>
+                <span>告警中心</span>
+            </div>
+            <div class="sidebar-item" onclick="navigateToPage('设备管理')">
+                <i class="fas fa-server"></i>
+                <span>设备管理</span>
+            </div>
+            <div class="sidebar-item" onclick="navigateToPage('网络拓扑')">
+                <i class="fas fa-project-diagram"></i>
+                <span>网络拓扑</span>
+            </div>
+            <div class="sidebar-item" onclick="navigateToPage('统计报表')">
+                <i class="fas fa-chart-bar"></i>
+                <span>统计报表</span>
+            </div>
+            <div class="sidebar-item" onclick="navigateToPage('运维工具')">
+                <i class="fas fa-tools"></i>
+                <span>运维工具</span>
+            </div>
+            
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">拓展中心</div>
+            <div class="sidebar-item" onclick="navigateToPage('业务管理')">
+                <i class="fas fa-briefcase"></i>
+                <span>业务管理</span>
+            </div>
+            <div class="sidebar-item" onclick="navigateToPage('网络管理')">
+                <i class="fas fa-network-wired"></i>
+                <span>网络管理</span>
+            </div>
+            <div class="sidebar-item" onclick="navigateToPage('视频管理')">
+                <i class="fas fa-video"></i>
+                <span>视频管理</span>
+            </div>
+            <div class="sidebar-item" onclick="navigateToPage('机房管理')">
+                <i class="fas fa-building"></i>
+                <span>机房管理</span>
+            </div>
+            <div class="sidebar-item" onclick="navigateToPage('资产管理')">
+                <i class="fas fa-box"></i>
+                <span>资产管理</span>
+            </div>
+            <div class="sidebar-item" onclick="navigateToPage('运维管理')">
+                <i class="fas fa-tasks"></i>
+                <span>运维管理</span>
+            </div>
+            <div class="sidebar-item" onclick="navigateToPage('日志管理')">
+                <i class="fas fa-file-alt"></i>
+                <span>日志管理</span>
+            </div>
+            <div class="sidebar-item" onclick="navigateToPage('智能预测管理')">
+                <i class="fas fa-chart-pie"></i>
+                <span>智能预测管理</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-tools"></i>
+                <span>运维工具</span>
+            </div>
+            <div class="sidebar-item">
+                <i class="fas fa-desktop"></i>
+                <span>数字大屏</span>
+            </div>
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">设置中心</div>
+            <div class="sidebar-item" onclick="navigateToPage('设置')">
+                <i class="fas fa-cog"></i>
+                <span>设置</span>
+            </div>
+            <div class="sidebar-item" onclick="navigateToPage('对接配置')">
+                <i class="fas fa-plug"></i>
+                <span>对接配置</span>
+            </div>
+        </div>
+
+        <!-- 主内容区域 -->
+        <div class="main-content">
+            <div class="header">
+                <h1>云平台管理</h1>
+                <!-- 用户下拉菜单容器 -->
+                <div id="user-dropdown-container"></div>
+            </div>
+
+            <!-- 内容区域：左侧导航 + 右侧内容 -->
+            <div style="display: flex; gap: 0; height: calc(100vh - 80px);">
+                <!-- 左侧导航树 -->
+                <div style="width: 250px; background: white; border-right: 1px solid #e9ecef; overflow-y: auto;">
+                    <div style="padding: 20px 15px; border-bottom: 1px solid #e9ecef;">
+                        <h3 style="margin: 0; font-size: 16px; color: #333;">云平台管理</h3>
+                    </div>
+                    <div style="padding: 10px 0;">
+                        <!-- 华为云 -->
+                        <div class="tree-node has-children expanded">
+                            <div class="node-item parent-node" data-provider="huawei">
+                                <i class="fas fa-chevron-right expand-icon"></i>
+                                <i class="fas fa-cloud node-icon" style="color: #ff0000;"></i>
+                                <span class="node-text">华为云</span>
+                            </div>
+                            <div class="sub-nodes">
+                                <div class="sub-node selected" data-provider="huawei" data-page="overview">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>概览</span>
+                                </div>
+                                <div class="sub-node" data-provider="huawei" data-page="vm">
+                                    <i class="fas fa-server"></i>
+                                    <span>虚拟机</span>
+                                </div>
+                                <div class="sub-node" data-provider="huawei" data-page="host">
+                                    <i class="fas fa-desktop"></i>
+                                    <span>云主机</span>
+                                </div>
+                                <div class="sub-node" data-provider="huawei" data-page="storage">
+                                    <i class="fas fa-database"></i>
+                                    <span>云存储</span>
+                                </div>
+                                <div class="sub-node" data-provider="huawei" data-page="monitor">
+                                    <i class="fas fa-chart-area"></i>
+                                    <span>监控告警</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- 阿里云 -->
+                        <div class="tree-node has-children">
+                            <div class="node-item parent-node" data-provider="aliyun">
+                                <i class="fas fa-chevron-right expand-icon"></i>
+                                <i class="fas fa-cloud node-icon" style="color: #ff6a00;"></i>
+                                <span class="node-text">阿里云</span>
+                            </div>
+                            <div class="sub-nodes">
+                                <div class="sub-node" data-provider="aliyun" data-page="overview">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>概览</span>
+                                </div>
+                                <div class="sub-node" data-provider="aliyun" data-page="vm">
+                                    <i class="fas fa-server"></i>
+                                    <span>虚拟机</span>
+                                </div>
+                                <div class="sub-node" data-provider="aliyun" data-page="host">
+                                    <i class="fas fa-desktop"></i>
+                                    <span>云主机</span>
+                                </div>
+                                <div class="sub-node" data-provider="aliyun" data-page="storage">
+                                    <i class="fas fa-database"></i>
+                                    <span>云存储</span>
+                                </div>
+                                <div class="sub-node" data-provider="aliyun" data-page="monitor">
+                                    <i class="fas fa-chart-area"></i>
+                                    <span>监控告警</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧内容区 -->
+                <div style="flex: 1; overflow-y: auto; padding: 20px; background: #f5f7fa;">
+
+                    <!-- 华为云概览页面 -->
+                    <div class="content-page active" id="huawei-overview">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">总实例数</span>
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                <i class="fas fa-server"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="hw-total-instances">0</div>
+                        <div class="stat-footer">运行中: <span id="hw-running-instances">0</span></div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">CPU总核数</span>
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                <i class="fas fa-microchip"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="hw-total-cpu">0</div>
+                        <div class="stat-footer">核心</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">内存总量</span>
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                <i class="fas fa-memory"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="hw-total-memory">0</div>
+                        <div class="stat-footer">GB</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">存储总量</span>
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                                <i class="fas fa-hdd"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="hw-total-storage">0</div>
+                        <div class="stat-footer">GB</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3 class="chart-title">资源使用情况</h3>
+                    <div id="hwResourceChart" style="width: 100%; height: 300px;"></div>
+                </div>
+
+                <div class="data-table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">最近告警</h3>
+                    </div>
+                    <table class="data-table" id="hw-alert-table">
+                        <thead>
+                            <tr>
+                                <th>告警时间</th>
+                                <th>资源名称</th>
+                                <th>告警级别</th>
+                                <th>告警信息</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+                    <!-- 华为云虚拟机页面 -->
+                    <div class="content-page" id="huawei-vm">
+                        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0;">华为云虚拟机管理</h2>
+                            <button class="btn-primary" onclick="showCreateVMModal('huawei')">
+                                <i class="fas fa-plus"></i> 创建虚拟机
+                            </button>
+                        </div>
+
+                        <!-- 筛选工具栏 -->
+                        <div class="filter-toolbar" style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <div style="display: flex; gap: 15px; align-items: center;">
+                                <select id="vmStatusFilter" style="padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                                    <option value="">全部状态</option>
+                                    <option value="running">运行中</option>
+                                    <option value="stopped">已停止</option>
+                                    <option value="error">异常</option>
+                                </select>
+                                <input type="text" id="vmSearchKeyword" placeholder="搜索虚拟机名称..." 
+                                       style="flex: 1; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                                <button class="btn-primary" onclick="searchVMs('huawei')">
+                                    <i class="fas fa-search"></i> 搜索
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 虚拟机列表 -->
+                        <div class="vm-list" id="huaweiVMList" style="background: white; border-radius: 8px; overflow: hidden;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead style="background: #fafafa;">
+                                    <tr>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">虚拟机名称</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">状态</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">规格</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">IP地址</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">创建时间</th>
+                                        <th style="padding: 12px; text-align: center; border-bottom: 1px solid #e9ecef;">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="huaweiVMTableBody">
+                                    <tr>
+                                        <td colspan="6" style="padding: 40px; text-align: center; color: #999;">
+                                            <i class="fas fa-spinner fa-spin" style="font-size: 24px;"></i>
+                                            <p style="margin-top: 10px;">加载中...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 华为云云主机页面 -->
+                    <div class="content-page" id="huawei-host">
+                        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0;">华为云云主机管理</h2>
+                        </div>
+
+                        <!-- 筛选工具栏 -->
+                        <div class="filter-toolbar" style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <div style="display: flex; gap: 15px; align-items: center;">
+                                <select id="hostStatusFilter" style="padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                                    <option value="">全部状态</option>
+                                    <option value="running">运行中</option>
+                                    <option value="stopped">已停止</option>
+                                </select>
+                                <input type="text" id="hostSearchKeyword" placeholder="搜索云主机名称..." 
+                                       style="flex: 1; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                                <button class="btn-primary" onclick="searchHosts('huawei')">
+                                    <i class="fas fa-search"></i> 搜索
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 云主机列表 -->
+                        <div class="host-list" id="huaweiHostList" style="background: white; border-radius: 8px; overflow: hidden;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead style="background: #fafafa;">
+                                    <tr>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">云主机名称</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">状态</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">实例类型</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">公网IP</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">操作系统</th>
+                                        <th style="padding: 12px; text-align: center; border-bottom: 1px solid #e9ecef;">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="huaweiHostTableBody">
+                                    <tr>
+                                        <td colspan="6" style="padding: 40px; text-align: center; color: #999;">
+                                            <i class="fas fa-spinner fa-spin" style="font-size: 24px;"></i>
+                                            <p style="margin-top: 10px;">加载中...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 华为云云存储页面 -->
+                    <div class="content-page" id="huawei-storage">
+                        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0;">华为云存储管理</h2>
+                        </div>
+
+                        <!-- 筛选工具栏 -->
+                        <div class="filter-toolbar" style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <div style="display: flex; gap: 15px; align-items: center;">
+                                <select id="storageTypeFilter" style="padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                                    <option value="">全部类型</option>
+                                    <option value="object">对象存储</option>
+                                    <option value="block">块存储</option>
+                                    <option value="file">文件存储</option>
+                                </select>
+                                <input type="text" id="storageSearchKeyword" placeholder="搜索存储名称..." 
+                                       style="flex: 1; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                                <button class="btn-primary" onclick="searchStorage('huawei')">
+                                    <i class="fas fa-search"></i> 搜索
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 云存储列表 -->
+                        <div class="storage-list" id="huaweiStorageList" style="background: white; border-radius: 8px; overflow: hidden;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead style="background: #fafafa;">
+                                    <tr>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">存储名称</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">存储类型</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">容量</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">已使用</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">使用率</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">状态</th>
+                                        <th style="padding: 12px; text-align: center; border-bottom: 1px solid #e9ecef;">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="huaweiStorageTableBody">
+                                    <tr>
+                                        <td colspan="7" style="padding: 40px; text-align: center; color: #999;">
+                                            <i class="fas fa-spinner fa-spin" style="font-size: 24px;"></i>
+                                            <p style="margin-top: 10px;">加载中...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 华为云监控告警页面 -->
+                    <div class="content-page" id="huawei-monitor">
+                        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0;">华为云监控告警</h2>
+                        </div>
+
+                        <!-- 筛选工具栏 -->
+                        <div class="filter-toolbar" style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <div style="display: flex; gap: 15px; align-items: center;">
+                                <select id="alertLevelFilter" style="padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                                    <option value="">全部级别</option>
+                                    <option value="info">信息</option>
+                                    <option value="warning">警告</option>
+                                    <option value="error">错误</option>
+                                    <option value="critical">严重</option>
+                                </select>
+                                <select id="alertStatusFilter" style="padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                                    <option value="">全部状态</option>
+                                    <option value="active">活跃</option>
+                                    <option value="resolved">已解决</option>
+                                </select>
+                                <button class="btn-primary" onclick="searchAlerts('huawei')">
+                                    <i class="fas fa-search"></i> 搜索
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 告警列表 -->
+                        <div class="alert-list" id="huaweiAlertList" style="background: white; border-radius: 8px; overflow: hidden;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead style="background: #fafafa;">
+                                    <tr>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">告警时间</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">资源名称</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">资源类型</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">告警级别</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">告警信息</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">状态</th>
+                                        <th style="padding: 12px; text-align: center; border-bottom: 1px solid #e9ecef;">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="huaweiAlertTableBody">
+                                    <tr>
+                                        <td colspan="7" style="padding: 40px; text-align: center; color: #999;">
+                                            <i class="fas fa-spinner fa-spin" style="font-size: 24px;"></i>
+                                            <p style="margin-top: 10px;">加载中...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 阿里云概览页面 -->
+                    <div class="content-page" id="aliyun-overview">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">总实例数</span>
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                                <i class="fas fa-server"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="ali-total-instances">0</div>
+                        <div class="stat-footer">运行中: <span id="ali-running-instances">0</span></div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">CPU总核数</span>
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                                <i class="fas fa-microchip"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="ali-total-cpu">0</div>
+                        <div class="stat-footer">核心</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">内存总量</span>
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                                <i class="fas fa-memory"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="ali-total-memory">0</div>
+                        <div class="stat-footer">GB</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-header">
+                            <span class="stat-title">存储总量</span>
+                            <div class="stat-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                                <i class="fas fa-hdd"></i>
+                            </div>
+                        </div>
+                        <div class="stat-value" id="ali-total-storage">0</div>
+                        <div class="stat-footer">GB</div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <h3 class="chart-title">资源使用情况</h3>
+                    <div id="aliResourceChart" style="width: 100%; height: 400px;"></div>
+                </div>
+
+                <div class="data-table-container">
+                    <div class="table-header">
+                        <h3 class="table-title">最近告警</h3>
+                    </div>
+                    <table class="data-table" id="ali-alert-table">
+                        <thead>
+                            <tr>
+                                <th>告警时间</th>
+                                <th>资源名称</th>
+                                <th>告警级别</th>
+                                <th>告警信息</th>
+                                <th>状态</th>
+                            </tr>
+                        </thead>
+                        <tbody></tbody>
+                    </table>
+                </div>
+            </div>
+
+                    <!-- 阿里云虚拟机页面 -->
+                    <div class="content-page" id="aliyun-vm">
+                        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0;">阿里云虚拟机管理</h2>
+                            <button class="btn-primary" onclick="showCreateVMModal('aliyun')">
+                                <i class="fas fa-plus"></i> 创建虚拟机
+                            </button>
+                        </div>
+
+                        <!-- 筛选工具栏 -->
+                        <div class="filter-toolbar" style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <div style="display: flex; gap: 15px; align-items: center;">
+                                <select id="aliyunVmStatusFilter" style="padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                                    <option value="">全部状态</option>
+                                    <option value="running">运行中</option>
+                                    <option value="stopped">已停止</option>
+                                    <option value="error">异常</option>
+                                </select>
+                                <input type="text" id="aliyunVmSearchKeyword" placeholder="搜索虚拟机名称..." 
+                                       style="flex: 1; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                                <button class="btn-primary" onclick="searchVMs('aliyun')">
+                                    <i class="fas fa-search"></i> 搜索
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 虚拟机列表 -->
+                        <div class="vm-list" id="aliyunVMList" style="background: white; border-radius: 8px; overflow: hidden;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead style="background: #fafafa;">
+                                    <tr>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">虚拟机名称</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">状态</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">规格</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">IP地址</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">创建时间</th>
+                                        <th style="padding: 12px; text-align: center; border-bottom: 1px solid #e9ecef;">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="aliyunVMTableBody">
+                                    <tr>
+                                        <td colspan="6" style="padding: 40px; text-align: center; color: #999;">
+                                            <i class="fas fa-spinner fa-spin" style="font-size: 24px;"></i>
+                                            <p style="margin-top: 10px;">加载中...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 阿里云云主机页面 -->
+                    <div class="content-page" id="aliyun-host">
+                        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0;">阿里云云主机管理</h2>
+                        </div>
+
+                        <!-- 筛选工具栏 -->
+                        <div class="filter-toolbar" style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <div style="display: flex; gap: 15px; align-items: center;">
+                                <select id="aliyunHostStatusFilter" style="padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                                    <option value="">全部状态</option>
+                                    <option value="running">运行中</option>
+                                    <option value="stopped">已停止</option>
+                                </select>
+                                <input type="text" id="aliyunHostSearchKeyword" placeholder="搜索云主机名称..." 
+                                       style="flex: 1; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                                <button class="btn-primary" onclick="searchHosts('aliyun')">
+                                    <i class="fas fa-search"></i> 搜索
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 云主机列表 -->
+                        <div class="host-list" id="aliyunHostList" style="background: white; border-radius: 8px; overflow: hidden;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead style="background: #fafafa;">
+                                    <tr>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">云主机名称</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">状态</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">实例类型</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">公网IP</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">操作系统</th>
+                                        <th style="padding: 12px; text-align: center; border-bottom: 1px solid #e9ecef;">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="aliyunHostTableBody">
+                                    <tr>
+                                        <td colspan="6" style="padding: 40px; text-align: center; color: #999;">
+                                            <i class="fas fa-spinner fa-spin" style="font-size: 24px;"></i>
+                                            <p style="margin-top: 10px;">加载中...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 阿里云云存储页面 -->
+                    <div class="content-page" id="aliyun-storage">
+                        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0;">阿里云存储管理</h2>
+                        </div>
+
+                        <!-- 筛选工具栏 -->
+                        <div class="filter-toolbar" style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <div style="display: flex; gap: 15px; align-items: center;">
+                                <select id="aliyunStorageTypeFilter" style="padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                                    <option value="">全部类型</option>
+                                    <option value="object">对象存储</option>
+                                    <option value="block">块存储</option>
+                                    <option value="file">文件存储</option>
+                                </select>
+                                <input type="text" id="aliyunStorageSearchKeyword" placeholder="搜索存储名称..." 
+                                       style="flex: 1; padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                                <button class="btn-primary" onclick="searchStorage('aliyun')">
+                                    <i class="fas fa-search"></i> 搜索
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 云存储列表 -->
+                        <div class="storage-list" id="aliyunStorageList" style="background: white; border-radius: 8px; overflow: hidden;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead style="background: #fafafa;">
+                                    <tr>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">存储名称</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">存储类型</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">容量</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">已使用</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">使用率</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">状态</th>
+                                        <th style="padding: 12px; text-align: center; border-bottom: 1px solid #e9ecef;">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="aliyunStorageTableBody">
+                                    <tr>
+                                        <td colspan="7" style="padding: 40px; text-align: center; color: #999;">
+                                            <i class="fas fa-spinner fa-spin" style="font-size: 24px;"></i>
+                                            <p style="margin-top: 10px;">加载中...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 阿里云监控告警页面 -->
+                    <div class="content-page" id="aliyun-monitor">
+                        <div class="page-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                            <h2 style="margin: 0;">阿里云监控告警</h2>
+                        </div>
+
+                        <!-- 筛选工具栏 -->
+                        <div class="filter-toolbar" style="background: white; padding: 15px; border-radius: 8px; margin-bottom: 20px;">
+                            <div style="display: flex; gap: 15px; align-items: center;">
+                                <select id="aliyunAlertLevelFilter" style="padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                                    <option value="">全部级别</option>
+                                    <option value="info">信息</option>
+                                    <option value="warning">警告</option>
+                                    <option value="error">错误</option>
+                                    <option value="critical">严重</option>
+                                </select>
+                                <select id="aliyunAlertStatusFilter" style="padding: 8px 12px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                                    <option value="">全部状态</option>
+                                    <option value="active">活跃</option>
+                                    <option value="resolved">已解决</option>
+                                </select>
+                                <button class="btn-primary" onclick="searchAlerts('aliyun')">
+                                    <i class="fas fa-search"></i> 搜索
+                                </button>
+                            </div>
+                        </div>
+
+                        <!-- 告警列表 -->
+                        <div class="alert-list" id="aliyunAlertList" style="background: white; border-radius: 8px; overflow: hidden;">
+                            <table style="width: 100%; border-collapse: collapse;">
+                                <thead style="background: #fafafa;">
+                                    <tr>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">告警时间</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">资源名称</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">资源类型</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">告警级别</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">告警信息</th>
+                                        <th style="padding: 12px; text-align: left; border-bottom: 1px solid #e9ecef;">状态</th>
+                                        <th style="padding: 12px; text-align: center; border-bottom: 1px solid #e9ecef;">操作</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="aliyunAlertTableBody">
+                                    <tr>
+                                        <td colspan="7" style="padding: 40px; text-align: center; color: #999;">
+                                            <i class="fas fa-spinner fa-spin" style="font-size: 24px;"></i>
+                                            <p style="margin-top: 10px;">加载中...</p>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 创建虚拟机模态框 -->
+    <div id="createVMModal" class="modal" style="display: none;">
+        <div class="modal-content" style="max-width: 600px; max-height: 90vh; overflow-y: auto;">
+            <div class="modal-header">
+                <h3>创建虚拟机</h3>
+                <span class="close" onclick="closeCreateVMModal()">&times;</span>
+            </div>
+            <div class="modal-body">
+                <form id="createVMForm">
+                    <div class="form-group">
+                        <label for="vmName">虚拟机名称 <span style="color: red;">*</span></label>
+                        <input type="text" id="vmName" name="vmName" required 
+                               placeholder="请输入虚拟机名称" class="form-control">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="specType">规格类型 <span style="color: red;">*</span></label>
+                        <select id="specType" name="specType" required class="form-control">
+                            <option value="">请选择规格类型</option>
+                            <option value="s6.small.1">s6.small.1 (1核2GB)</option>
+                            <option value="s6.medium.2">s6.medium.2 (1核2GB)</option>
+                            <option value="s6.large.2" selected>s6.large.2 (2核4GB)</option>
+                            <option value="s6.xlarge.2">s6.xlarge.2 (4核8GB)</option>
+                            <option value="s6.2xlarge.2">s6.2xlarge.2 (8核16GB)</option>
+                            <option value="s6.4xlarge.2">s6.4xlarge.2 (16核32GB)</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group" style="flex: 1; margin-right: 10px;">
+                            <label for="cpuCores">CPU核数 <span style="color: red;">*</span></label>
+                            <input type="number" id="cpuCores" name="cpuCores" required 
+                                   min="1" max="64" value="2" class="form-control">
+                        </div>
+                        <div class="form-group" style="flex: 1;">
+                            <label for="memoryGb">内存(GB) <span style="color: red;">*</span></label>
+                            <input type="number" id="memoryGb" name="memoryGb" required 
+                                   min="1" max="512" value="4" class="form-control">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="diskGb">磁盘大小(GB) <span style="color: red;">*</span></label>
+                        <input type="number" id="diskGb" name="diskGb" required 
+                               min="20" max="32768" value="40" class="form-control">
+                        <small style="color: #666;">最小20GB，最大32TB</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="ipAddress">IP地址 <span style="color: red;">*</span></label>
+                        <input type="text" id="ipAddress" name="ipAddress" required 
+                               placeholder="例如: 192.168.1.100" class="form-control"
+                               pattern="^(\d{1,3}\.){3}\d{1,3}$">
+                        <small style="color: #666;">请输入有效的IPv4地址</small>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="region">所属区域 <span style="color: red;">*</span></label>
+                        <select id="region" name="region" required class="form-control">
+                            <option value="">请选择区域</option>
+                            <option value="cn-north-1" selected>华北-北京一</option>
+                            <option value="cn-north-4">华北-北京四</option>
+                            <option value="cn-east-2">华东-上海二</option>
+                            <option value="cn-east-3">华东-上海一</option>
+                            <option value="cn-south-1">华南-广州</option>
+                            <option value="cn-southwest-2">西南-贵阳一</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="osType">操作系统</label>
+                        <select id="osType" name="osType" class="form-control">
+                            <option value="CentOS 7.9" selected>CentOS 7.9</option>
+                            <option value="CentOS 8.2">CentOS 8.2</option>
+                            <option value="Ubuntu 20.04">Ubuntu 20.04</option>
+                            <option value="Ubuntu 22.04">Ubuntu 22.04</option>
+                            <option value="Windows Server 2019">Windows Server 2019</option>
+                            <option value="Windows Server 2022">Windows Server 2022</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>
+                            <input type="checkbox" id="autoStart" name="autoStart" checked>
+                            创建后自动启动
+                        </label>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn-secondary" onclick="closeCreateVMModal()">取消</button>
+                <button type="button" class="btn-primary" onclick="submitCreateVM()">
+                    <i class="fas fa-check"></i> 创建
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 引入用户下拉菜单组件 -->
+    <script src="js/user-dropdown-loader.js"></script>
+    <script src="js/cloud-platform-new.js"></script>
+    <script src="云平台.js"></script>
+</body>
+</html>

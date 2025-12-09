@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zxb.aiproject.mapper.UserGroupMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.zxb.aiproject.entity.UserGroup">
+        <id column="id" property="id"/>
+        <result column="group_name" property="groupName"/>
+        <result column="group_code" property="groupCode"/>
+        <result column="description" property="description"/>
+        <result column="status" property="status"/>
+        <result column="sort_order" property="sortOrder"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_by" property="updateBy"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+        <result column="remark" property="remark"/>
+    </resultMap>
+
+    <!-- 根据用户ID查询用户所属的用户组列表 -->
+    <select id="selectGroupsByUserId" resultMap="BaseResultMap">
+        SELECT g.*
+        FROM sys_user_group g
+        INNER JOIN sys_user_group_relation r ON g.id = r.group_id
+        WHERE r.user_id = #{userId}
+          AND g.deleted = 0
+          AND r.deleted = 0
+        ORDER BY g.sort_order ASC, g.create_time DESC
+    </select>
+
+    <!-- 根据用户组编码查询用户组 -->
+    <select id="selectByGroupCode" resultMap="BaseResultMap">
+        SELECT *
+        FROM sys_user_group
+        WHERE group_code = #{groupCode}
+          AND deleted = 0
+        LIMIT 1
+    </select>
+
+</mapper>

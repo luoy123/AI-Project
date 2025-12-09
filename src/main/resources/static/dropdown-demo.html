@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>??????????</title>
+    <link rel="stylesheet" href="libs/fontawesome/6.0.0/css/all.min.css">
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', Arial, sans-serif;
+            padding: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            margin: 0;
+        }
+        
+        .demo-container {
+            max-width: 600px;
+            margin: 0 auto;
+            background: white;
+            padding: 40px;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        
+        .title {
+            color: #1f2937;
+            margin-bottom: 30px;
+            font-size: 24px;
+            font-weight: 600;
+        }
+        
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 40px;
+            font-size: 16px;
+        }
+        
+        .demo-area {
+            background: #f8fafc;
+            padding: 30px;
+            border-radius: 12px;
+            border: 2px dashed #e2e8f0;
+            margin: 30px 0;
+        }
+        
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        
+        .btn-small {
+            padding: 10px 18px;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.2);
+        }
+        
+        .btn-small:hover {
+            background: #2563eb;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
+        }
+        
+        /* ???????? */
+        .export-dropdown {
+            position: relative;
+            display: inline-block;
+        }
+
+        .dropdown-toggle {
+            position: relative;
+        }
+
+        .dropdown-toggle .fa-caret-down {
+            margin-left: 6px;
+            font-size: 12px;
+            transition: transform 0.2s ease;
+        }
+
+        .dropdown-toggle:hover .fa-caret-down {
+            transform: translateY(1px);
+        }
+
+        .dropdown-menu {
+            display: none;
+            position: absolute;
+            top: 100%;
+            right: 0;
+            background: white;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+            z-index: 1001;
+            min-width: 200px;
+            width: auto;
+            padding: 10px 0;
+            white-space: nowrap;
+            margin-top: 8px;
+            font-size: 14px;
+        }
+
+        .dropdown-menu.show {
+            display: block;
+            animation: fadeInDown 0.2s ease;
+        }
+
+        @keyframes fadeInDown {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .dropdown-menu button {
+            width: 100%;
+            padding: 14px 24px;
+            border: none;
+            background: none;
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            color: #374151;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            overflow: visible;
+            display: flex;
+            align-items: center;
+            line-height: 1.4;
+        }
+
+        .dropdown-menu button:hover {
+            background-color: #f8fafc;
+            color: #1f2937;
+        }
+
+        .dropdown-menu button:hover i {
+            color: #3b82f6;
+        }
+
+        .dropdown-menu button i {
+            margin-right: 12px;
+            width: 18px;
+            min-width: 18px;
+            color: #6b7280;
+            text-align: center;
+            flex-shrink: 0;
+            font-size: 14px;
+        }
+        
+        .features {
+            margin-top: 40px;
+            text-align: left;
+        }
+        
+        .feature-item {
+            display: flex;
+            align-items: center;
+            margin: 12px 0;
+            color: #374151;
+        }
+        
+        .feature-item i {
+            color: #10b981;
+            margin-right: 10px;
+            width: 16px;
+        }
+        
+        .note {
+            background: #fef3c7;
+            color: #92400e;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 30px;
+            font-size: 14px;
+            border-left: 4px solid #f59e0b;
+        }
+    </style>
+</head>
+<body>
+    <div class="demo-container">
+        <h1 class="title">?? ??????????</h1>
+        <p class="subtitle">??????????,?????????</p>
+        
+        <div class="demo-area">
+            <div class="controls">
+                <button class="btn-small"><i class="fas fa-search-plus"></i> ??</button>
+                <button class="btn-small"><i class="fas fa-search-minus"></i> ??</button>
+                <button class="btn-small"><i class="fas fa-home"></i> ????</button>
+                <button class="btn-small"><i class="fas fa-sync"></i> ????</button>
+                
+                <div class="export-dropdown">
+                    <button class="btn-small dropdown-toggle" onclick="toggleExportMenu()">
+                        <i class="fas fa-download"></i> ?? <i class="fas fa-caret-down"></i>
+                    </button>
+                    <div class="dropdown-menu" id="exportMenu">
+                        <button onclick="testExport('topology')"><i class="fas fa-image"></i> ?????</button>
+                        <button onclick="testExport('devices')"><i class="fas fa-list"></i> ??????</button>
+                        <button onclick="testExport('report')"><i class="fas fa-file-alt"></i> ??????</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="features">
+            <h3 style="color: #1f2937; margin-bottom: 20px;">? ????</h3>
+            <div class="feature-item">
+                <i class="fas fa-check"></i>
+                <span><strong>?????:</strong>????????????</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-check"></i>
+                <span><strong>????:</strong>??????????,?????</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-check"></i>
+                <span><strong>????:</strong>??Flex?????????????</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-check"></i>
+                <span><strong>????:</strong>????????????</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-check"></i>
+                <span><strong>????:</strong>?????/??????</span>
+            </div>
+            <div class="feature-item">
+                <i class="fas fa-check"></i>
+                <span><strong>?????:</strong>???????????</span>
+            </div>
+        </div>
+        
+        <div class="note">
+            <strong>?? ??:</strong> ??"??"??????????????????????,?????????????
+        </div>
+    </div>
+
+    <script>
+        // ????????
+        function toggleExportMenu() {
+            const menu = document.getElementById('exportMenu');
+            if (menu) {
+                menu.classList.toggle('show');
+            }
+        }
+
+        // ????????????
+        document.addEventListener('click', function(event) {
+            const dropdown = document.querySelector('.export-dropdown');
+            const menu = document.getElementById('exportMenu');
+            
+            if (dropdown && menu && !dropdown.contains(event.target)) {
+                menu.classList.remove('show');
+            }
+        });
+        
+        // ??????
+        function testExport(type) {
+            const typeNames = {
+                'topology': '???',
+                'devices': '????',
+                'report': '????'
+            };
+            
+            // ????
+            const menu = document.getElementById('exportMenu');
+            if (menu) menu.classList.remove('show');
+            
+            // ??????
+            setTimeout(() => {
+                alert(`? ????!\n\n???:${typeNames[type]}\n\n????????????????????,??????`);
+            }, 200);
+        }
+    </script>
+</body>
+</html>

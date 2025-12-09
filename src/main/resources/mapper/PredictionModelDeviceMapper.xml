@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zxb.aiproject.mapper.PredictionModelDeviceMapper">
+
+    <!-- 批量插入模型-设备关联（合并后） -->
+    <insert id="batchInsert" parameterType="java.util.List">
+        INSERT INTO prediction_model_device (
+            service_id, device_id, category_id, monitoring_type, monitoring_metric,
+            status, create_time, deleted
+        )
+        VALUES
+        <foreach collection="list" item="item" separator=",">
+            (
+                #{item.serviceId}, #{item.deviceId}, #{item.categoryId},
+                #{item.monitoringType}, #{item.monitoringMetric},
+                COALESCE(#{item.status}, 1), NOW(), 0
+            )
+        </foreach>
+    </insert>
+
+</mapper>

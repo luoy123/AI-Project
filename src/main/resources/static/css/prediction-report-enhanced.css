@@ -1,0 +1,623 @@
+/**
+ * 预测报告增强样式
+ * 健康度图表和报告卡片样式
+ */
+
+/* 增强报告容器 */
+.enhanced-reports-container {
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+/* 健康度仪表板 */
+.health-dashboard {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.health-chart-section {
+    margin-bottom: 20px;
+}
+
+.health-chart-section h4 {
+    color: #333;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.health-chart-section h4 i {
+    color: #e74c3c;
+    margin-right: 8px;
+}
+
+/* 健康度统计卡片 */
+.health-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 10px;
+    text-align: center;
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-5px);
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+/* 增强报告卡片 */
+.enhanced-report-card {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    transition: all 0.3s ease;
+    border-left: 4px solid #007bff;
+}
+
+.enhanced-report-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.15);
+}
+
+.enhanced-report-card .report-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid #eee;
+}
+
+.enhanced-report-card .report-title {
+    margin: 0;
+    color: #333;
+    font-size: 1.1rem;
+    font-weight: 600;
+}
+
+.health-badge {
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    background: #28a745;
+    color: white;
+}
+
+.health-badge.text-success { background: #28a745; }
+.health-badge.text-info { background: #17a2b8; }
+.health-badge.text-warning { background: #ffc107; color: #333; }
+.health-badge.text-danger { background: #dc3545; }
+.health-badge.text-muted { background: #6c757d; }
+
+/* 报告指标网格 */
+.report-metrics {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+.metric-item {
+    text-align: center;
+    padding: 12px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.metric-label {
+    display: block;
+    font-size: 0.8rem;
+    color: #666;
+    margin-bottom: 5px;
+    font-weight: 500;
+}
+
+.metric-value {
+    display: block;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #333;
+}
+
+.metric-value.text-success { color: #28a745 !important; }
+.metric-value.text-info { color: #17a2b8 !important; }
+.metric-value.text-warning { color: #ffc107 !important; }
+.metric-value.text-danger { color: #dc3545 !important; }
+.metric-value.text-muted { color: #6c757d !important; }
+
+/* 报告操作按钮 */
+.report-actions {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.btn-view-detail,
+.btn-view-trend {
+    flex: 1;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.btn-view-detail {
+    background: #007bff;
+    color: white;
+}
+
+.btn-view-detail:hover {
+    background: #0056b3;
+    transform: translateY(-1px);
+}
+
+.btn-view-trend {
+    background: #28a745;
+    color: white;
+}
+
+.btn-view-trend:hover {
+    background: #1e7e34;
+    transform: translateY(-1px);
+}
+
+.report-footer {
+    font-size: 0.8rem;
+    color: #666;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+}
+
+/* 报告列表 */
+.reports-list {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.reports-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.reports-header h4 {
+    margin: 0;
+    color: #333;
+    font-weight: 600;
+}
+
+.reports-header h4 i {
+    color: #007bff;
+    margin-right: 8px;
+}
+
+.report-count {
+    background: #007bff;
+    color: white;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+
+.reports-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+    gap: 20px;
+}
+
+/* 简单健康度统计（ECharts备选方案） */
+.simple-health-stats {
+    text-align: center;
+    padding: 40px 20px;
+}
+
+.simple-health-stats h5 {
+    color: #333;
+    margin-bottom: 20px;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
+    gap: 15px;
+    max-width: 500px;
+    margin: 0 auto;
+}
+
+.stat-item {
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.stat-name {
+    font-size: 0.9rem;
+    color: #666;
+    margin-bottom: 5px;
+}
+
+.stat-count {
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #333;
+}
+
+/* 趋势分析模态框样式 */
+.trend-item {
+    padding: 15px;
+    margin: 10px 0;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #007bff;
+}
+
+.trend-direction {
+    font-weight: 600;
+    color: #007bff;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .enhanced-reports-container {
+        padding: 15px;
+    }
+    
+    .health-stats {
+        grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+        gap: 10px;
+    }
+    
+    .stat-card {
+        padding: 15px;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+    
+    .reports-grid {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+    
+    .report-metrics {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .report-actions {
+        flex-direction: column;
+    }
+}
+
+@media (max-width: 480px) {
+    .health-stats {
+        grid-template-columns: 1fr;
+    }
+    
+    .report-metrics {
+        grid-template-columns: 1fr;
+    }
+    
+    .reports-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+    }
+}
+
+/* 分类树样式 */
+.sidebar-category {
+    padding: 12px 16px;
+    margin: 4px 0;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.sidebar-category:hover {
+    background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+    border-left-color: #3b82f6;
+    transform: translateX(2px);
+}
+
+.sidebar-category.active {
+    background: linear-gradient(135deg, #3b82f6 0%, #1e40af 100%);
+    color: white;
+    border-left-color: #10b981;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+}
+
+.sidebar-category.header {
+    background: linear-gradient(135deg, #1e293b 0%, #334155 100%);
+    color: white;
+    font-weight: 600;
+    cursor: default;
+    border-left-color: #10b981;
+}
+
+/* 父分类样式 */
+.sidebar-category.parent {
+    background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+    font-weight: 600;
+    border-left-color: #6366f1;
+}
+
+.sidebar-category.parent:hover {
+    background: linear-gradient(135deg, #e2e8f0 0%, #cbd5e1 100%);
+    border-left-color: #4f46e5;
+}
+
+.sidebar-category.parent.active {
+    background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+    color: white;
+}
+
+/* 子分类容器 */
+.subcategory-container {
+    margin-left: 20px;
+    border-left: 2px solid #e2e8f0;
+    padding-left: 8px;
+}
+
+/* 子分类样式 */
+.sidebar-category.child {
+    padding: 8px 12px;
+    margin: 2px 0;
+    background: #f8fafc;
+    font-size: 0.9em;
+    border-left-width: 2px;
+}
+
+.sidebar-category.child:hover {
+    background: linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%);
+    border-left-color: #0ea5e9;
+}
+
+.sidebar-category.child.active {
+    background: linear-gradient(135deg, #0ea5e9 0%, #0284c7 100%);
+    color: white;
+    border-left-color: #10b981;
+}
+
+/* 展开图标样式 */
+.expand-icon {
+    font-size: 0.8em;
+    transition: transform 0.3s ease;
+    color: #64748b;
+}
+
+.sidebar-category.parent.expanded .expand-icon {
+    transform: rotate(180deg);
+}
+
+.sidebar-category.parent.collapsed .subcategory-container {
+    display: none;
+}
+
+/* 分类数量标签 */
+.category-count {
+    background: #e2e8f0;
+    color: #475569;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: 500;
+    margin-left: 8px;
+}
+
+.sidebar-category.active .category-count {
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+}
+
+/* 简化的健康度统计样式 */
+.health-stats-simple {
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.stats-header h4 {
+    margin: 0 0 20px 0;
+    color: #333;
+    font-weight: 600;
+}
+
+.stats-header h4 i {
+    color: #e74c3c;
+    margin-right: 8px;
+}
+
+/* 统计信息头部 */
+.stats-info-header {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+    border-left: 4px solid #3b82f6;
+}
+
+.category-info {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.health-standard {
+    font-size: 0.9rem;
+    color: #666;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.health-standard i {
+    color: #3b82f6;
+}
+
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+.stats-cards-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+}
+
+/* 简化版统计卡片 - 只显示2个卡片 */
+.stats-cards-grid.simplified {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.stat-card {
+    display: flex;
+    align-items: center;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    transition: transform 0.3s ease;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+}
+
+.stat-card.normal {
+    background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+    color: white;
+}
+
+.stat-card.abnormal {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+}
+
+.stat-card.total {
+    background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%);
+    color: white;
+}
+
+.stat-card.rate {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 100%);
+    color: white;
+}
+
+.stat-icon {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-right: 15px;
+    opacity: 0.9;
+}
+
+.stat-info {
+    flex: 1;
+}
+
+.stat-value {
+    font-size: 2rem;
+    font-weight: bold;
+    margin-bottom: 5px;
+}
+
+.stat-label {
+    font-size: 0.9rem;
+    opacity: 0.9;
+}
+
+.loading {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+}
+
+.error-message {
+    text-align: center;
+    padding: 40px;
+    color: #dc3545;
+}
+
+.error-message i {
+    font-size: 2rem;
+    margin-bottom: 10px;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .stats-cards {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .stat-card {
+        padding: 15px;
+    }
+    
+    .stat-icon {
+        font-size: 1.5rem;
+        margin-right: 10px;
+    }
+    
+    .stat-value {
+        font-size: 1.5rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .stats-cards {
+        grid-template-columns: 1fr;
+    }
+}

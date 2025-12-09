@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<style>
+/* ????CMDB??? - ???? */
+.nav-cmdb { display: none !important; }
+.sidebar-item[data-page="CMDB"] { display: none !important; }
+</style>
+<script>
+// ????:????CMDB,????
+(function() {
+    function hideCMDB() {
+        var items = document.querySelectorAll('.sidebar-item');
+        items.forEach(function(item) {
+            var span = item.querySelector('span');
+            if (span && span.textContent.trim() === 'CMDB') {
+                item.style.display = 'none';
+                item.setAttribute('data-hidden', 'true');
+            }
+        });
+    }
+    
+    // ????
+    hideCMDB();
+    
+    // DOM Ready??????
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideCMDB);
+    }
+    
+    // ????:????????????
+    setTimeout(hideCMDB, 10);
+    setTimeout(hideCMDB, 100);
+})();
+</script>
+    <meta charset="UTF-8">
+    <title>??????</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .container { max-width: 1200px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+        .danger { background: #f8d7da; color: #721c24; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
+        th { background: #f8f9fa; }
+        .severity-critical { color: #dc3545; font-weight: bold; }
+        .severity-warning { color: #ffc107; font-weight: bold; }
+        .severity-info { color: #17a2b8; font-weight: bold; }
+        .status-active { color: #dc3545; }
+        .status-acknowledged { color: #ffc107; }
+        .status-resolved { color: #28a745; }
+        .code-block { background: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 4px solid #007bff; font-family: 'Courier New', monospace; font-size: 13px; }
+        .stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+        .stat-card { padding: 15px; background: white; border: 1px solid #ddd; border-radius: 5px; text-align: center; }
+        .stat-number { font-size: 24px; font-weight: bold; margin: 10px 0; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>?? ??????</h1>
+        
+        <div class="section success">
+            <h2>? ???????</h2>
+            <p><strong>????????????????!</strong></p>
+            <ul>
+                <li>?? <strong>????</strong>: 16?????</li>
+                <li>?? <strong>????</strong>: 3?(CPU????????????)</li>
+                <li>?? <strong>????</strong>: 5?(?????????????)</li>
+                <li>?? <strong>????</strong>: 5?(??????????)</li>
+                <li>? <strong>?????</strong>: 3?(??????)</li>
+            </ul>
+        </div>
+        
+        <div class="section">
+            <h2>?? ??????</h2>
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <h4>????</h4>
+                    <div class="stat-number severity-critical">3</div>
+                    <p>??????</p>
+                </div>
+                <div class="stat-card">
+                    <h4>????</h4>
+                    <div class="stat-number severity-warning">5</div>
+                    <p>??????</p>
+                </div>
+                <div class="stat-card">
+                    <h4>????</h4>
+                    <div class="stat-number severity-info">5</div>
+                    <p>?????</p>
+                </div>
+                <div class="stat-card">
+                    <h4>???</h4>
+                    <div class="stat-number status-resolved">3</div>
+                    <p>????</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>?? ??????</h2>
+            <table>
+                <tr>
+                    <th>????</th>
+                    <th>????</th>
+                    <th>??</th>
+                    <th>??</th>
+                    <th>??</th>
+                    <th>??</th>
+                    <th>??</th>
+                </tr>
+                <tr>
+                    <td><strong>???-01</strong></td>
+                    <td>???</td>
+                    <td class="severity-critical">1</td>
+                    <td>0</td>
+                    <td class="severity-info">1</td>
+                    <td>2</td>
+                    <td><span class="status-active">1??</span>, <span class="status-resolved">1???</span></td>
+                </tr>
+                <tr>
+                    <td><strong>??AP-01</strong></td>
+                    <td>?????</td>
+                    <td>0</td>
+                    <td class="severity-warning">1</td>
+                    <td>0</td>
+                    <td>2</td>
+                    <td><span class="status-active">1??</span>, <span class="status-resolved">1???</span></td>
+                </tr>
+                <tr>
+                    <td><strong>??AP-02</strong></td>
+                    <td>?????</td>
+                    <td>0</td>
+                    <td class="severity-warning">1</td>
+                    <td>0</td>
+                    <td>1</td>
+                    <td><span class="status-acknowledged">1???</span></td>
+                </tr>
+                <tr>
+                    <td><strong>VPN??-01</strong></td>
+                    <td>???</td>
+                    <td>0</td>
+                    <td class="severity-warning">1</td>
+                    <td class="severity-info">1</td>
+                    <td>2</td>
+                    <td><span class="status-active">1??</span>, <span class="status-resolved">1???</span></td>
+                </tr>
+                <tr>
+                    <td><strong>API??-01</strong></td>
+                    <td>???</td>
+                    <td class="severity-critical">1</td>
+                    <td>0</td>
+                    <td class="severity-info">1</td>
+                    <td>3</td>
+                    <td><span class="status-active">1??</span>, <span class="status-resolved">2???</span></td>
+                </tr>
+                <tr>
+                    <td><strong>?????-01</strong></td>
+                    <td>???</td>
+                    <td class="severity-critical">1</td>
+                    <td>0</td>
+                    <td class="severity-info">1</td>
+                    <td>2</td>
+                    <td><span class="status-active">1??</span>, <span class="status-resolved">1???</span></td>
+                </tr>
+                <tr>
+                    <td><strong>?????-01</strong></td>
+                    <td>???</td>
+                    <td>0</td>
+                    <td class="severity-warning">1</td>
+                    <td>0</td>
+                    <td>2</td>
+                    <td><span class="status-acknowledged">1???</span>, <span class="status-resolved">1???</span></td>
+                </tr>
+                <tr>
+                    <td><strong>???-02</strong></td>
+                    <td>???</td>
+                    <td>0</td>
+                    <td class="severity-warning">1</td>
+                    <td class="severity-info">1</td>
+                    <td>2</td>
+                    <td><span class="status-active">1??</span>, <span class="status-resolved">1???</span></td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>?? ??????</h2>
+            <table>
+                <tr>
+                    <th>??</th>
+                    <th>????</th>
+                    <th>????</th>
+                    <th>???</th>
+                    <th>????</th>
+                </tr>
+                <tr>
+                    <td><span class="severity-critical">??</span></td>
+                    <td>???-01</td>
+                    <td>CPU?????</td>
+                    <td>95% (??: 90%)</td>
+                    <td>15???</td>
+                </tr>
+                <tr>
+                    <td><span class="severity-critical">??</span></td>
+                    <td>?????-01</td>
+                    <td>????</td>
+                    <td>98% (??: 85%)</td>
+                    <td>8???</td>
+                </tr>
+                <tr>
+                    <td><span class="severity-critical">??</span></td>
+                    <td>API??-01</td>
+                    <td>????</td>
+                    <td>5000ms (??: 2000ms)</td>
+                    <td>5???</td>
+                </tr>
+                <tr>
+                    <td><span class="severity-warning">??</span></td>
+                    <td>??AP-01</td>
+                    <td>?????</td>
+                    <td>80? (??: 70?)</td>
+                    <td>25???</td>
+                </tr>
+                <tr>
+                    <td><span class="severity-warning">??</span></td>
+                    <td>VPN??-01</td>
+                    <td>???????</td>
+                    <td>75% (??: 90%)</td>
+                    <td>1???</td>
+                </tr>
+                <tr>
+                    <td><span class="severity-warning">??</span></td>
+                    <td>???-02</td>
+                    <td>???????</td>
+                    <td>150% (??: 120%)</td>
+                    <td>2???</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>?? ??????</h2>
+            <table>
+                <tr>
+                    <th>????</th>
+                    <th>????</th>
+                    <th>??</th>
+                    <th>??</th>
+                </tr>
+                <tr>
+                    <td><strong>???</strong></td>
+                    <td>???-01, ?????-01, API??-01</td>
+                    <td>3</td>
+                    <td>CPU???????????????</td>
+                </tr>
+                <tr>
+                    <td><strong>???</strong></td>
+                    <td>??AP-01, VPN??-01</td>
+                    <td>2</td>
+                    <td>????????????????</td>
+                </tr>
+                <tr>
+                    <td><strong>???</strong></td>
+                    <td>???-02</td>
+                    <td>1</td>
+                    <td>????????????????</td>
+                </tr>
+                <tr>
+                    <td><strong>???</strong></td>
+                    <td>??AP-02</td>
+                    <td>1</td>
+                    <td>??????????????</td>
+                </tr>
+                <tr>
+                    <td><strong>????</strong></td>
+                    <td>?????-01</td>
+                    <td>1</td>
+                    <td>???????????????</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="section info">
+            <h2>?? SQL????</h2>
+            <p><strong>????SQL?????????:</strong></p>
+            <div class="code-block">
+-- ?MySQL???
+source /path/to/insert_alerts.sql;
+
+-- ??????SQL????
+USE aiops_db;
+-- ????insert_alerts.sql??INSERT??
+            </div>
+            
+            <h3>??????</h3>
+            <div class="code-block">
+-- ??????
+SELECT severity, COUNT(*) as count 
+FROM alert 
+WHERE deleted = 0 
+GROUP BY severity;
+
+-- ??????
+SELECT device_name, message, severity, occurred_time 
+FROM alert 
+WHERE status = 'active' AND deleted = 0 
+ORDER BY occurred_time DESC;
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>?? ??????</h2>
+            <div class="warning">
+                <p><strong>?????????????????:</strong></p>
+                <ul>
+                    <li>? ???-01 ? ???????????-01</li>
+                    <li>? ??AP-01 ? ??????????AP-01</li>
+                    <li>? ??AP-02 ? ??????????AP-02</li>
+                    <li>? VPN??-01 ? ????????VPN??-01</li>
+                    <li>? API??-01 ? ????????API??-01</li>
+                    <li>? ?????-01 ? ?????????????-01</li>
+                    <li>? ?????-01 ? ?????????????-01</li>
+                    <li>? ???-02 ? ???????????-02</li>
+                </ul>
+                <p><em>?????????????????????</em></p>
+            </div>
+        </div>
+        
+        <div class="section success">
+            <h2>? ????</h2>
+            <ul>
+                <li>?? <strong>???????</strong>: ???????????????</li>
+                <li>? <strong>??????</strong>: ?5????7???????</li>
+                <li>?? <strong>??????</strong>: ??critical?warning?info????</li>
+                <li>?? <strong>??????</strong>: active ? acknowledged ? resolved</li>
+                <li>?? <strong>??????</strong>: ???????????</li>
+                <li>?? <strong>?????</strong>: ????????????</li>
+                <li>??? <strong>??????</strong>: ????????????</li>
+            </ul>
+        </div>
+    </div>
+</body>
+</html>

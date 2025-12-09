@@ -1,0 +1,99 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zxb.aiproject.mapper.BusinessMapper">
+
+    <!-- 业务结果映射 -->
+    <resultMap id="BusinessResultMap" type="com.zxb.aiproject.entity.Business">
+        <id column="id" property="id"/>
+        <result column="name" property="name"/>
+        <result column="code" property="code"/>
+        <result column="parent_id" property="parentId"/>
+        <result column="type" property="type"/>
+        <result column="status" property="status"/>
+        <result column="description" property="description"/>
+        <result column="owner" property="owner"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <!-- 查询所有业务信息 -->
+    <select id="selectAllBusinessWithDetails" resultMap="BusinessResultMap">
+        SELECT 
+            id,
+            name,
+            code,
+            parent_id,
+            type,
+            status,
+            description,
+            owner,
+            create_time,
+            update_time,
+            deleted
+        FROM business 
+        WHERE deleted = 0 
+        ORDER BY 
+            CASE WHEN parent_id IS NULL THEN 0 ELSE 1 END,
+            parent_id,
+            id
+    </select>
+
+    <!-- 查询业务树结构 -->
+    <select id="selectBusinessTree" resultMap="BusinessResultMap">
+        WITH RECURSIVE business_tree AS (
+            -- 查询根节点
+            SELECT 
+                id, name, code, parent_id, type, status, description, owner,
+                create_time, update_time, deleted,
+                0 as level,
+                CAST(id AS CHAR(1000)) as path
+            FROM business 
+            WHERE parent_id IS NULL AND deleted = 0
+            
+            UNION ALL
+            
+            -- 递归查询子节点
+            SELECT 
+                b.id, b.name, b.code, b.parent_id, b.type, b.status, b.description, b.owner,
+                b.create_time, b.update_time, b.deleted,
+                bt.level + 1,
+                CONCAT(bt.path, '-', b.id)
+            FROM business b
+            INNER JOIN business_tree bt ON b.parent_id = bt.id
+            WHERE b.deleted = 0
+        )
+        SELECT * FROM business_tree ORDER BY path
+    </select>
+
+    <!-- 查询业务统计信息 -->
+    <select id="selectBusinessStats" resultType="map">
+        SELECT 
+            COUNT(*) as total_business,
+            COUNT(CASE WHEN status = 'active' THEN 1 END) as active_business,
+            COUNT(CASE WHEN status = 'inactive' THEN 1 END) as inactive_business,
+            COUNT(CASE WHEN parent_id IS NULL THEN 1 END) as root_business,
+            COUNT(CASE WHEN parent_id IS NOT NULL THEN 1 END) as child_business
+        FROM business 
+        WHERE deleted = 0
+    </select>
+
+    <!-- 根据业务编码查询业务 -->
+    <select id="selectByCode" resultMap="BusinessResultMap">
+        SELECT * FROM business 
+        WHERE code = #{code} AND deleted = 0
+    </select>
+
+    <!-- 查询指定业务的所有子业务（递归） -->
+    <select id="selectChildrenByParentId" resultMap="BusinessResultMap">
+        WITH RECURSIVE children AS (
+            SELECT * FROM business WHERE id = #{parentId} AND deleted = 0
+            UNION ALL
+            SELECT b.* FROM business b
+            INNER JOIN children c ON b.parent_id = c.id
+            WHERE b.deleted = 0
+        )
+        SELECT * FROM children WHERE id != #{parentId} ORDER BY parent_id, id
+    </select>
+
+</mapper>

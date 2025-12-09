@@ -1,0 +1,11 @@
+/* 全局样式覆盖 - 隐藏暂时不需要的功能 */
+
+/* 隐藏标记为需要隐藏的菜单项 */
+.sidebar-item[data-hidden="true"] {
+    display: none !important;
+}
+
+/* 隐藏CMDB相关的类（如果有的话） */
+.nav-cmdb {
+    display: none !important;
+}

@@ -1,0 +1,401 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>预测报告管理 - 智能预测系统</title>
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Font Awesome -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <style>
+        .report-card {
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            background: #fff;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: box-shadow 0.3s ease;
+        }
+        
+        .report-card:hover {
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .report-header {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f0f0f0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .report-title h5 {
+            margin: 0;
+            color: #333;
+        }
+        
+        .report-type-badge {
+            font-size: 0.75rem;
+            padding: 4px 8px;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+        
+        .badge-success { background-color: #28a745; color: white; }
+        .badge-info { background-color: #17a2b8; color: white; }
+        .badge-primary { background-color: #007bff; color: white; }
+        .badge-warning { background-color: #ffc107; color: black; }
+        .badge-secondary { background-color: #6c757d; color: white; }
+        
+        .report-content {
+            padding: 20px;
+        }
+        
+        .report-metrics {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 15px;
+        }
+        
+        .metric-item {
+            text-align: center;
+            padding: 10px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .metric-label {
+            display: block;
+            font-size: 0.85rem;
+            color: #666;
+            margin-bottom: 5px;
+        }
+        
+        .metric-value {
+            display: block;
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+        
+        .report-summary {
+            margin: 15px 0;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .report-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 15px;
+            padding-top: 15px;
+            border-top: 1px solid #f0f0f0;
+        }
+        
+        .stats-card {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .stats-number {
+            font-size: 2rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+        
+        .trend-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: #f8f9fa;
+            border-radius: 6px;
+            border-left: 4px solid #007bff;
+        }
+        
+        .trend-direction {
+            font-weight: 600;
+            color: #007bff;
+        }
+        
+        .modal-lg {
+            max-width: 800px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- 页面标题 -->
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <h2><i class="fas fa-chart-line"></i> 预测报告管理</h2>
+                        <p class="text-muted mb-0">智能预测报告生成与分析系统</p>
+                    </div>
+                    <div class="text-end">
+                        <small class="text-muted">当前时间: <span id="currentTime"></span></small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 控制面板 -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="card">
+                    <div class="card-header">
+                        <h6><i class="fas fa-cog"></i> 控制面板</h6>
+                    </div>
+                    <div class="card-body">
+                        <!-- 服务选择 -->
+                        <div class="mb-3">
+                            <label class="form-label">选择服务</label>
+                            <select class="form-select" id="serviceSelector">
+                                <!-- 动态加载 -->
+                            </select>
+                        </div>
+                        
+                        <!-- 报告类型过滤 -->
+                        <div class="mb-3">
+                            <label class="form-label">报告类型</label>
+                            <select class="form-select" id="reportTypeFilter">
+                                <!-- 动态加载 -->
+                            </select>
+                        </div>
+                        
+                        <!-- 操作按钮 -->
+                        <div class="d-grid gap-2">
+                            <button class="btn btn-primary" id="refreshBtn">
+                                <i class="fas fa-sync-alt"></i> 刷新数据
+                            </button>
+                            <button class="btn btn-success" id="generateHealthBtn">
+                                <i class="fas fa-plus"></i> 生成健康度报告
+                            </button>
+                            <button class="btn btn-info" id="generateTrendBtn">
+                                <i class="fas fa-chart-line"></i> 生成趋势分析
+                            </button>
+                            <button class="btn btn-warning" id="generateSummaryBtn">
+                                <i class="fas fa-file-alt"></i> 生成综合摘要
+                            </button>
+                            <button class="btn btn-secondary" id="trendAnalysisBtn">
+                                <i class="fas fa-analytics"></i> 趋势分析
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-md-9">
+                <!-- 统计卡片 -->
+                <div class="row mb-3">
+                    <div class="col-md-3">
+                        <div class="stats-card">
+                            <div class="stats-number" id="totalReportsCount">0</div>
+                            <div>总报告数</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <div class="stats-number" id="healthReportsCount">0</div>
+                            <div>健康度报告</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">
+                            <div class="stats-number" id="trendReportsCount">0</div>
+                            <div>趋势分析</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="stats-card" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">
+                            <div class="stats-number" id="summaryReportsCount">0</div>
+                            <div>综合摘要</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 报告列表 -->
+                <div class="card">
+                    <div class="card-header d-flex justify-content-between align-items-center">
+                        <h6><i class="fas fa-list"></i> 报告列表</h6>
+                        <div>
+                            <button class="btn btn-sm btn-outline-secondary" id="prevPageBtn">
+                                <i class="fas fa-chevron-left"></i>
+                            </button>
+                            <span class="mx-2" id="currentPageInfo">第 1 页</span>
+                            <button class="btn btn-sm btn-outline-secondary" id="nextPageBtn">
+                                <i class="fas fa-chevron-right"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="card-body" id="reportsList">
+                        <!-- 动态加载报告列表 -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 报告详情模态框 -->
+    <div class="modal fade" id="reportDetailModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-file-alt"></i> 报告详情
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong>报告标题:</strong> <span id="detailReportTitle"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>报告类型:</strong> <span id="detailReportType"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <strong>健康度评分:</strong><br>
+                            <span id="detailHealthScore" class="h5"></span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>预测次数:</strong><br>
+                            <span id="detailTotalPredictions" class="h5"></span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>异常检测:</strong><br>
+                            <span id="detailAnomalyCount" class="h5"></span>
+                        </div>
+                        <div class="col-md-3">
+                            <strong>准确率:</strong><br>
+                            <span id="detailAccuracyRate" class="h5"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>报告摘要:</strong>
+                        <div class="p-3 bg-light rounded mt-2">
+                            <span id="detailSummary"></span>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>关键发现:</strong>
+                        <ul id="detailKeyFindings" class="mt-2">
+                            <!-- 动态加载 -->
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>建议措施:</strong>
+                        <ul id="detailRecommendations" class="mt-2">
+                            <!-- 动态加载 -->
+                        </ul>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <strong>详细分析:</strong>
+                        <div class="p-3 bg-light rounded mt-2" style="max-height: 200px; overflow-y: auto;">
+                            <pre id="detailAnalysis" style="white-space: pre-wrap;"></pre>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong>生成时间:</strong> <span id="detailReportTime"></span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>统计周期:</strong> <span id="detailPeriod"></span>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                    <button type="button" class="btn btn-primary">
+                        <i class="fas fa-download"></i> 下载报告
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- 趋势分析模态框 -->
+    <div class="modal fade" id="trendAnalysisModal" tabindex="-1">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">
+                        <i class="fas fa-chart-line"></i> 趋势分析报告
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-4">
+                        <h6>综合趋势</h6>
+                        <div class="trend-item">
+                            <div>趋势方向: <span id="trendOverallDirection" class="trend-direction"></span></div>
+                            <div>置信度: <span id="trendOverallConfidence"></span></div>
+                            <div class="mt-2"><span id="trendDescription"></span></div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-4">
+                            <h6>健康度趋势</h6>
+                            <div class="trend-item">
+                                <div>方向: <span id="healthTrendDirection" class="trend-direction"></span></div>
+                                <div>置信度: <span id="healthTrendConfidence"></span></div>
+                                <div class="mt-2 small"><span id="healthTrendDescription"></span></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>准确率趋势</h6>
+                            <div class="trend-item">
+                                <div>方向: <span id="accuracyTrendDirection" class="trend-direction"></span></div>
+                                <div>置信度: <span id="accuracyTrendConfidence"></span></div>
+                                <div class="mt-2 small"><span id="accuracyTrendDescription"></span></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <h6>异常率趋势</h6>
+                            <div class="trend-item">
+                                <div>方向: <span id="anomalyTrendDirection" class="trend-direction"></span></div>
+                                <div>置信度: <span id="anomalyTrendConfidence"></span></div>
+                                <div class="mt-2 small"><span id="anomalyTrendDescription"></span></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">关闭</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- 自定义JS -->
+    <script src="js/prediction-reports.js"></script>
+</body>
+</html>

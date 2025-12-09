@@ -1,0 +1,39 @@
+{
+  "name": "ai-ops-platform",
+  "version": "1.0.0",
+  "description": "人工智能运维平台自动化测试",
+  "main": "index.js",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug",
+    "test:ui": "playwright test --ui",
+    "test:prediction": "playwright test test-prediction-management.spec.js",
+    "test:prediction:headed": "playwright test test-prediction-management.spec.js --headed",
+    "test:overview": "playwright test overview-test.spec.js",
+    "test:asset": "playwright test asset-management-test.spec.js",
+    "test:alert": "playwright test alert-management-test.spec.js",
+    "test:log": "playwright test log-management-test.spec.js",
+    "test:chrome": "playwright test --project=chromium",
+    "test:firefox": "playwright test --project=firefox",
+    "test:safari": "playwright test --project=webkit",
+    "test:mobile": "playwright test --project='Mobile Chrome'",
+    "report": "playwright show-report",
+    "install-browsers": "playwright install"
+  },
+  "keywords": [
+    "playwright",
+    "automation",
+    "testing",
+    "ai-ops",
+    "e2e"
+  ],
+  "author": "AI-Ops Team",
+  "license": "MIT",
+  "devDependencies": {
+    "@playwright/test": "^1.56.1"
+  },
+  "engines": {
+    "node": ">=16.0.0"
+  }
+}

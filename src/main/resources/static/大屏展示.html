@@ -1,0 +1,1281 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>大屏展示 - 人工智能运维平台</title>
+    <link rel="stylesheet" href="libs/fontawesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="大屏展示.css">
+    <script src="libs/echarts/echarts.min.js"></script>
+</head>
+<body>
+<div class="dashboard-container">
+    <!-- 侧边栏 -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>人工智能运维平台</h2>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>总览</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-eye"></i>
+            <span>视图</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-bell"></i>
+            <span>告警中心</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-server"></i>
+            <span>设备管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-network-wired"></i>
+            <span>网络拓扑</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-chart-line"></i>
+            <span>统计报表</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-tools"></i>
+            <span>运维工具</span>
+        </div>
+        <div class="sidebar-item nav-bigscreen active">
+            <i class="fas fa-desktop"></i>
+            <span>数字大屏</span>
+        </div>
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-group-title">拓展中心</div>
+        <div class="sidebar-item">
+            <i class="fas fa-layer-group"></i>
+            <span>业务管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-globe"></i>
+            <span>网络管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-video"></i>
+            <span>视频管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-building"></i>
+            <span>机房管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-cubes"></i>
+            <span>资产管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-user-cog"></i>
+            <span>运维管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-database"></i>
+            <span>CMDB</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-file-alt"></i>
+            <span>日志管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-chart-pie"></i>
+            <span>智能预测管理</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-cloud"></i>
+            <span>云平台</span>
+        </div>
+        <div class="sidebar-divider"></div>
+        <div class="sidebar-group-title">设置中心</div>
+        <div class="sidebar-item">
+            <i class="fas fa-cog"></i>
+            <span>设置</span>
+        </div>
+        <div class="sidebar-item">
+            <i class="fas fa-plug"></i>
+            <span>对接配置</span>
+        </div>
+    </div>
+
+    <!-- 主内容区域 -->
+    <div class="main-content">
+        <!-- 大屏内容区 -->
+        <div class="bigscreen-container">
+            <!-- 顶部导航栏 -->
+            <div class="bigscreen-header">
+                <div class="header-left">
+                    <div class="nav-item" data-page="首页">首页</div>
+                    <div class="nav-item" data-page="资源监控">资源监控</div>
+                    <div class="nav-item" data-page="告警监控">告警监控</div>
+                    <div class="nav-item" data-page="智能预测">智能预测</div>
+                </div>
+                <div class="header-center">
+                    <h1 class="main-title">人工智能运维平台</h1>
+                    <div class="current-time" id="currentTime"></div>
+                </div>
+                <div class="header-right">
+                    <div class="nav-item" data-page="运维监控">运维监控</div>
+                    <div class="nav-item" data-page="网络监控">网络监控</div>
+                    <div class="nav-item" data-page="机房管理">机房管理</div>
+                    <div class="nav-item" data-page="能耗监测">能耗监测</div>
+                </div>
+            </div>
+
+            <!-- 主要内容区 -->
+            <div class="bigscreen-views">
+                <!-- 首页视图 -->
+                <div id="view-home" class="view-content" style="display: block;">
+                    <div class="bigscreen-content">
+                        <!-- 左侧区域 -->
+                        <div class="content-left">
+                    <!-- 设备类型统计 -->
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <i class="fas fa-server"></i>
+                            <span>设备类型统计</span>
+                            <span class="header-tag">Top 5</span>
+                        </div>
+                        <div class="panel-body">
+                            <div id="deviceTypeChart" class="chart-container-full"></div>
+                        </div>
+                    </div>
+
+                    <!-- 设备使用情况 -->
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>设备使用情况</span>
+                            <div class="header-legend">
+                                <span class="legend-item"><i class="legend-dot cpu"></i>已用</span>
+                                <span class="legend-item"><i class="legend-dot memory"></i>空闲</span>
+                            </div>
+                        </div>
+                        <div class="panel-body">
+                            <div id="deviceUsageChart" class="chart-container-full"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 中间区域 -->
+                <div class="content-center">
+                    <!-- 核心数字展示区 -->
+                    <div class="core-stats-area" onclick="window.location.href='告警中心.html'" style="cursor: pointer;">
+                        <div class="stats-row">
+                            <!-- 左侧：在线设备 -->
+                            <div class="stat-card online">
+                                <div class="stat-number" id="onlineDevices">--</div>
+                                <div class="stat-label">当前在线设备</div>
+                            </div>
+                            
+                            <!-- SVG曲线连接左 -->
+                            <svg class="connector-svg left" viewBox="0 0 80 80">
+                                <path d="M 0 40 Q 40 40, 60 20 Q 75 5, 80 40" stroke="rgba(59, 130, 246, 0.5)" stroke-width="2" fill="none"/>
+                            </svg>
+                            
+                            <!-- 中间：告警圈图 -->
+                            <div class="alert-ring-container">
+                                <div class="alert-ring">
+                                    <svg class="ring-svg" viewBox="0 0 130 130">
+                                        <circle cx="65" cy="65" r="56" fill="none" stroke="rgba(59, 130, 246, 0.15)" stroke-width="8"/>
+                                        <circle cx="65" cy="65" r="56" fill="none" stroke="url(#ringGradient)" stroke-width="8" 
+                                                stroke-dasharray="300 352" stroke-linecap="round" transform="rotate(-90 65 65)"/>
+                                        <defs>
+                                            <linearGradient id="ringGradient" x1="0%" y1="0%" x2="100%" y2="0%">
+                                                <stop offset="0%" style="stop-color:#3b82f6"/>
+                                                <stop offset="100%" style="stop-color:#8b5cf6"/>
+                                            </linearGradient>
+                                        </defs>
+                                    </svg>
+                                    <div class="ring-content">
+                                        <div class="ring-sub">本月告警总数</div>
+                                        <div class="ring-number" id="alertTotal">--</div>
+                                    </div>
+                                </div>
+                                <div class="ring-trend down">
+                                    <i class="fas fa-arrow-down"></i>
+                                    <span>较上月: <span id="alertChange">30%</span></span>
+                                </div>
+                            </div>
+                            
+                            <!-- SVG曲线连接右 -->
+                            <svg class="connector-svg right" viewBox="0 0 80 80">
+                                <path d="M 0 40 Q 5 5, 20 20 Q 40 40, 80 40" stroke="rgba(59, 130, 246, 0.5)" stroke-width="2" fill="none"/>
+                            </svg>
+                            
+                            <!-- 右侧：离线设备 -->
+                            <div class="stat-card offline">
+                                <div class="stat-number" id="offlineDevices">--</div>
+                                <div class="stat-label">当前离线设备</div>
+                            </div>
+                        </div>
+                        <div class="view-detail-link">
+                            <span>告警监控</span>
+                            <i class="fas fa-arrow-right"></i>
+                        </div>
+                    </div>
+
+                    <!-- 告警类型/严重度（雷达图） -->
+                    <div class="panel-card">
+                        <div class="panel-header">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <span>告警类型/严重度</span>
+                        </div>
+                        <div class="panel-body">
+                            <div id="alertRadarChart" class="chart-container-full"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 右侧区域 -->
+                <div class="content-right">
+                    <!-- 资源使用趋势（智能预测） -->
+                    <div class="panel-card trend-panel">
+                        <div class="panel-header">
+                            <i class="fas fa-chart-line"></i>
+                            <span>资源使用趋势 (智能预测)</span>
+                            <span class="header-tag ai-tag">AI Enabled</span>
+                        </div>
+                        <div class="panel-body">
+                            <div id="trendChart" class="chart-container-full"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 最右侧区域：设备列表 -->
+                <div class="content-far-right">
+                    <!-- 设备列表 -->
+                    <div class="panel-card device-list-panel">
+                        <div class="panel-header">
+                            <i class="fas fa-list"></i>
+                            <span>设备列表</span>
+                            <i class="fas fa-search header-icon"></i>
+                        </div>
+                        <div class="panel-body">
+                            <table class="device-table">
+                                <thead>
+                                    <tr>
+                                        <th></th>
+                                        <th>设备名称</th>
+                                        <th>设备类型</th>
+                                        <th>在线状态</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="deviceTableBody">
+                                    <!-- 设备列表将通过JS动态填充 -->
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- 选中设备详情 -->
+                    <div class="panel-card device-detail-card">
+                        <div class="panel-header">
+                            <i class="fas fa-microchip"></i>
+                            <span>选中设备详情</span>
+                        </div>
+                        <div class="panel-body">
+                            <div class="device-detail">
+                                <div class="detail-row">
+                                    <span class="detail-label">设备名称:</span>
+                                    <span class="detail-value" id="selectedDeviceName">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">IP地址:</span>
+                                    <span class="detail-value detail-ip" id="selectedIp">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">设备状态:</span>
+                                    <span class="detail-value" id="selectedStatus">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">设备类型:</span>
+                                    <span class="detail-value" id="selectedType">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">制造商:</span>
+                                    <span class="detail-value" id="selectedManufacturer">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">型号:</span>
+                                    <span class="detail-value" id="selectedModel">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">位置:</span>
+                                    <span class="detail-value" id="selectedLocation">-</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">CPU使用率:</span>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill cpu" id="selectedCpu" style="width: 0%"></div>
+                                    </div>
+                                    <span class="detail-percent" id="selectedCpuPercent">0%</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">内存使用:</span>
+                                    <div class="progress-bar">
+                                        <div class="progress-fill memory" id="selectedMemory" style="width: 0%"></div>
+                                    </div>
+                                    <span class="detail-percent" id="selectedMemoryPercent">0%</span>
+                                </div>
+                                <div class="detail-row">
+                                    <span class="detail-label">网络流量:</span>
+                                    <span class="detail-value" id="selectedNetwork">-</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                    </div>
+                </div>
+                <!-- 首页视图结束 -->
+
+                <!-- 资源监控视图 -->
+                <div id="view-resource" class="view-content" style="display: none;">
+                    <div class="prediction-container">
+                        <!-- 顶部：筛选器和资源概览 -->
+                        <div class="prediction-top-bar">
+                            <div class="prediction-filters">
+                                <div class="filter-group">
+                                    <label>资源类型</label>
+                                    <select id="resourceTypeFilter" onchange="updatePredictionData()">
+                                        <option value="physical">物理机</option>
+                                        <option value="virtual">虚拟机</option>
+                                        <option value="container">容器</option>
+                                    </select>
+                                </div>
+                                <div class="filter-group">
+                                    <label>设备实例</label>
+                                    <select id="deviceInstanceFilter" onchange="updatePredictionData()">
+                                        <option value="all">全部设备</option>
+                                        <option value="server-01">Server-01</option>
+                                        <option value="server-02">Server-02</option>
+                                        <option value="server-03">Server-03</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="resource-pool-overview">
+                                <div class="pool-title"><i class="fas fa-server"></i> 集群资源池</div>
+                                <div class="pool-stats">
+                                    <div class="pool-stat">
+                                        <span class="stat-label">CPU</span>
+                                        <span class="stat-value">1280<span class="stat-unit">核</span></span>
+                                    </div>
+                                    <div class="pool-stat">
+                                        <span class="stat-label">内存</span>
+                                        <span class="stat-value">3.2<span class="stat-unit">TB</span></span>
+                                    </div>
+                                    <div class="pool-stat">
+                                        <span class="stat-label">存储</span>
+                                        <span class="stat-value">1.8<span class="stat-unit">PB</span></span>
+                                    </div>
+                                    <div class="pool-stat">
+                                        <span class="stat-label">带宽</span>
+                                        <span class="stat-value">40<span class="stat-unit">Gbps</span></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 主内容区：三栏布局 -->
+                        <div class="prediction-main-content">
+                            <!-- 左栏：资源使用率排行 -->
+                            <div class="prediction-left-panel">
+                                <div class="panel-card">
+                                    <div class="panel-header">
+                                        <i class="fas fa-sort-amount-down"></i>
+                                        <span>资源消耗排行</span>
+                                        <div class="header-tag">Top 10</div>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div id="resourceRankChart" class="chart-container-full"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 中栏：三个仪表盘 -->
+                            <div class="prediction-center-panel">
+                                <div class="panel-card">
+                                    <div class="panel-header">
+                                        <i class="fas fa-tachometer-alt"></i>
+                                        <span>实时性能</span>
+                                        <div class="header-tag">实时</div>
+                                    </div>
+                                    <div class="panel-body gauge-panel-body">
+                                        <div class="gauge-grid">
+                                            <div class="gauge-item">
+                                                <div id="cpuGaugeChart2" class="gauge-chart"></div>
+                                                <div class="gauge-info">
+                                                    <span class="gauge-label">CPU使用率</span>
+                                                    <span class="gauge-detail">16 Cores / Load: 0.75</span>
+                                                </div>
+                                            </div>
+                                            <div class="gauge-item">
+                                                <div id="memoryGaugeChart2" class="gauge-chart"></div>
+                                                <div class="gauge-info">
+                                                    <span class="gauge-label">内存使用率</span>
+                                                    <span class="gauge-detail">198GB / 320GB</span>
+                                                </div>
+                                            </div>
+                                            <div class="gauge-item">
+                                                <div id="networkGaugeChart" class="gauge-chart"></div>
+                                                <div class="gauge-info">
+                                                    <span class="gauge-label">网络带宽</span>
+                                                    <span class="gauge-detail">↑2.5Gbps / ↓3.8Gbps</span>
+                                                </div>
+                                            </div>
+                                            <div class="gauge-item">
+                                                <div id="storageGaugeChart" class="gauge-chart"></div>
+                                                <div class="gauge-info">
+                                                    <span class="gauge-label">存储使用率</span>
+                                                    <span class="gauge-detail">1.2PB / 1.8PB</span>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 右栏：资源使用历史 -->
+                            <div class="prediction-right-panel">
+                                <div class="panel-card">
+                                    <div class="panel-header">
+                                        <i class="fas fa-chart-area"></i>
+                                        <span>资源使用历史曲线</span>
+                                        <div class="header-tag">24小时</div>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div id="resourceHistoryChart" class="chart-container-full"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 告警监控视图 -->
+                <div id="view-alert" class="view-content" style="display: none;">
+                    <div class="alert-monitor-container-new">
+                        <!-- 主内容区(左侧) -->
+                        <div class="alert-main-area">
+                            <!-- 顶部三个图表 -->
+                            <div class="alert-top-row">
+                                <!-- 告警统计Top5 -->
+                                <div class="panel-card alert-panel-sm">
+                                    <div class="panel-header">
+                                        <i class="fas fa-chart-pie"></i>
+                                        <span>告警统计</span>
+                                        <div class="header-tag">Top5</div>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div id="alertStatsPieChart" class="chart-container-full"></div>
+                                    </div>
+                                </div>
+                                <!-- 本月告警统计 -->
+                                <div class="panel-card alert-panel-sm">
+                                    <div class="panel-header">
+                                        <i class="fas fa-chart-bar"></i>
+                                        <span>本月告警统计</span>
+                                        <div class="header-tag">Top5</div>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div id="alertMonthTrendChart" class="chart-container-full"></div>
+                                    </div>
+                                </div>
+                                <!-- 告警处理情况 -->
+                                <div class="panel-card alert-panel-sm">
+                                    <div class="panel-header">
+                                        <i class="fas fa-tasks"></i>
+                                        <span>告警处理情况</span>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div id="alertHandleChart" class="chart-container-full"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 底部区域 -->
+                            <div class="alert-bottom-row">
+                                <!-- 30天告警趋势 -->
+                                <div class="panel-card alert-panel-left">
+                                    <div class="panel-header">
+                                        <i class="fas fa-chart-line"></i>
+                                        <span>30天告警趋势</span>
+                                        <div class="trend-filter-btns">
+                                            <button class="trend-btn active" data-type="all">总情况</button>
+                                            <button class="trend-btn" data-type="critical">严重</button>
+                                            <button class="trend-btn" data-type="warning">警告</button>
+                                            <button class="trend-btn" data-type="info">信息</button>
+                                        </div>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div id="alert30DayTrendChart" class="chart-container-full"></div>
+                                    </div>
+                                </div>
+                                <!-- 告警统计概览 - 放射图 -->
+                                <div class="panel-card alert-panel-center">
+                                    <div class="panel-header">
+                                        <i class="fas fa-chart-pie"></i>
+                                        <span>告警统计概览</span>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div id="alertRadialChart" class="chart-container-full"></div>
+                                    </div>
+                                </div>
+                                <!-- 告警列表 -->
+                                <div class="panel-card alert-panel-right">
+                                    <div class="panel-header">
+                                        <i class="fas fa-list-alt"></i>
+                                        <span>告警列表</span>
+                                        <div class="header-tag">实时</div>
+                                    </div>
+                                    <div class="panel-body alert-table-body">
+                                        <table class="alert-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>告警时间</th>
+                                                    <th>告警设备</th>
+                                                    <th>告警类型</th>
+                                                    <th>状态</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="alertTableBody">
+                                                <!-- 动态填充 -->
+                                            </tbody>
+                                        </table>
+                                        <!-- 告警详情弹窗 -->
+                                        <div id="alertDetailModal" class="alert-detail-modal" style="display:none;">
+                                            <div class="alert-detail-content">
+                                                <div class="alert-detail-header">
+                                                    <span>告警详情</span>
+                                                    <button class="close-btn" onclick="closeAlertDetail()">&times;</button>
+                                                </div>
+                                                <div class="alert-detail-body" id="alertDetailBody">
+                                                    <!-- 动态填充 -->
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                <!-- 智能预测视图 -->
+                <div id="view-prediction" class="view-content" style="display: none;">
+                    <div class="prediction-container">
+                        <!-- 顶部：全局筛选器 -->
+                        <div class="prediction-filter-bar">
+                            <div class="filter-group">
+                                <label><i class="fas fa-calendar-alt"></i> 时间范围</label>
+                                <select id="predTimeRange">
+                                    <option value="7">最近7天</option>
+                                    <option value="15">最近15天</option>
+                                    <option value="30">最近30天</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label><i class="fas fa-microchip"></i> 预测类型</label>
+                                <select id="predType">
+                                    <option value="cpu">CPU</option>
+                                    <option value="memory">内存</option>
+                                    <option value="storage">存储</option>
+                                    <option value="network">网络</option>
+                                    <option value="alert">告警数</option>
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label><i class="fas fa-brain"></i> 模型</label>
+                                <select id="predModel">
+                                    <!-- 从数据库动态加载 -->
+                                </select>
+                            </div>
+                            <div class="filter-group">
+                                <label><i class="fas fa-clock"></i> 预测周期</label>
+                                <select id="predPeriod">
+                                    <option value="1">未来1天</option>
+                                    <option value="3">未来3天</option>
+                                    <option value="7">未来7天</option>
+                                </select>
+                            </div>
+                            <button class="filter-apply-btn" onclick="applyPredictionFilters()">
+                                <i class="fas fa-sync-alt"></i> 应用筛选
+                            </button>
+                        </div>
+
+                        <!-- 主内容区：卡片网格布局 -->
+                        <div class="prediction-grid">
+                            <!-- 第一行：历史与预测对比图 + 核心指标 -->
+                            <div class="prediction-row">
+                                <!-- 历史与预测对比图 -->
+                                <div class="panel-card prediction-card wide-card">
+                                    <div class="panel-header">
+                                        <i class="fas fa-chart-area"></i>
+                                        <span>历史<span id="predTypeLabel">CPU</span>使用率与预测对比</span>
+                                        <span class="header-tag ai-tag">AI Prediction</span>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div id="historyPredictionChart" class="chart-container-full"></div>
+                                    </div>
+                                </div>
+                                
+                                <!-- 核心预测指标 -->
+                                <div class="panel-card prediction-card kpi-card">
+                                    <div class="panel-header">
+                                        <i class="fas fa-tachometer-alt"></i>
+                                        <span>核心预测指标</span>
+                                    </div>
+                                    <div class="panel-body kpi-body">
+                                        <div class="kpi-item">
+                                            <div class="kpi-icon"><i class="fas fa-bullseye"></i></div>
+                                            <div class="kpi-content">
+                                                <div class="kpi-value">96.2<span class="kpi-unit">%</span></div>
+                                                <div class="kpi-label">当前算法预测准确率</div>
+                                                <div class="kpi-trend up"><i class="fas fa-arrow-up"></i> 2.1%</div>
+                                            </div>
+                                        </div>
+                                        <div class="kpi-item">
+                                            <div class="kpi-icon warning"><i class="fas fa-exclamation-triangle"></i></div>
+                                            <div class="kpi-content">
+                                                <div class="kpi-value">3.2<span class="kpi-unit">%</span></div>
+                                                <div class="kpi-label">最大误差</div>
+                                                <div class="kpi-sub">2025/12/01 15:00</div>
+                                            </div>
+                                        </div>
+                                        <div class="kpi-item">
+                                            <div class="kpi-icon peak"><i class="fas fa-mountain"></i></div>
+                                            <div class="kpi-content">
+                                                <div class="kpi-value">85.3<span class="kpi-unit">%</span></div>
+                                                <div class="kpi-label">今日预测峰值</div>
+                                                <div class="kpi-sub">预计时间 约 14:30</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 第二行：热力图 + 误差趋势 + 预警分布 -->
+                            <div class="prediction-row">
+                                <!-- 预测准确度热力图 -->
+                                <div class="panel-card prediction-card">
+                                    <div class="panel-header">
+                                        <i class="fas fa-th"></i>
+                                        <span><span id="predTypeLabel2">CPU</span>预测准确度分布</span>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div id="accuracyHeatmapChart" class="chart-container-full"></div>
+                                    </div>
+                                </div>
+
+                                <!-- 预测误差趋势 -->
+                                <div class="panel-card prediction-card">
+                                    <div class="panel-header">
+                                        <i class="fas fa-chart-line"></i>
+                                        <span>预测误差趋势</span>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div id="errorTrendChart" class="chart-container-full"></div>
+                                    </div>
+                                </div>
+
+                                <!-- 预警分布环形图 -->
+                                <div class="panel-card prediction-card">
+                                    <div class="panel-header">
+                                        <i class="fas fa-bell"></i>
+                                        <span>预测性预警分布</span>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div id="alertDistributionChart" class="chart-container-full"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 第三行：未来预测图 -->
+                            <div class="prediction-row">
+                                <div class="panel-card prediction-card full-width-card">
+                                    <div class="panel-header">
+                                        <i class="fas fa-crystal-ball"></i>
+                                        <span>未来<span id="predPeriodLabel">7</span>天<span id="predTypeLabel3">CPU</span>使用率预测</span>
+                                        <span class="header-tag confidence-tag">95% 置信区间</span>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div id="futurePredictionChart" class="chart-container-full"></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 运维监控视图 - 工单管理与SLA监控 -->
+                <div id="view-ops" class="view-content" style="display: none;">
+                    <div class="workorder-container">
+                        <!-- 顶部：3个核心KPI卡片 -->
+                        <div class="workorder-kpi-bar">
+                            <div class="workorder-kpi-card">
+                                <div class="workorder-kpi-icon sla">
+                                    <i class="fas fa-shield-alt"></i>
+                                </div>
+                                <div class="workorder-kpi-content">
+                                    <div class="workorder-kpi-value" id="slaRateValue">96.8<span class="unit">%</span></div>
+                                    <div class="workorder-kpi-label">SLA 达成率</div>
+                                    <div class="workorder-kpi-trend down">
+                                        <i class="fas fa-arrow-down"></i>
+                                        <span>平均修复时长 <strong id="avgRepairTime">2.1h</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="workorder-kpi-card">
+                                <div class="workorder-kpi-icon tickets">
+                                    <i class="fas fa-ticket-alt"></i>
+                                </div>
+                                <div class="workorder-kpi-content">
+                                    <div class="workorder-kpi-value" id="todayTicketsValue">27</div>
+                                    <div class="workorder-kpi-label">今日总工单</div>
+                                    <div class="workorder-kpi-trend up">
+                                        <i class="fas fa-arrow-up"></i>
+                                        <span>较昨日 <strong id="ticketsDiff">+15</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="workorder-kpi-card">
+                                <div class="workorder-kpi-icon timeout">
+                                    <i class="fas fa-exclamation-triangle"></i>
+                                </div>
+                                <div class="workorder-kpi-content">
+                                    <div class="workorder-kpi-value warning" id="timeoutTicketsValue">4</div>
+                                    <div class="workorder-kpi-label">超时工单</div>
+                                    <div class="workorder-kpi-trend warning">
+                                        <i class="fas fa-arrow-up"></i>
+                                        <span>较昨日 <strong id="timeoutDiff">+1</strong></span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 主内容区：4个数据卡片 -->
+                        <div class="workorder-grid">
+                            <!-- 卡片1：今日工单状态分布 -->
+                            <div class="workorder-card card-status">
+                                <div class="workorder-card-header">
+                                    <div class="card-title">
+                                        <i class="fas fa-tasks"></i>
+                                        <span>今日工单状态</span>
+                                    </div>
+                                    <div class="card-legend">
+                                        <span class="legend-item"><span class="legend-dot resolved"></span>已解决</span>
+                                        <span class="legend-item"><span class="legend-dot pending"></span>待解决</span>
+                                    </div>
+                                </div>
+                                <div class="workorder-card-body">
+                                    <div id="ticketStatusChart" class="chart-container-full"></div>
+                                </div>
+                            </div>
+
+                            <!-- 卡片2：近期工单趋势与修复时长 -->
+                            <div class="workorder-card card-trend">
+                                <div class="workorder-card-header">
+                                    <div class="card-title">
+                                        <i class="fas fa-chart-line"></i>
+                                        <span>近15天工单情况</span>
+                                    </div>
+                                    <div class="card-legend">
+                                        <span class="legend-item"><span class="legend-line trend"></span>工单量</span>
+                                        <span class="legend-item"><span class="legend-bar repair"></span>修复时长</span>
+                                    </div>
+                                </div>
+                                <div class="workorder-card-body">
+                                    <div id="ticketTrendChart" class="chart-container-full"></div>
+                                </div>
+                            </div>
+
+                            <!-- 卡片3：工单类型分布 -->
+                            <div class="workorder-card card-source">
+                                <div class="workorder-card-header">
+                                    <div class="card-title">
+                                        <i class="fas fa-sitemap"></i>
+                                        <span>工单类型分布</span>
+                                    </div>
+                                </div>
+                                <div class="workorder-card-body">
+                                    <div id="ticketSourceChart" class="chart-container-full"></div>
+                                </div>
+                            </div>
+
+                            <!-- 卡片4：本月SLA达成率详情 -->
+                            <div class="workorder-card card-sla-table">
+                                <div class="workorder-card-header">
+                                    <div class="card-title">
+                                        <i class="fas fa-clipboard-list"></i>
+                                        <span>本月SLA达成率监控</span>
+                                    </div>
+                                </div>
+                                <div class="workorder-card-body">
+                                    <table class="sla-detail-table">
+                                        <thead>
+                                            <tr>
+                                                <th>优先级</th>
+                                                <th>SLA目标</th>
+                                                <th>实际达成</th>
+                                                <th>达成率</th>
+                                                <th>趋势</th>
+                                                <th>超时数</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="slaDetailTableBody">
+                                            <!-- 动态填充 -->
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 网络监控视图 - 网络状态监控仪表盘 -->
+                <div id="view-network" class="view-content" style="display: none;">
+                    <div class="netops-container">
+                        <!-- 顶部：全局网络状态栏 -->
+                        <div class="netops-status-bar">
+                            <div class="netops-link-selector">
+                                <i class="fas fa-network-wired"></i>
+                                <span>当前网络链路</span>
+                                <select id="networkLinkSelect">
+                                    <option value="0">全部链路</option>
+                                </select>
+                            </div>
+                            <div class="netops-kpi-group">
+                                <div class="netops-kpi-item">
+                                    <div class="netops-kpi-icon latency"><i class="fas fa-tachometer-alt"></i></div>
+                                    <div class="netops-kpi-info">
+                                        <div class="netops-kpi-label">平均延迟</div>
+                                        <div class="netops-kpi-value" id="netAvgLatency">3.2<span class="unit">ms</span></div>
+                                        <div class="netops-kpi-trend good"><i class="fas fa-arrow-down"></i><span id="netLatencyDiff">0.02ms</span></div>
+                                    </div>
+                                </div>
+                                <div class="netops-kpi-item">
+                                    <div class="netops-kpi-icon loss"><i class="fas fa-exclamation-circle"></i></div>
+                                    <div class="netops-kpi-info">
+                                        <div class="netops-kpi-label">丢包率</div>
+                                        <div class="netops-kpi-value" id="netPacketLoss">0.08<span class="unit">%</span></div>
+                                        <div class="netops-kpi-trend good"><i class="fas fa-arrow-down"></i><span id="netLossDiff">0.001%</span></div>
+                                    </div>
+                                </div>
+                                <div class="netops-kpi-item">
+                                    <div class="netops-kpi-icon traffic"><i class="fas fa-exchange-alt"></i></div>
+                                    <div class="netops-kpi-info">
+                                        <div class="netops-kpi-label">总流量</div>
+                                        <div class="netops-kpi-value" id="netTotalTraffic">1.82<span class="unit">TBps</span></div>
+                                        <div class="netops-kpi-trend good"><i class="fas fa-arrow-down"></i><span id="netTrafficDiff">0.2 TBps</span></div>
+                                    </div>
+                                </div>
+                                <div class="netops-kpi-item">
+                                    <div class="netops-kpi-icon health"><i class="fas fa-heartbeat"></i></div>
+                                    <div class="netops-kpi-info">
+                                        <div class="netops-kpi-label">链路健康度</div>
+                                        <div class="netops-kpi-value success" id="netHealthScore">97.8<span class="unit">%</span></div>
+                                        <div class="netops-kpi-sub">链路拥塞度 <span id="netCongestion">0.02%</span></div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 主内容区：双栏布局 -->
+                        <div class="netops-main-grid">
+                            <!-- 左栏：流量与排行 -->
+                            <div class="netops-left-column">
+                                <!-- 卡片1：实时网络流量趋势 -->
+                                <div class="netops-card card-traffic-trend">
+                                    <div class="netops-card-header">
+                                        <div class="card-title">
+                                            <i class="fas fa-chart-area"></i>
+                                            <span>网络流量趋势</span>
+                                        </div>
+                                        <div class="card-legend">
+                                            <span class="legend-item"><span class="legend-line inbound"></span>入口流量</span>
+                                            <span class="legend-item"><span class="legend-line outbound"></span>出口流量</span>
+                                            <span class="legend-item"><span class="legend-line threshold"></span>阈值</span>
+                                        </div>
+                                    </div>
+                                    <div class="netops-card-body">
+                                        <div id="networkTrafficTrendChart" class="chart-container-full"></div>
+                                    </div>
+                                </div>
+
+                                <!-- 卡片2：今日高流量设备Top5 -->
+                                <div class="netops-card card-top-devices">
+                                    <div class="netops-card-header">
+                                        <div class="card-title">
+                                            <i class="fas fa-sort-amount-down"></i>
+                                            <span>今日高流量设备 Top 5</span>
+                                        </div>
+                                    </div>
+                                    <div class="netops-card-body">
+                                        <div id="topDevicesChart" class="chart-container-full"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 右栏：地理与详情 -->
+                            <div class="netops-right-column">
+                                <!-- 卡片3：全国网络节点地图 -->
+                                <div class="netops-card card-network-map">
+                                    <div class="netops-card-header">
+                                        <div class="card-title">
+                                            <i class="fas fa-map-marked-alt"></i>
+                                            <span>全国网络节点状态地图</span>
+                                        </div>
+                                        <div class="map-legend">
+                                            <span class="legend-item"><span class="status-dot normal"></span>正常</span>
+                                            <span class="legend-item"><span class="status-dot warning"></span>警告</span>
+                                            <span class="legend-item"><span class="status-dot error"></span>异常</span>
+                                        </div>
+                                    </div>
+                                    <div class="netops-card-body">
+                                        <div id="networkNodeMapChart" class="chart-container-full"></div>
+                                    </div>
+                                </div>
+
+                                <!-- 卡片4：网络链路节点监控表格 -->
+                                <div class="netops-card card-node-table">
+                                    <div class="netops-card-header">
+                                        <div class="card-title">
+                                            <i class="fas fa-server"></i>
+                                            <span>网络链路节点监控</span>
+                                        </div>
+                                        <div class="table-actions">
+                                            <input type="text" id="nodeSearchInput" placeholder="搜索节点..." class="node-search">
+                                        </div>
+                                    </div>
+                                    <div class="netops-card-body">
+                                        <table class="netops-node-table">
+                                            <thead>
+                                                <tr>
+                                                    <th class="sortable" data-sort="status">状态</th>
+                                                    <th class="sortable" data-sort="name">链路节点</th>
+                                                    <th class="sortable" data-sort="latency">延迟(ms)</th>
+                                                    <th class="sortable" data-sort="loss">丢包率</th>
+                                                    <th class="sortable" data-sort="bandwidth">带宽利用率</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="networkNodeTableBody">
+                                                <!-- 动态填充 -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 机房管理视图 -->
+                <div id="view-datacenter" class="view-content" style="display: none;">
+                    <div class="dc-monitor-wrapper">
+                        <!-- 上部区域：设备列表 + 机房地图 -->
+                        <div class="dc-top-row">
+                            <!-- 左侧：设备状态列表 -->
+                            <div class="panel-card dc-device-panel">
+                                <div class="panel-header">
+                                    <div class="header-left">
+                                        <i class="fas fa-server"></i>
+                                        <span>设备状态列表</span>
+                                    </div>
+                                    <div class="dc-room-tag" id="dcSelectedRoom">全部机房</div>
+                                </div>
+                                <div class="panel-body dc-device-body">
+                                    <table class="dc-device-table">
+                                        <thead>
+                                            <tr>
+                                                <th>设备名称</th>
+                                                <th>状态</th>
+                                                <th>资源使用率</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dcDeviceTableBody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <!-- 右侧：机房位置地图 -->
+                            <div class="panel-card dc-map-panel">
+                                <div class="panel-header">
+                                    <div class="header-left">
+                                        <i class="fas fa-map-marked-alt"></i>
+                                        <span>整栋楼机房位置与状态</span>
+                                    </div>
+                                    <div class="dc-legend">
+                                        <span class="legend-item"><span class="dot normal"></span>正常</span>
+                                        <span class="legend-item"><span class="dot warning"></span>警告</span>
+                                        <span class="legend-item"><span class="dot error"></span>异常</span>
+                                    </div>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="dc-floor-plan" id="dcFloorPlan">
+                                        <!-- 机房区域动态生成 -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 下部区域：三个监控图表 -->
+                        <div class="dc-bottom-row">
+                            <!-- 网络流量监控 -->
+                            <div class="panel-card">
+                                <div class="panel-header">
+                                    <i class="fas fa-network-wired"></i>
+                                    <span>网络总流量监控</span>
+                                    <div class="header-tag">Gbps</div>
+                                </div>
+                                <div class="panel-body">
+                                    <div id="dcTrafficChart" class="chart-container-full"></div>
+                                </div>
+                            </div>
+
+                            <!-- 温度监控 -->
+                            <div class="panel-card">
+                                <div class="panel-header">
+                                    <i class="fas fa-thermometer-half"></i>
+                                    <span>实时温度监控</span>
+                                    <div class="header-tag">°C</div>
+                                </div>
+                                <div class="panel-body">
+                                    <div id="dcTemperatureChart" class="chart-container-full"></div>
+                                </div>
+                            </div>
+
+                            <!-- 湿度监控 -->
+                            <div class="panel-card">
+                                <div class="panel-header">
+                                    <i class="fas fa-tint"></i>
+                                    <span>实时湿度监控</span>
+                                    <div class="header-tag">%RH</div>
+                                </div>
+                                <div class="panel-body">
+                                    <div id="dcHumidityChart" class="chart-container-full"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 机房Tooltip -->
+                    <div class="dc-tooltip" id="dcTooltip">
+                        <div class="tooltip-title" id="dcTooltipTitle"></div>
+                        <div class="tooltip-row"><span>设备总数：</span><span id="dcTooltipDevices">0</span></div>
+                        <div class="tooltip-row"><span>异常设备：</span><span id="dcTooltipErrors" class="error">0</span></div>
+                    </div>
+                </div>
+
+                <!-- 能耗监测视图 -->
+                <div id="view-energy" class="view-content" style="display: none;">
+                    <div class="energy-monitor-container">
+                        <!-- 顶部：能耗概览KPI区 -->
+                        <div class="energy-overview-bar">
+                            <!-- 总能耗仪表盘 -->
+                            <div class="energy-gauge-card">
+                                <div class="gauge-title">功率消耗</div>
+                                <div id="energyGaugeChart" class="energy-gauge-chart"></div>
+                                <div class="gauge-footer">
+                                    <div class="gauge-trend up">
+                                        <i class="fas fa-arrow-up"></i>
+                                        <span>能效趋势: <strong id="energyTrendValue">9%</strong></span>
+                                    </div>
+                                    <div class="gauge-total">
+                                        <span>相: <strong id="energyTotalPhase">22400</strong> kwh</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <!-- 关键能效指标 -->
+                            <div class="energy-metrics-card">
+                                <div class="metrics-title">关键能效指标</div>
+                                <div class="metrics-grid">
+                                    <div class="metric-item">
+                                        <span class="metric-label">PUE</span>
+                                        <span class="metric-value" id="pueValue">1.50</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-label">CLF</span>
+                                        <span class="metric-value" id="clfValue">0.30</span>
+                                    </div>
+                                    <div class="metric-item">
+                                        <span class="metric-label">PLF</span>
+                                        <span class="metric-value" id="plfValue">0.08</span>
+                                    </div>
+                                    <div class="metric-item full-width">
+                                        <span class="metric-label">能效评级</span>
+                                        <div class="rating-display">
+                                            <span class="rating-value" id="efficiencyRating">3级</span>
+                                            <span class="rating-status warning" id="efficiencyStatus">偏高</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 中部：核心视图区 -->
+                        <div class="energy-main-grid">
+                            <!-- 3D大楼视图 -->
+                            <div class="energy-panel building-3d-panel">
+                                <div class="panel-header">
+                                    <i class="fas fa-building"></i>
+                                    <span>整栋大楼的3D图</span>
+                                    <div class="header-hint">可点击切换查看每层机位</div>
+                                </div>
+                                <div class="panel-body">
+                                    <div id="building3DView" class="building-3d-container">
+                                        <!-- 3D视图容器 -->
+                                        <div class="floor-selector">
+                                            <button class="floor-btn active" data-floor="all">全部</button>
+                                            <button class="floor-btn" data-floor="1">1F</button>
+                                            <button class="floor-btn" data-floor="2">2F</button>
+                                            <button class="floor-btn" data-floor="3">3F</button>
+                                            <button class="floor-btn" data-floor="4">4F</button>
+                                        </div>
+                                        <div id="building3DCanvas" class="building-canvas"></div>
+                                        <div class="heatmap-legend">
+                                            <span class="legend-label">低能耗</span>
+                                            <div class="legend-gradient"></div>
+                                            <span class="legend-label">高能耗</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- 电力线损构成 -->
+                            <div class="energy-panel power-loss-panel">
+                                <div class="panel-header">
+                                    <i class="fas fa-plug"></i>
+                                    <span>电力线损构成</span>
+                                </div>
+                                <div class="panel-body">
+                                    <div id="powerLossChart" class="chart-container-full"></div>
+                                </div>
+                            </div>
+
+                            <!-- 实时能耗明细 -->
+                            <div class="energy-panel realtime-detail-panel">
+                                <div class="panel-header">
+                                    <i class="fas fa-list-alt"></i>
+                                    <span>实时能耗明细</span>
+                                    <div class="header-tag live">实时</div>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="energy-table-wrapper">
+                                        <table class="energy-detail-table">
+                                            <thead>
+                                                <tr>
+                                                    <th>时间</th>
+                                                    <th>机房</th>
+                                                    <th>总功耗(kW)</th>
+                                                    <th>IT功耗(kW)</th>
+                                                    <th>PUE</th>
+                                                    <th>用电量(kWh)</th>
+                                                    <th>状态</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="energyDetailBody">
+                                                <!-- 动态填充 -->
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 底部：趋势图表区 -->
+                        <div class="energy-charts-grid">
+                            <!-- 水资源监控 -->
+                            <div class="energy-panel">
+                                <div class="panel-header">
+                                    <i class="fas fa-tint"></i>
+                                    <span>水资源监控</span>
+                                    <div class="view-switcher">
+                                        <button class="view-btn active" data-view="day">日</button>
+                                        <button class="view-btn" data-view="week">周</button>
+                                        <button class="view-btn" data-view="month">月</button>
+                                    </div>
+                                </div>
+                                <div class="panel-body">
+                                    <div id="waterUsageChart" class="chart-container-full"></div>
+                                </div>
+                            </div>
+
+                            <!-- PUE/PLF/CLF趋势 -->
+                            <div class="energy-panel">
+                                <div class="panel-header">
+                                    <i class="fas fa-chart-line"></i>
+                                    <span>PUE, PLF, CLF 趋势</span>
+                                    <div class="view-switcher">
+                                        <button class="view-btn active" data-view="day">日</button>
+                                        <button class="view-btn" data-view="week">周</button>
+                                        <button class="view-btn" data-view="month">月</button>
+                                        <button class="view-btn" data-view="year">年</button>
+                                    </div>
+                                </div>
+                                <div class="panel-body">
+                                    <div id="efficiencyTrendChart" class="chart-container-full"></div>
+                                </div>
+                            </div>
+
+                            <!-- 月度能耗对比 -->
+                            <div class="energy-panel">
+                                <div class="panel-header">
+                                    <i class="fas fa-chart-bar"></i>
+                                    <span>月度能耗对比</span>
+                                    <div class="header-unit">万kWh</div>
+                                </div>
+                                <div class="panel-body">
+                                    <div id="deviceEnergyCompareChart" class="chart-container-full"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 设备流量趋势模态框 -->
+<div id="deviceTrafficModal" class="traffic-modal-overlay" style="display:none;">
+    <div class="traffic-modal">
+        <div class="traffic-modal-header">
+            <div class="modal-title">
+                <i class="fas fa-chart-line"></i>
+                <span id="modalDeviceName">设备流量趋势</span>
+            </div>
+            <button class="modal-close" onclick="closeDeviceTrafficModal()">&times;</button>
+        </div>
+        <div class="traffic-modal-body">
+            <div id="deviceTrafficChart" style="width:100%;height:300px;"></div>
+        </div>
+        <div class="traffic-modal-footer">
+            <div class="traffic-stats">
+                <div class="stat-item">
+                    <span class="stat-label">入口峰值</span>
+                    <span id="modalInPeak" class="stat-value">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">出口峰值</span>
+                    <span id="modalOutPeak" class="stat-value">-</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">平均流量</span>
+                    <span id="modalAvgTraffic" class="stat-value">-</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="common.js"></script>
+<script src="js/user-dropdown-loader.js"></script>
+<script src="大屏展示.js"></script>
+</body>
+</html>

@@ -1,0 +1,345 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<style>
+/* 立即隐藏CMDB菜单项 - 防止闪烁 */
+.nav-cmdb { display: none !important; }
+.sidebar-item[data-page="CMDB"] { display: none !important; }
+</style>
+<script>
+// 立即执行：尽早隐藏CMDB，防止闪烁
+(function() {
+    function hideCMDB() {
+        var items = document.querySelectorAll('.sidebar-item');
+        items.forEach(function(item) {
+            var span = item.querySelector('span');
+            if (span && span.textContent.trim() === 'CMDB') {
+                item.style.display = 'none';
+                item.setAttribute('data-hidden', 'true');
+            }
+        });
+    }
+    
+    hideCMDB();
+    
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideCMDB);
+    }
+    
+    setTimeout(hideCMDB, 10);
+    setTimeout(hideCMDB, 100);
+})();
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>人工智能运维平台</title>
+    <link rel="stylesheet" href="libs/fontawesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', sans-serif;
+            background: #f5f7fa;
+            color: #333;
+            overflow: hidden;
+        }
+
+        .main-container {
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* 侧边栏 - 与主系统保持一致 */
+        .sidebar {
+            width: 200px;
+            background: #000000;
+            color: white;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+            overflow-y: auto;
+            overflow-x: hidden;
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+
+        .sidebar-header {
+            padding: 20px 15px;
+            text-align: center;
+            border-bottom: 1px solid #334155;
+        }
+
+        .sidebar-header h2 {
+            font-size: 16px;
+            margin: 0;
+            font-weight: bold;
+        }
+
+        .sidebar-group-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            color: #64748b;
+            padding: 10px 15px;
+            letter-spacing: 1px;
+        }
+
+        .sidebar-item {
+            width: 100%;
+            padding: 12px 15px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            position: relative;
+        }
+
+        .sidebar-item:hover {
+            background-color: #334155;
+        }
+
+        .sidebar-item.active {
+            background-color: #1e293b;
+            font-weight: bold;
+        }
+
+        .sidebar-item.active::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background-color: #3b82f6 !important;
+            z-index: 10;
+            display: block;
+        }
+
+        .sidebar-item i {
+            font-size: 16px;
+            margin-right: 12px;
+            width: 20px;
+            text-align: center;
+        }
+
+        .sidebar-item span {
+            font-size: 14px;
+        }
+
+        .sidebar-divider {
+            height: 1px;
+            background-color: #334155;
+            margin: 10px 0;
+        }
+
+        /* 内容区域 */
+        .content-area {
+            flex: 1;
+            margin-left: 200px;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* iframe样式 */
+        #contentFrame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: block;
+        }
+
+        /* 加载提示 */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 200px;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .loading-overlay.show {
+            display: flex;
+        }
+
+        .loading-spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #3498db;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="main-container">
+        <!-- 侧边栏 -->
+        <div class="sidebar">
+            <div class="sidebar-header">
+                <h2>人工智能运维平台</h2>
+            </div>
+            
+            <div class="sidebar-group-title">拓展中心</div>
+            <div class="sidebar-item active" data-page="总览.html">
+                <i class="fas fa-tachometer-alt"></i>
+                <span>总览</span>
+            </div>
+            <div class="sidebar-item" data-page="视图.html">
+                <i class="fas fa-eye"></i>
+                <span>视图</span>
+            </div>
+            <div class="sidebar-item" data-page="告警中心.html">
+                <i class="fas fa-bell"></i>
+                <span>告警中心</span>
+            </div>
+            <div class="sidebar-item" data-page="设备管理.html">
+                <i class="fas fa-server"></i>
+                <span>设备管理</span>
+            </div>
+            <div class="sidebar-item" data-page="网络拓扑.html">
+                <i class="fas fa-project-diagram"></i>
+                <span>网络拓扑</span>
+            </div>
+            <div class="sidebar-item" data-page="统计报表.html">
+                <i class="fas fa-chart-bar"></i>
+                <span>统计报表</span>
+            </div>
+            <div class="sidebar-item" data-page="运维工具.html">
+                <i class="fas fa-tools"></i>
+                <span>运维工具</span>
+            </div>
+            <div class="sidebar-item" data-page="大屏展示.html">
+                <i class="fas fa-desktop"></i>
+                <span>数字大屏</span>
+            </div>
+            
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">拓展中心</div>
+            <div class="sidebar-item" data-page="业务管理.html">
+                <i class="fas fa-briefcase"></i>
+                <span>业务管理</span>
+            </div>
+            <div class="sidebar-item" data-page="网络管理.html">
+                <i class="fas fa-network-wired"></i>
+                <span>网络管理</span>
+            </div>
+            <div class="sidebar-item" data-page="视频管理.html">
+                <i class="fas fa-video"></i>
+                <span>视频管理</span>
+            </div>
+            <div class="sidebar-item" data-page="机房管理.html">
+                <i class="fas fa-building"></i>
+                <span>机房管理</span>
+            </div>
+            <div class="sidebar-item" data-page="资产管理.html">
+                <i class="fas fa-box"></i>
+                <span>资产管理</span>
+            </div>
+            <div class="sidebar-item" data-page="运维管理.html">
+                <i class="fas fa-tasks"></i>
+                <span>运维管理</span>
+            </div>
+            <div class="sidebar-item" data-page="日志管理.html">
+                <i class="fas fa-file-alt"></i>
+                <span>日志管理</span>
+            </div>
+            <div class="sidebar-item" data-page="智能预测管理.html">
+                <i class="fas fa-chart-pie"></i>
+                <span>智能预测管理</span>
+            </div>
+            <div class="sidebar-item" data-page="云平台.html">
+                <i class="fas fa-cloud"></i>
+                <span>云平台</span>
+            </div>
+            
+            <div class="sidebar-divider"></div>
+            <div class="sidebar-group-title">设置中心</div>
+            <div class="sidebar-item" data-page="设置.html">
+                <i class="fas fa-cog"></i>
+                <span>设置</span>
+            </div>
+            <div class="sidebar-item" data-page="对接配置.html">
+                <i class="fas fa-plug"></i>
+                <span>对接配置</span>
+            </div>
+        </div>
+
+        <!-- 内容区域 -->
+        <div class="content-area">
+            <iframe id="contentFrame" src="总览.html" name="contentFrame"></iframe>
+        </div>
+
+        <!-- 加载提示 -->
+        <div class="loading-overlay" id="loadingOverlay">
+            <div class="loading-spinner"></div>
+        </div>
+    </div>
+
+    <script>
+        // 页面加载完成后初始化
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('主框架页面初始化...');
+            
+            // 获取所有侧边栏菜单项
+            const sidebarItems = document.querySelectorAll('.sidebar-item');
+            const contentFrame = document.getElementById('contentFrame');
+            const loadingOverlay = document.getElementById('loadingOverlay');
+            
+            // 为每个菜单项添加点击事件
+            sidebarItems.forEach(item => {
+                item.addEventListener('click', function() {
+                    const pagePath = this.getAttribute('data-page');
+                    
+                    if (!pagePath) return;
+                    
+                    console.log('切换页面:', pagePath);
+                    
+                    // 更新active状态
+                    sidebarItems.forEach(i => i.classList.remove('active'));
+                    this.classList.add('active');
+                    
+                    // 显示加载提示
+                    loadingOverlay.classList.add('show');
+                    
+                    // 加载新页面
+                    contentFrame.src = pagePath;
+                });
+            });
+            
+            // iframe加载完成后隐藏加载提示
+            contentFrame.addEventListener('load', function() {
+                setTimeout(() => {
+                    loadingOverlay.classList.remove('show');
+                }, 300);
+            });
+            
+            // 隐藏CMDB菜单项
+            setTimeout(() => {
+                sidebarItems.forEach(item => {
+                    const span = item.querySelector('span');
+                    if (span && span.textContent.trim() === 'CMDB') {
+                        item.style.display = 'none';
+                    }
+                });
+            }, 100);
+        });
+    </script>
+</body>
+</html>

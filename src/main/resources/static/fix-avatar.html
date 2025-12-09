@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>Fix Avatar URLs</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .step { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        button { padding: 10px 15px; margin: 5px; cursor: pointer; }
+        pre { background: #f8f9fa; padding: 10px; border-radius: 3px; overflow-x: auto; }
+        .success { background-color: #d4edda; }
+        .error { background-color: #f8d7da; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Fix Avatar URLs Tool</h1>
+    
+    <div class="step">
+        <h2>Step 1: Check Current Avatar URLs</h2>
+        <button onclick="checkAvatarUrls()">Check Avatar URLs</button>
+        <pre id="urlCheck"></pre>
+    </div>
+    
+    <div class="step">
+        <h2>Step 2: Fix Avatar URLs</h2>
+        <button onclick="fixAvatarUrls()">Fix All Avatar URLs</button>
+        <pre id="fixResult"></pre>
+    </div>
+    
+    <div class="step">
+        <h2>Step 3: Test Fixed URLs</h2>
+        <button onclick="testFixedUrls()">Test Fixed URLs</button>
+        <button onclick="openDashboard()">Open Dashboard</button>
+        <pre id="testResult"></pre>
+    </div>
+
+    <script>
+        function checkAvatarUrls() {
+            const result = [];
+            
+            // 检查localStorage中的头像URL
+            const userAvatar = localStorage.getItem('userAvatar');
+            const userInfo = localStorage.getItem('userInfo');
+            
+            result.push('=== Current Avatar URLs ===');
+            result.push('userAvatar: ' + (userAvatar || 'NOT_SET'));
+            
+            if (userInfo) {
+                try {
+                    const info = JSON.parse(userInfo);
+                    result.push('userInfo.avatar: ' + (info.avatar || 'NOT_SET'));
+                } catch (e) {
+                    result.push('userInfo: PARSE_ERROR');
+                }
+            } else {
+                result.push('userInfo: NOT_SET');
+            }
+            
+            result.push('');
+            result.push('=== URL Format Analysis ===');
+            
+            if (userAvatar) {
+                if (userAvatar.startsWith('/api/upload/')) {
+                    result.push('✅ userAvatar format is correct (/api/upload/...)');
+                } else if (userAvatar.startsWith('/upload/')) {
+                    result.push('⚠️ userAvatar needs fixing (/upload/ -> /api/upload/)');
+                } else {
+                    result.push('❌ userAvatar format is unknown: ' + userAvatar);
+                }
+            }
+            
+            document.getElementById('urlCheck').textContent = result.join('\n');
+        }
+        
+        function fixAvatarUrls() {
+            const result = [];
+            let fixed = false;
+            
+            // 修复 userAvatar
+            const userAvatar = localStorage.getItem('userAvatar');
+            if (userAvatar && userAvatar.startsWith('/upload/')) {
+                const fixedUrl = userAvatar.replace('/upload/', '/api/upload/');
+                localStorage.setItem('userAvatar', fixedUrl);
+                result.push('✅ Fixed userAvatar: ' + userAvatar + ' -> ' + fixedUrl);
+                fixed = true;
+            } else if (userAvatar && userAvatar.startsWith('/api/upload/')) {
+                result.push('✅ userAvatar already correct: ' + userAvatar);
+            } else if (userAvatar) {
+                result.push('⚠️ userAvatar format unknown, not changed: ' + userAvatar);
+            } else {
+                result.push('❌ No userAvatar to fix');
+            }
+            
+            // 修复 userInfo.avatar
+            const userInfo = localStorage.getItem('userInfo');
+            if (userInfo) {
+                try {
+                    const info = JSON.parse(userInfo);
+                    if (info.avatar && info.avatar.startsWith('/upload/')) {
+                        info.avatar = info.avatar.replace('/upload/', '/api/upload/');
+                        localStorage.setItem('userInfo', JSON.stringify(info));
+                        result.push('✅ Fixed userInfo.avatar: ' + info.avatar);
+                        fixed = true;
+                    } else if (info.avatar && info.avatar.startsWith('/api/upload/')) {
+                        result.push('✅ userInfo.avatar already correct: ' + info.avatar);
+                    } else if (info.avatar) {
+                        result.push('⚠️ userInfo.avatar format unknown: ' + info.avatar);
+                    } else {
+                        result.push('❌ No userInfo.avatar to fix');
+                    }
+                } catch (e) {
+                    result.push('❌ Failed to parse userInfo: ' + e.message);
+                }
+            }
+            
+            if (fixed) {
+                result.push('');
+                result.push('🎉 URLs fixed! Triggering update event...');
+                
+                // 触发头像更新事件
+                const newAvatar = localStorage.getItem('userAvatar');
+                if (newAvatar) {
+                    window.dispatchEvent(new CustomEvent('avatarUpdated', {
+                        detail: { avatar: newAvatar }
+                    }));
+                    result.push('✅ Avatar update event triggered');
+                }
+            } else {
+                result.push('');
+                result.push('ℹ️ No URLs needed fixing');
+            }
+            
+            document.getElementById('fixResult').textContent = result.join('\n');
+        }
+        
+        function testFixedUrls() {
+            const result = [];
+            const userAvatar = localStorage.getItem('userAvatar');
+            
+            if (!userAvatar) {
+                result.push('❌ No avatar URL to test');
+                document.getElementById('testResult').textContent = result.join('\n');
+                return;
+            }
+            
+            result.push('Testing avatar URL: ' + userAvatar);
+            
+            // 测试图片是否可访问
+            const img = new Image();
+            img.onload = function() {
+                result.push('✅ Avatar accessible!');
+                result.push('🎉 Ready to test in dashboard');
+                document.getElementById('testResult').textContent = result.join('\n');
+            };
+            img.onerror = function() {
+                result.push('❌ Avatar still not accessible');
+                result.push('💡 Try different URL format or check server');
+                document.getElementById('testResult').textContent = result.join('\n');
+            };
+            
+            img.src = userAvatar;
+            result.push('⏳ Testing...');
+            document.getElementById('testResult').textContent = result.join('\n');
+        }
+        
+        function openDashboard() {
+            window.open('总览.html', '_blank');
+        }
+        
+        // 页面加载时自动检查
+        window.onload = function() {
+            checkAvatarUrls();
+        };
+    </script>
+</body>
+</html>

@@ -31,3 +31,50 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### Node.js ###
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+### Logs ###
+logs/
+*.log
+server.log
+
+### Upload Files ###
+upload/
+
+### Test Files ###
+test-*.png
+test-*.js
+test-*.html
+test-results/
+playwright-report/
+
+### Database ###
+*.sql
+src/main/resources/sql/**/*.sql
+
+### Backup Files ###
+backups/
+*.bak
+*-backup.html
+*-old-backup.html
+
+### Build ###
+BOOT-INF/
+META-INF/
+
+### Documentation (temporary) ###
+*.md
+!README.md
+!CLAUDE.md
+
+### Playwright ###
+.playwright-mcp/
+
+### Claude ###
+.claude/

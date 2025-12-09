@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zxb.aiproject.mapper.UserGroupRelationMapper">
+
+    <!-- 结果映射 -->
+    <resultMap id="BaseResultMap" type="com.zxb.aiproject.entity.UserGroupRelation">
+        <id column="id" property="id"/>
+        <result column="user_id" property="userId"/>
+        <result column="group_id" property="groupId"/>
+        <result column="create_by" property="createBy"/>
+        <result column="create_time" property="createTime"/>
+        <result column="deleted" property="deleted"/>
+    </resultMap>
+
+    <!-- 用户结果映射 -->
+    <resultMap id="UserResultMap" type="com.zxb.aiproject.entity.User">
+        <id column="id" property="id"/>
+        <result column="username" property="username"/>
+        <result column="email" property="email"/>
+        <result column="phone" property="phone"/>
+        <result column="real_name" property="realName"/>
+        <result column="role" property="role"/>
+        <result column="status" property="status"/>
+        <result column="avatar" property="avatar"/>
+        <result column="last_login_time" property="lastLoginTime"/>
+        <result column="last_login_ip" property="lastLoginIp"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <!-- 根据用户组ID查询该组下的所有用户 -->
+    <select id="selectUsersByGroupId" resultMap="UserResultMap">
+        SELECT u.*
+        FROM sys_user u
+        INNER JOIN sys_user_group_relation r ON u.id = r.user_id
+        WHERE r.group_id = #{groupId}
+          AND u.deleted = 0
+          AND r.deleted = 0
+        ORDER BY u.create_time DESC
+    </select>
+
+    <!-- 批量插入用户-用户组关联关系 -->
+    <insert id="batchInsert">
+        INSERT INTO sys_user_group_relation (user_id, group_id, create_by, create_time, deleted)
+        VALUES
+        <foreach collection="relations" item="item" separator=",">
+            (#{item.userId}, #{item.groupId}, #{item.createBy}, #{item.createTime}, 0)
+        </foreach>
+    </insert>
+
+    <!-- 根据用户ID删除关联关系（逻辑删除） -->
+    <update id="deleteByUserId">
+        UPDATE sys_user_group_relation
+        SET deleted = 1
+        WHERE user_id = #{userId}
+          AND deleted = 0
+    </update>
+
+    <!-- 根据用户组ID删除关联关系（逻辑删除） -->
+    <update id="deleteByGroupId">
+        UPDATE sys_user_group_relation
+        SET deleted = 1
+        WHERE group_id = #{groupId}
+          AND deleted = 0
+    </update>
+
+</mapper>

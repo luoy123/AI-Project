@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>最近告警数量配置说明</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .container { max-width: 1000px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .result { background: #f8f9fa; padding: 15px; border-radius: 5px; white-space: pre-wrap; font-family: monospace; font-size: 12px; }
+        .success { background: #d4edda; color: #155724; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+        th, td { padding: 8px; border: 1px solid #ddd; text-align: left; }
+        th { background: #f8f9fa; }
+        .before-after { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .before { background: #fff3cd; padding: 15px; border-radius: 5px; border-left: 4px solid #ffc107; }
+        .after { background: #d4edda; padding: 15px; border-radius: 5px; border-left: 4px solid #28a745; }
+        .code-block { background: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 4px solid #007bff; font-family: 'Courier New', monospace; font-size: 13px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📊 最近告警数量配置说明</h1>
+        
+        <div class="section">
+            <h2>🔍 问题分析</h2>
+            <div class="warning" style="padding: 15px; border-radius: 5px;">
+                <strong>您发现的问题：</strong><br><br>
+                
+                最近告警只显示少量数据，这是因为系统设置了数量限制：<br><br>
+                
+                ❌ <strong>原始设置</strong>: API请求限制为5条告警<br>
+                ❌ <strong>示例数据</strong>: 只有5条示例告警<br>
+                ❌ <strong>显示空间</strong>: 界面空间没有充分利用<br><br>
+                
+                <strong>限制原因</strong>:<br>
+                • 避免界面过于拥挤<br>
+                • 减少API请求数据量<br>
+                • 提高页面加载速度<br>
+                • 突出最重要的告警
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>✅ 已修复内容</h2>
+            <div class="success" style="padding: 15px; border-radius: 5px;">
+                <strong>数量限制已调整：</strong><br><br>
+                
+                ✅ <strong>API限制</strong>: 从5条增加到10条<br>
+                ✅ <strong>示例数据</strong>: 从5条增加到10条<br>
+                ✅ <strong>告警类型</strong>: 增加更多不同类型的告警<br>
+                ✅ <strong>时间分布</strong>: 更合理的时间间隔分布<br>
+                ✅ <strong>设备覆盖</strong>: 涵盖更多设备类型
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🔄 修改对比</h2>
+            <div class="before-after">
+                <div class="before">
+                    <h4>❌ 修改前 (5条告警)</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li>1. 路由器-01 CPU使用率过高</li>
+                        <li>2. 核心交换机-01 内存不足</li>
+                        <li>3. 无线AP-01 连接数过多</li>
+                        <li>4. 防火墙-02 规则匹配率异常</li>
+                        <li>5. API网关-01 性能监控报告</li>
+                    </ul>
+                    <p><strong>问题</strong>: 数量太少，信息不够全面</p>
+                </div>
+                <div class="after">
+                    <h4>✅ 修改后 (10条告警)</h4>
+                    <ul style="list-style: none; padding: 0;">
+                        <li>1. 路由器-01 CPU使用率过高</li>
+                        <li>2. 核心交换机-01 内存不足</li>
+                        <li>3. API网关-01 服务异常</li>
+                        <li>4. 无线AP-01 连接数过多</li>
+                        <li>5. 接入交换机-01 端口利用率高</li>
+                        <li>6. VPN网关-01 隧道连接不稳定</li>
+                        <li>7. 防火墙-02 规则匹配率异常</li>
+                        <li>8. 无线AP-02 信号强度下降</li>
+                        <li>9. 核心交换机-01 端口状态变更</li>
+                        <li>10. API网关-01 性能监控报告</li>
+                    </ul>
+                    <p><strong>优势</strong>: 信息更全面，覆盖更多设备</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>⚙️ 技术实现</h2>
+            
+            <h3>API请求限制调整</h3>
+            <div class="code-block">
+// 修改前
+const response = await fetch('/api/alerts/recent?limit=5');
+
+// 修改后
+const response = await fetch('/api/alerts/recent?limit=10');
+            </div>
+            
+            <h3>示例数据扩展</h3>
+            <div class="code-block">
+// 新增的告警类型
+{
+    id: 3,
+    severity: 'critical',
+    message: 'API网关-01 服务异常',
+    deviceName: 'API网关-01',
+    deviceType: 'server',
+    status: 'active',
+    occurredTime: new Date(now.getTime() - 12 * 60 * 1000),
+    metricValue: '5000ms',
+    threshold: '2000ms',
+    description: '服务响应超时，影响业务访问'
+}
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📊 新的告警分布</h2>
+            <table>
+                <tr>
+                    <th>序号</th>
+                    <th>告警消息</th>
+                    <th>设备名称</th>
+                    <th>严重级别</th>
+                    <th>时间</th>
+                    <th>状态</th>
+                </tr>
+                <tr>
+                    <td>1</td>
+                    <td>CPU使用率过高</td>
+                    <td>路由器-01</td>
+                    <td class="severity-critical">严重</td>
+                    <td>3分钟前</td>
+                    <td>活跃</td>
+                </tr>
+                <tr>
+                    <td>2</td>
+                    <td>内存不足</td>
+                    <td>核心交换机-01</td>
+                    <td class="severity-critical">严重</td>
+                    <td>7分钟前</td>
+                    <td>活跃</td>
+                </tr>
+                <tr>
+                    <td>3</td>
+                    <td>服务异常</td>
+                    <td>API网关-01</td>
+                    <td class="severity-critical">严重</td>
+                    <td>12分钟前</td>
+                    <td>活跃</td>
+                </tr>
+                <tr>
+                    <td>4</td>
+                    <td>连接数过多</td>
+                    <td>无线AP-01</td>
+                    <td class="severity-warning">警告</td>
+                    <td>18分钟前</td>
+                    <td>活跃</td>
+                </tr>
+                <tr>
+                    <td>5</td>
+                    <td>端口利用率高</td>
+                    <td>接入交换机-01</td>
+                    <td class="severity-warning">警告</td>
+                    <td>25分钟前</td>
+                    <td>已确认</td>
+                </tr>
+                <tr>
+                    <td>6</td>
+                    <td>隧道连接不稳定</td>
+                    <td>VPN网关-01</td>
+                    <td class="severity-warning">警告</td>
+                    <td>35分钟前</td>
+                    <td>活跃</td>
+                </tr>
+                <tr>
+                    <td>7</td>
+                    <td>规则匹配率异常</td>
+                    <td>防火墙-02</td>
+                    <td class="severity-warning">警告</td>
+                    <td>50分钟前</td>
+                    <td>已确认</td>
+                </tr>
+                <tr>
+                    <td>8</td>
+                    <td>信号强度下降</td>
+                    <td>无线AP-02</td>
+                    <td class="severity-warning">警告</td>
+                    <td>1小时5分钟前</td>
+                    <td>已确认</td>
+                </tr>
+                <tr>
+                    <td>9</td>
+                    <td>端口状态变更</td>
+                    <td>核心交换机-01</td>
+                    <td class="severity-info">信息</td>
+                    <td>2小时前</td>
+                    <td>已解决</td>
+                </tr>
+                <tr>
+                    <td>10</td>
+                    <td>性能监控报告</td>
+                    <td>API网关-01</td>
+                    <td class="severity-info">信息</td>
+                    <td>4小时前</td>
+                    <td>已解决</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>🎯 进一步配置选项</h2>
+            <div class="info" style="padding: 15px; border-radius: 5px;">
+                <strong>如果您需要更多告警显示，可以进一步调整：</strong><br><br>
+                
+                <strong>选项1: 增加更多告警</strong><br>
+                • 修改API限制: <code>limit=15</code> 或 <code>limit=20</code><br>
+                • 添加更多示例数据<br>
+                • 考虑界面滚动或分页<br><br>
+                
+                <strong>选项2: 添加"查看更多"按钮</strong><br>
+                • 初始显示10条<br>
+                • 点击按钮加载更多<br>
+                • 避免界面过长<br><br>
+                
+                <strong>选项3: 时间范围过滤</strong><br>
+                • 最近1小时、6小时、24小时<br>
+                • 用户可选择时间范围<br>
+                • 动态调整显示数量<br><br>
+                
+                <strong>选项4: 严重级别过滤</strong><br>
+                • 只显示严重和警告级别<br>
+                • 隐藏信息级别告警<br>
+                • 突出重要告警
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🧪 测试验证</h2>
+            <button onclick="openViewPage()">打开视图页面验证</button>
+            <button onclick="showCurrentConfig()">显示当前配置</button>
+            <button onclick="suggestOptimization()">优化建议</button>
+        </div>
+        
+        <div class="section">
+            <h2>📝 测试日志</h2>
+            <div id="testLog" class="result">等待测试...</div>
+        </div>
+        
+        <div class="section">
+            <h2>✅ 预期效果</h2>
+            <div class="success" style="padding: 15px; border-radius: 5px;">
+                <strong>现在最近告警应该显示：</strong><br><br>
+                
+                1. <strong>数量增加</strong><br>
+                   ✅ 从5条增加到10条告警<br>
+                   ✅ 更全面的告警信息<br><br>
+                
+                2. <strong>类型丰富</strong><br>
+                   ✅ 包含严重、警告、信息三个级别<br>
+                   ✅ 涵盖服务器、网络、安全等设备<br><br>
+                
+                3. <strong>时间分布</strong><br>
+                   ✅ 从3分钟前到4小时前的合理分布<br>
+                   ✅ 体现告警的时间层次<br><br>
+                
+                4. <strong>状态多样</strong><br>
+                   ✅ 活跃、已确认、已解决等不同状态<br>
+                   ✅ 反映告警的处理进度
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let testLog = [];
+        
+        function addLog(message) {
+            const timestamp = new Date().toLocaleTimeString();
+            testLog.push(`[${timestamp}] ${message}`);
+            document.getElementById('testLog').textContent = testLog.join('\n');
+        }
+        
+        function openViewPage() {
+            addLog('📱 打开视图页面验证告警数量');
+            addLog('操作：选择仪表盘视图 → 查看最近告警区域');
+            addLog('预期：应该显示10条告警，而不是之前的5条');
+            window.open('视图.html', '_blank');
+        }
+        
+        function showCurrentConfig() {
+            addLog('⚙️ 当前配置信息：');
+            addLog('');
+            addLog('API请求配置:');
+            addLog('  URL: /api/alerts/recent?limit=10');
+            addLog('  方法: GET');
+            addLog('  限制: 10条告警');
+            addLog('');
+            addLog('示例数据配置:');
+            addLog('  数量: 10条告警');
+            addLog('  严重级别: 3条严重 + 5条警告 + 2条信息');
+            addLog('  时间范围: 3分钟前 ~ 4小时前');
+            addLog('  设备类型: 服务器、交换机、路由器、防火墙、无线AP');
+            addLog('');
+            addLog('自动刷新:');
+            addLog('  频率: 每30秒');
+            addLog('  包含: 活跃设备 + 最近告警');
+        }
+        
+        function suggestOptimization() {
+            addLog('💡 进一步优化建议：');
+            addLog('');
+            addLog('1. 如果需要更多告警：');
+            addLog('   - 修改 limit=15 或 limit=20');
+            addLog('   - 添加滚动条或分页');
+            addLog('   - 考虑界面布局调整');
+            addLog('');
+            addLog('2. 如果需要过滤功能：');
+            addLog('   - 添加严重级别过滤');
+            addLog('   - 添加时间范围选择');
+            addLog('   - 添加设备类型过滤');
+            addLog('');
+            addLog('3. 如果需要更好的用户体验：');
+            addLog('   - 添加"查看更多"按钮');
+            addLog('   - 实现无限滚动加载');
+            addLog('   - 添加告警分组显示');
+            addLog('');
+            addLog('4. 如果需要性能优化：');
+            addLog('   - 实现虚拟滚动');
+            addLog('   - 添加缓存机制');
+            addLog('   - 优化API响应速度');
+        }
+        
+        // 页面加载时显示初始信息
+        window.onload = function() {
+            addLog('📊 最近告警数量配置说明页面已加载');
+            addLog('');
+            addLog('修改内容:');
+            addLog('✅ API限制: 5条 → 10条');
+            addLog('✅ 示例数据: 5条 → 10条');
+            addLog('✅ 告警类型: 更丰富的告警类型');
+            addLog('✅ 时间分布: 更合理的时间间隔');
+            addLog('✅ 设备覆盖: 涵盖更多设备类型');
+            addLog('');
+            addLog('现在最近告警应该显示10条告警了！');
+        };
+    </script>
+</body>
+</html>

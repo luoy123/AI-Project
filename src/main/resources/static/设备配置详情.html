@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<style>
+/* ????CMDB??? - ???? */
+.nav-cmdb { display: none !important; }
+.sidebar-item[data-page="CMDB"] { display: none !important; }
+</style>
+<script>
+// ????:????CMDB,????
+(function() {
+    function hideCMDB() {
+        var items = document.querySelectorAll('.sidebar-item');
+        items.forEach(function(item) {
+            var span = item.querySelector('span');
+            if (span && span.textContent.trim() === 'CMDB') {
+                item.style.display = 'none';
+                item.setAttribute('data-hidden', 'true');
+            }
+        });
+    }
+    
+    // ????
+    hideCMDB();
+    
+    // DOM Ready??????
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', hideCMDB);
+    }
+    
+    // ????:????????????
+    setTimeout(hideCMDB, 10);
+    setTimeout(hideCMDB, 100);
+})();
+</script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>?????? - ????????</title>
+    <link rel="stylesheet" href="libs/fontawesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="????.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f7fa;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 24px;
+            color: #333;
+        }
+
+        .back-btn {
+            padding: 10px 20px;
+            background: #2196F3;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .back-btn:hover {
+            background: #1976D2;
+        }
+
+        .device-info {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .device-info h2 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+        }
+
+        .info-item {
+            padding: 10px;
+            background: #f5f7fa;
+            border-radius: 4px;
+        }
+
+        .info-label {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .info-value {
+            font-size: 16px;
+            font-weight: 500;
+            color: #333;
+        }
+
+        .version-history {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+        }
+
+        .version-history h2 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .version-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .version-table th {
+            background: #f5f7fa;
+            padding: 12px;
+            text-align: left;
+            font-weight: 500;
+            color: #666;
+            font-size: 13px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .version-table td {
+            padding: 12px;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+        }
+
+        .version-table tr:hover {
+            background: #f9f9f9;
+        }
+
+        .baseline-badge {
+            background: #4CAF50;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+
+        .btn-small {
+            padding: 5px 12px;
+            border: 1px solid #2196F3;
+            background: #fff;
+            color: #2196F3;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 12px;
+            margin-right: 5px;
+        }
+
+        .btn-small:hover {
+            background: #2196F3;
+            color: #fff;
+        }
+
+        .btn-small.danger {
+            border-color: #F44336;
+            color: #F44336;
+        }
+
+        .btn-small.danger:hover {
+            background: #F44336;
+            color: #fff;
+        }
+
+        .btn-small.success {
+            border-color: #4CAF50;
+            color: #4CAF50;
+        }
+
+        .btn-small.success:hover {
+            background: #4CAF50;
+            color: #fff;
+        }
+
+        /* Diff???? */
+        .diff-container {
+            background: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            display: none;
+        }
+
+        .diff-container.active {
+            display: block;
+        }
+
+        .diff-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 15px;
+            border-bottom: 2px solid #e0e0e0;
+        }
+
+        .diff-header h2 {
+            color: #333;
+        }
+
+        .diff-view {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+        }
+
+        .diff-panel {
+            border: 1px solid #e0e0e0;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .diff-panel-header {
+            background: #f5f7fa;
+            padding: 10px 15px;
+            font-weight: 500;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .diff-content {
+            max-height: 600px;
+            overflow-y: auto;
+            background: #fafafa;
+        }
+
+        .diff-line {
+            padding: 2px 10px;
+            white-space: pre-wrap;
+            word-break: break-all;
+        }
+
+        .diff-line.added {
+            background: #e6ffed;
+            color: #22863a;
+        }
+
+        .diff-line.removed {
+            background: #ffeef0;
+            color: #cb2431;
+        }
+
+        .diff-line.unchanged {
+            background: #fff;
+            color: #333;
+        }
+
+        .close-diff-btn {
+            padding: 8px 16px;
+            background: #607D8B;
+            color: #fff;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+        .close-diff-btn:hover {
+            background: #455A64;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- ?? -->
+        <div class="header">
+            <h1><i class="fas fa-cog"></i> ??????</h1>
+            <a href="????.html" class="back-btn">
+                <i class="fas fa-arrow-left"></i> ??????
+            </a>
+        </div>
+
+        <!-- ?????? -->
+        <div class="device-info">
+            <h2><i class="fas fa-info-circle"></i> ????</h2>
+            <div class="info-grid">
+                <div class="info-item">
+                    <div class="info-label">????</div>
+                    <div class="info-value" id="deviceName">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">IP??</div>
+                    <div class="info-value" id="deviceIp">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">????</div>
+                    <div class="info-value" id="deviceModel">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">????</div>
+                    <div class="info-value" id="baselineVersion">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">??????</div>
+                    <div class="info-value" id="lastBackupTime">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">????</div>
+                    <div class="info-value" id="backupStatus">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">????</div>
+                    <div class="info-value" id="changeStatus">-</div>
+                </div>
+                <div class="info-item">
+                    <div class="info-label">????</div>
+                    <div class="info-value" id="versionCount">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ?????? -->
+        <div class="version-history">
+            <h2><i class="fas fa-history"></i> ????</h2>
+            <table class="version-table">
+                <thead>
+                    <tr>
+                        <th>???</th>
+                        <th>????</th>
+                        <th>????</th>
+                        <th>????</th>
+                        <th>????</th>
+                        <th>????</th>
+                        <th>????</th>
+                        <th>??</th>
+                    </tr>
+                </thead>
+                <tbody id="versionTableBody">
+                    <tr>
+                        <td colspan="8" style="text-align: center; padding: 40px;">
+                            <i class="fas fa-spinner fa-spin"></i> ???...
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- ?????? -->
+        <div class="diff-container" id="diffContainer">
+            <div class="diff-header">
+                <h2><i class="fas fa-code-branch"></i> ????</h2>
+                <button class="close-diff-btn" onclick="closeDiffView()">
+                    <i class="fas fa-times"></i> ????
+                </button>
+            </div>
+            <div class="diff-view">
+                <div class="diff-panel">
+                    <div class="diff-panel-header" id="leftVersionHeader">?? v1.0</div>
+                    <div class="diff-content" id="leftDiffContent"></div>
+                </div>
+                <div class="diff-panel">
+                    <div class="diff-panel-header" id="rightVersionHeader">?? v1.1</div>
+                    <div class="diff-content" id="rightDiffContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // ?URL????ID
+        const urlParams = new URLSearchParams(window.location.search);
+        const deviceId = urlParams.get('deviceId');
+
+        // ????????????????
+        window.addEventListener('DOMContentLoaded', function() {
+            if (deviceId) {
+                loadDeviceInfo(deviceId);
+                loadVersionHistory(deviceId);
+            } else {
+                alert('????ID??');
+                window.location.href = '????.html';
+            }
+        });
+
+        // ??????
+        function loadDeviceInfo(deviceId) {
+            // TODO: ??API??????
+            // ????
+            const mockDevice = {
+                deviceName: '?????-01',
+                deviceIp: '192.168.1.10',
+                deviceModel: 'Cisco 3850',
+                baselineVersion: 'v1.0',
+                lastBackupTime: '2025-10-29 02:00:00',
+                backupStatus: '??',
+                changeStatus: '???',
+                versionCount: 5
+            };
+
+            document.getElementById('deviceName').textContent = mockDevice.deviceName;
+            document.getElementById('deviceIp').textContent = mockDevice.deviceIp;
+            document.getElementById('deviceModel').textContent = mockDevice.deviceModel;
+            document.getElementById('baselineVersion').textContent = mockDevice.baselineVersion;
+            document.getElementById('lastBackupTime').textContent = mockDevice.lastBackupTime;
+            document.getElementById('backupStatus').textContent = mockDevice.backupStatus;
+            document.getElementById('changeStatus').textContent = mockDevice.changeStatus;
+            document.getElementById('versionCount').textContent = mockDevice.versionCount;
+        }
+
+        // ??????
+        function loadVersionHistory(deviceId) {
+            // TODO: ??API??????
+            // ????
+            const mockVersions = [
+                {
+                    versionId: 5,
+                    version: 'v1.4',
+                    backupTime: '2025-10-30 02:00:00',
+                    backupType: '????',
+                    fileSize: '1.2 MB',
+                    backupStatus: 'success',
+                    isBaseline: false,
+                    description: '??????\n?????'
+                },
+                {
+                    versionId: 4,
+                    version: 'v1.3',
+                    backupTime: '2025-10-29 14:30:00',
+                    backupType: '????',
+                    fileSize: '1.2 MB',
+                    backupStatus: 'success',
+                    isBaseline: false,
+                    description: 'ACL????\n- ????????ACL 100\n- ??192.168.10.0/24????\n- ????????'
+                },
+                {
+                    versionId: 3,
+                    version: 'v1.2',
+                    backupTime: '2025-10-29 10:00:00',
+                    backupType: '????',
+                    fileSize: '1.1 MB',
+                    backupStatus: 'success',
+                    isBaseline: false,
+                    description: '??????\n- ?GigabitEthernet0/1??????\n- ??: Uplink to Core Router\n- ????????'
+                },
+                {
+                    versionId: 2,
+                    version: 'v1.1',
+                    backupTime: '2025-10-28 16:00:00',
+                    backupType: '????',
+                    fileSize: '1.1 MB',
+                    backupStatus: 'success',
+                    isBaseline: false,
+                    description: 'VLAN????\n- ??GigabitEthernet0/2??\n- ???access??\n- ???VLAN 20\n- ??????????'
+                },
+                {
+                    versionId: 1,
+                    version: 'v1.0',
+                    backupTime: '2025-10-27 09:00:00',
+                    backupType: '????',
+                    fileSize: '1.0 MB',
+                    backupStatus: 'success',
+                    isBaseline: true,
+                    description: '????????\n- ??????core-switch-01\n- ??GigabitEthernet0/1??\n- IP??: 192.168.1.10/24\n- ????'
+                }
+            ];
+
+            renderVersionTable(mockVersions);
+        }
+
+        // ??????
+        function renderVersionTable(versions) {
+            const tbody = document.getElementById('versionTableBody');
+            
+            if (versions.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="8" style="text-align: center; padding: 40px;">??????</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = versions.map(v => `
+                <tr>
+                    <td><strong>${v.version}</strong></td>
+                    <td>${v.backupTime}</td>
+                    <td>${v.backupType}</td>
+                    <td>${v.fileSize}</td>
+                    <td><span style="color: ${v.backupStatus === 'success' ? '#4CAF50' : '#F44336'}">${v.backupStatus === 'success' ? '??' : '??'}</span></td>
+                    <td>${v.isBaseline ? '<span class="baseline-badge">????</span>' : '-'}</td>
+                    <td style="white-space: pre-wrap; max-width: 300px; font-size: 12px; color: #666;">
+                        ${v.description || '-'}
+                    </td>
+                    <td>
+                        <button class="btn-small" onclick="viewConfig(${v.versionId}, '${v.version}')">
+                            <i class="fas fa-eye"></i> ??
+                        </button>
+                        <button class="btn-small" onclick="compareVersion(${v.versionId}, '${v.version}')">
+                            <i class="fas fa-code-branch"></i> ??
+                        </button>
+                        ${!v.isBaseline ? `<button class="btn-small success" onclick="setBaseline(${v.versionId}, '${v.version}')">
+                            <i class="fas fa-star"></i> ????
+                        </button>` : ''}
+                        <button class="btn-small danger" onclick="restoreConfig(${v.versionId}, '${v.version}')">
+                            <i class="fas fa-undo"></i> ??
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        // ??????
+        function viewConfig(versionId, version) {
+            alert(`??????: ${version}\n\n?????,????????????`);
+        }
+
+        // ????
+        let selectedVersion = null;
+        function compareVersion(versionId, version) {
+            if (!selectedVersion) {
+                selectedVersion = { versionId, version };
+                alert(`????? ${version},????????????`);
+            } else {
+                // ????
+                showDiffView(selectedVersion, { versionId, version });
+                selectedVersion = null;
+            }
+        }
+
+        // ??Diff??
+        function showDiffView(version1, version2) {
+            document.getElementById('leftVersionHeader').textContent = `?? ${version1.version}`;
+            document.getElementById('rightVersionHeader').textContent = `?? ${version2.version}`;
+            
+            // ??????
+            const config1 = `hostname core-switch-01
+!
+interface GigabitEthernet0/1
+ description Uplink to Core
+ ip address 192.168.1.10 255.255.255.0
+ no shutdown
+!
+interface GigabitEthernet0/2
+ description Access Port
+ switchport mode access
+ switchport access vlan 10
+!
+end`;
+
+            const config2 = `hostname core-switch-01
+!
+interface GigabitEthernet0/1
+ description Uplink to Core Router
+ ip address 192.168.1.10 255.255.255.0
+ no shutdown
+!
+interface GigabitEthernet0/2
+ description Access Port VLAN20
+ switchport mode access
+ switchport access vlan 20
+!
+interface GigabitEthernet0/3
+ description New Port
+ switchport mode access
+ switchport access vlan 30
+!
+end`;
+
+            renderDiff(config1, config2);
+            document.getElementById('diffContainer').classList.add('active');
+        }
+
+        // ??Diff??
+        function renderDiff(config1, config2) {
+            const lines1 = config1.split('\n');
+            const lines2 = config2.split('\n');
+            
+            const leftContent = document.getElementById('leftDiffContent');
+            const rightContent = document.getElementById('rightDiffContent');
+            
+            // ???????(?????????diff??)
+            leftContent.innerHTML = lines1.map((line, i) => {
+                const className = lines2[i] !== line ? 'removed' : 'unchanged';
+                return `<div class="diff-line ${className}">${line || ' '}</div>`;
+            }).join('');
+            
+            rightContent.innerHTML = lines2.map((line, i) => {
+                const className = !lines1[i] || lines1[i] !== line ? 'added' : 'unchanged';
+                return `<div class="diff-line ${className}">${line || ' '}</div>`;
+            }).join('');
+        }
+
+        // ??Diff??
+        function closeDiffView() {
+            document.getElementById('diffContainer').classList.remove('active');
+        }
+
+        // ??????
+        function setBaseline(versionId, version) {
+            if (confirm(`?????? ${version} ????????`)) {
+                alert(`?? ${version} ???????\n\n?????`);
+                // TODO: ??API??????
+                loadVersionHistory(deviceId);
+            }
+        }
+
+        // ????
+        function restoreConfig(versionId, version) {
+            if (confirm(`???????? ${version} ??\n\n??:??????????!`)) {
+                alert(`??????? ${version}...\n\n?????`);
+                // TODO: ??API????
+            }
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>活跃设备自动刷新说明</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: 0 auto; }
+        .section { margin: 20px 0; padding: 15px; border: 1px solid #ddd; border-radius: 5px; }
+        .success { background: #d4edda; color: #155724; }
+        .info { background: #d1ecf1; color: #0c5460; }
+        .warning { background: #fff3cd; color: #856404; }
+        button { padding: 10px 15px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 3px; cursor: pointer; }
+        .code-block { background: #f8f9fa; padding: 15px; border-radius: 5px; border-left: 4px solid #007bff; font-family: 'Courier New', monospace; font-size: 13px; }
+        .timeline { display: flex; align-items: center; margin: 10px 0; }
+        .timeline-item { padding: 10px 15px; background: #f8f9fa; border-radius: 5px; margin: 0 5px; border: 1px solid #ddd; }
+        .arrow { margin: 0 10px; color: #007bff; font-size: 18px; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔄 活跃设备自动刷新功能</h1>
+        
+        <div class="section success">
+            <h2>✅ 功能确认</h2>
+            <p><strong>活跃设备已配置自动刷新功能！</strong></p>
+            <ul>
+                <li>📊 <strong>刷新频率</strong>: 每30秒自动刷新一次</li>
+                <li>🚀 <strong>启动时机</strong>: 页面加载完成后自动开始</li>
+                <li>🔄 <strong>刷新内容</strong>: 活跃设备列表和设备统计数据</li>
+                <li>🎯 <strong>用户体验</strong>: 后台静默刷新，不影响用户操作</li>
+            </ul>
+        </div>
+        
+        <div class="section info">
+            <h2>⚙️ 技术实现</h2>
+            <div class="code-block">
+// 页面加载完成后设置定期刷新
+document.addEventListener('DOMContentLoaded', function() {
+    // 初始加载
+    setTimeout(() => {
+        loadActiveDevices();
+    }, 800);
+    
+    // 每30秒自动刷新
+    setInterval(() => {
+        loadDeviceStatistics();  // 刷新设备统计
+        loadActiveDevices();     // 刷新活跃设备
+    }, 30000);
+});
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>⏰ 刷新时间线</h2>
+            <div class="timeline">
+                <div class="timeline-item">页面加载</div>
+                <div class="arrow">→</div>
+                <div class="timeline-item">0.8秒后<br>首次加载</div>
+                <div class="arrow">→</div>
+                <div class="timeline-item">30秒后<br>第1次刷新</div>
+                <div class="arrow">→</div>
+                <div class="timeline-item">60秒后<br>第2次刷新</div>
+                <div class="arrow">→</div>
+                <div class="timeline-item">持续循环...</div>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>🗑️ 已移除的手动刷新功能</h2>
+            <div class="warning">
+                <p><strong>由于已有自动刷新功能，以下内容已被移除：</strong></p>
+                <ul>
+                    <li>❌ 活跃设备标题旁的刷新按钮</li>
+                    <li>❌ refreshActiveDevices() JavaScript函数</li>
+                    <li>❌ 刷新按钮相关的CSS样式</li>
+                    <li>❌ 手动刷新的旋转动画</li>
+                </ul>
+                <p><em>这样可以简化界面，避免功能重复，提升用户体验。</em></p>
+            </div>
+        </div>
+        
+        <div class="section">
+            <h2>📊 自动刷新的优势</h2>
+            <table style="width: 100%; border-collapse: collapse;">
+                <tr style="background: #f8f9fa;">
+                    <th style="padding: 10px; border: 1px solid #ddd;">方面</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">手动刷新</th>
+                    <th style="padding: 10px; border: 1px solid #ddd;">自动刷新</th>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;"><strong>用户操作</strong></td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">需要点击按钮</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">无需操作</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;"><strong>数据实时性</strong></td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">取决于用户习惯</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">保证30秒内的实时性</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;"><strong>界面简洁性</strong></td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">增加按钮元素</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">界面更简洁</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;"><strong>用户体验</strong></td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">需要主动操作</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">静默更新，体验更好</td>
+                </tr>
+            </table>
+        </div>
+        
+        <div class="section">
+            <h2>🔍 如何验证自动刷新</h2>
+            <ol>
+                <li><strong>打开视图页面</strong>: 访问 <code>视图.html</code></li>
+                <li><strong>选择仪表盘视图</strong>: 点击"仪表盘视图"标签</li>
+                <li><strong>观察活跃设备</strong>: 查看右侧活跃设备区域</li>
+                <li><strong>打开开发者工具</strong>: 按F12打开Console</li>
+                <li><strong>观察日志</strong>: 每30秒会看到"开始加载活跃设备数据..."</li>
+                <li><strong>确认刷新</strong>: 设备列表会定期更新时间戳</li>
+            </ol>
+        </div>
+        
+        <div class="section">
+            <h2>🧪 测试操作</h2>
+            <button onclick="openViewPage()">打开视图页面验证</button>
+            <button onclick="showConsoleInstructions()">显示控制台验证方法</button>
+        </div>
+        
+        <div class="section">
+            <h2>📝 控制台验证日志</h2>
+            <div id="instructions" class="code-block" style="display: none;">
+在浏览器控制台中，您应该看到以下日志模式：
+
+[时间] DOM loaded, initializing...
+[时间] 开始加载活跃设备数据...
+[时间] API无响应或无数据，使用示例数据
+[时间] 渲染了 8 个活跃设备
+
+... 30秒后 ...
+
+[时间] 开始加载设备统计数据...
+[时间] 开始加载活跃设备数据...
+[时间] API无响应或无数据，使用示例数据
+[时间] 渲染了 8 个活跃设备
+
+... 继续每30秒重复 ...
+            </div>
+        </div>
+        
+        <div class="section success">
+            <h2>✅ 总结</h2>
+            <p><strong>活跃设备现在具备完善的自动刷新功能：</strong></p>
+            <ul>
+                <li>🔄 每30秒自动更新数据</li>
+                <li>🎯 保证数据实时性</li>
+                <li>🎨 界面更加简洁</li>
+                <li>👥 提升用户体验</li>
+                <li>⚡ 减少用户操作</li>
+            </ul>
+            <p><em>用户无需手动刷新，系统会自动保持数据的最新状态。</em></p>
+        </div>
+    </div>
+
+    <script>
+        function openViewPage() {
+            alert('即将打开视图页面，请观察活跃设备区域的自动刷新功能');
+            window.open('视图.html', '_blank');
+        }
+        
+        function showConsoleInstructions() {
+            const instructions = document.getElementById('instructions');
+            instructions.style.display = instructions.style.display === 'none' ? 'block' : 'none';
+        }
+    </script>
+</body>
+</html>

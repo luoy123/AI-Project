@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zxb.aiproject.mapper.PredictionModelServiceMapper">
+
+    <!-- 查询算法模型服务列表(带统计信息) -->
+    <select id="selectServiceListWithStats" resultType="java.util.Map">
+        SELECT
+            pms.id,
+            pms.service_name,
+            pms.service_code,
+            pms.algorithm_type,
+            pms.status,
+            pms.update_cycle,
+            pms.auto_prediction,
+            pms.prediction_cycle,
+            pms.prediction_duration,
+            pms.notes,
+            pms.last_train_time,
+            pms.last_prediction_time,
+            pms.train_count,
+            pms.prediction_count,
+            pms.accuracy_rate,
+            pms.create_time,
+            pms.update_time,
+            COALESCE(pm.model_count, 0) as model_count,
+            COALESCE(pr.total_predictions, 0) as total_predictions,
+            COALESCE(pr.anomaly_count, 0) as anomaly_count,
+            COALESCE(pa.alert_count, 0) as alert_count,
+            COALESCE(pa.pending_alert_count, 0) as pending_alert_count
+        FROM prediction_model_service pms
+        LEFT JOIN (
+            SELECT
+                pmd.service_id,
+                COUNT(*) as model_count
+            FROM prediction_model_device pmd
+            WHERE pmd.deleted = 0
+            GROUP BY pmd.service_id
+        ) pm ON pms.id = pm.service_id
+        LEFT JOIN (
+            SELECT
+                service_id,
+                COUNT(*) as total_predictions,
+                SUM(CASE WHEN is_anomaly = 1 THEN 1 ELSE 0 END) as anomaly_count
+            FROM prediction_result
+            GROUP BY service_id
+        ) pr ON pms.id = pr.service_id
+        LEFT JOIN (
+            SELECT
+                service_id,
+                COUNT(*) as alert_count,
+                SUM(CASE WHEN alert_status = 'pending' THEN 1 ELSE 0 END) as pending_alert_count
+            FROM prediction_alert
+            GROUP BY service_id
+        ) pa ON pms.id = pa.service_id
+        WHERE pms.deleted = 0
+        <if test="serviceName != null and serviceName != ''">
+            AND pms.service_name LIKE CONCAT('%', #{serviceName}, '%')
+        </if>
+        <if test="status != null">
+            AND pms.status = #{status}
+        </if>
+        <if test="keyword != null and keyword != ''">
+            AND (
+                pms.service_name LIKE CONCAT('%', #{keyword}, '%')
+                OR pms.service_code LIKE CONCAT('%', #{keyword}, '%')
+            )
+        </if>
+        ORDER BY pms.create_time DESC
+    </select>
+
+    <!-- 获取服务统计信息 -->
+    <select id="selectServiceStats" resultType="java.util.Map">
+        SELECT
+            pms.id,
+            pms.service_name,
+            pms.train_count,
+            pms.prediction_count,
+            pms.accuracy_rate,
+            pms.last_train_time,
+            pms.last_prediction_time,
+            COUNT(DISTINCT pr.id) as total_predictions,
+            COUNT(DISTINCT CASE WHEN pr.is_anomaly = 1 THEN pr.id END) as anomaly_count,
+            COUNT(DISTINCT pa.id) as alert_count,
+            COUNT(DISTINCT CASE WHEN pa.alert_status = 'pending' THEN pa.id END) as pending_alert_count,
+            COUNT(DISTINCT CASE WHEN pa.alert_level = 'critical' THEN pa.id END) as critical_alert_count,
+            COUNT(DISTINCT CASE WHEN pa.alert_level = 'warning' THEN pa.id END) as warning_alert_count
+        FROM prediction_model_service pms
+        LEFT JOIN prediction_result pr ON pms.id = pr.service_id
+        LEFT JOIN prediction_alert pa ON pms.id = pa.service_id
+        WHERE pms.id = #{serviceId} AND pms.deleted = 0
+        GROUP BY pms.id
+    </select>
+
+    <!-- 检查服务编码是否存在 -->
+    <select id="checkServiceCodeExists" resultType="int">
+        SELECT COUNT(*)
+        FROM prediction_model_service
+        WHERE service_code = #{serviceCode}
+        AND deleted = 0
+        <if test="excludeId != null">
+            AND id != #{excludeId}
+        </if>
+    </select>
+
+    <!-- 更新服务状态 -->
+    <update id="updateServiceStatus">
+        UPDATE prediction_model_service
+        SET status = #{status},
+            update_time = NOW()
+        WHERE id = #{serviceId}
+        AND deleted = 0
+    </update>
+
+    <!-- 更新训练统计信息 -->
+    <update id="updateTrainStats">
+        UPDATE prediction_model_service pms
+        SET
+            pms.train_count = (
+                SELECT COUNT(*)
+                FROM prediction_train_history
+                WHERE service_id = #{serviceId}
+                AND train_status = 'success'
+            ),
+            pms.last_train_time = (
+                SELECT MAX(train_end_time)
+                FROM prediction_train_history
+                WHERE service_id = #{serviceId}
+                AND train_status = 'success'
+            ),
+            pms.accuracy_rate = (
+                SELECT AVG(accuracy_rate)
+                FROM prediction_train_history
+                WHERE service_id = #{serviceId}
+                AND train_status = 'success'
+                AND accuracy_rate IS NOT NULL
+            ),
+            pms.update_time = NOW()
+        WHERE pms.id = #{serviceId}
+        AND pms.deleted = 0
+    </update>
+
+    <!-- 更新预测统计信息 -->
+    <update id="updatePredictionStats">
+        UPDATE prediction_model_service pms
+        SET
+            pms.prediction_count = (
+                SELECT COUNT(*)
+                FROM prediction_result
+                WHERE service_id = #{serviceId}
+            ),
+            pms.last_prediction_time = (
+                SELECT MAX(prediction_time)
+                FROM prediction_result
+                WHERE service_id = #{serviceId}
+            ),
+            pms.update_time = NOW()
+        WHERE pms.id = #{serviceId}
+        AND pms.deleted = 0
+    </update>
+
+</mapper>
