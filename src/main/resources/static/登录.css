@@ -256,6 +256,33 @@ body {
     border-color: var(--primary-color);
 }
 
+/* 密码输入框包装器 */
+.password-input-wrapper {
+    position: relative;
+    width: 100%;
+}
+
+.password-input-wrapper input {
+    padding-right: 40px; /* 为眼睛图标留出空间 */
+}
+
+/* 密码显示/隐藏图标 */
+.password-toggle-icon {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--secondary-color);
+    cursor: pointer;
+    font-size: 16px;
+    transition: color 0.3s;
+    user-select: none;
+}
+
+.password-toggle-icon:hover {
+    color: var(--primary-color);
+}
+
 .captcha-container {
     display: flex;
     gap: 10px;

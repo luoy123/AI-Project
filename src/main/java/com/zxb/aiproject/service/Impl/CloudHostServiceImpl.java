@@ -59,4 +59,47 @@ public class CloudHostServiceImpl extends ServiceImpl<CloudHostMapper, CloudHost
         }
         return false;
     }
+
+    @Override
+    public java.util.Map<String, Object> getOverviewStats(String provider) {
+        java.util.Map<String, Object> stats = new java.util.HashMap<>();
+
+        // 统计总数
+        LambdaQueryWrapper<CloudHost> wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CloudHost::getProvider, provider);
+        long totalCount = count(wrapper);
+        stats.put("totalCount", totalCount);
+
+        // 统计运行中的数量
+        wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CloudHost::getProvider, provider)
+               .eq(CloudHost::getStatus, "running");
+        long runningCount = count(wrapper);
+        stats.put("runningCount", runningCount);
+
+        // 统计已停止的数量
+        wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CloudHost::getProvider, provider)
+               .eq(CloudHost::getStatus, "stopped");
+        long stoppedCount = count(wrapper);
+        stats.put("stoppedCount", stoppedCount);
+
+        // 统计异常的数量
+        wrapper = new LambdaQueryWrapper<>();
+        wrapper.eq(CloudHost::getProvider, provider)
+               .eq(CloudHost::getStatus, "error");
+        long errorCount = count(wrapper);
+        stats.put("errorCount", errorCount);
+
+        // 统计总CPU核数
+        List<CloudHost> hosts = listByProvider(provider);
+        int totalCpu = hosts.stream().mapToInt(host -> host.getCpuCores() != null ? host.getCpuCores() : 0).sum();
+        stats.put("totalCpu", totalCpu);
+
+        // 统计总内存
+        int totalMemory = hosts.stream().mapToInt(host -> host.getMemoryGb() != null ? host.getMemoryGb() : 0).sum();
+        stats.put("totalMemory", totalMemory);
+
+        return stats;
+    }
 }

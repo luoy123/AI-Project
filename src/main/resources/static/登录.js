@@ -1,16 +1,18 @@
 // 密码显示/隐藏切换
 function togglePassword() {
     const passwordInput = document.getElementById('password');
-    const toggleIcon = document.getElementById('toggleIcon');
-    
+    const toggleIcon = document.getElementById('togglePassword');
+
     if (passwordInput.type === 'password') {
         passwordInput.type = 'text';
         toggleIcon.classList.remove('fa-eye');
         toggleIcon.classList.add('fa-eye-slash');
+        toggleIcon.title = '隐藏密码';
     } else {
         passwordInput.type = 'password';
         toggleIcon.classList.remove('fa-eye-slash');
         toggleIcon.classList.add('fa-eye');
+        toggleIcon.title = '显示密码';
     }
 }
 
@@ -148,6 +150,9 @@ window.addEventListener('DOMContentLoaded', function() {
     document.getElementById('captchaImage').addEventListener('click', function() {
         generateCaptcha();
     });
+
+    // 绑定密码显示/隐藏图标点击事件
+    document.getElementById('togglePassword').addEventListener('click', togglePassword);
 
     // 绑定表单提交事件
     document.getElementById('login-form').addEventListener('submit', function(e) {

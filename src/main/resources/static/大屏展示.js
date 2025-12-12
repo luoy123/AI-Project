@@ -8,7 +8,8 @@ document.addEventListener('DOMContentLoaded', function() {
     initNavigation();
     initHeaderNav();
     initResponsive();
-    
+    initDeviceSearch(); // 初始化设备搜索功能
+
     // 定时刷新数据
     setInterval(loadData, 30000); // 30秒刷新一次
     setInterval(updateTime, 1000); // 每秒更新时间
@@ -642,6 +643,27 @@ function updateAlertStatsPieChart(data) {
         }]
     };
     alertStatsPieChart.setOption(option);
+
+    // 添加点击事件 - 跳转到告警中心页面
+    alertStatsPieChart.off('click'); // 移除旧的事件监听器
+    alertStatsPieChart.on('click', function(params) {
+        if (params.data && params.data.name !== '暂无数据') {
+            // 根据点击的数据项名称映射到严重级别
+            const severityMap = {
+                '紧急': 'critical',
+                '严重': 'critical',
+                '警告': 'warning',
+                '信息': 'info',
+                '提示': 'info'
+            };
+
+            const severity = severityMap[params.data.name] || '';
+            if (severity) {
+                // 跳转到告警中心页面，并传递严重级别参数
+                window.location.href = `告警中心.html?severity=${severity}`;
+            }
+        }
+    });
 }
 
 // 从数据库加载本月告警统计 (按告警分类和严重级别分组柱状图)
@@ -730,6 +752,50 @@ function updateAlertMonthTrendChart(data) {
         ]
     };
     alertMonthTrendChart.setOption(option);
+
+    // 添加点击事件 - 弹出模态框展示对应数据
+    alertMonthTrendChart.off('click'); // 移除旧的事件监听器
+    alertMonthTrendChart.on('click', function(params) {
+        if (params.seriesName && params.name) {
+            // 根据系列名称映射到严重级别
+            const severityMap = {
+                '紧急': 'critical',
+                '警告': 'warning',
+                '信息': 'info'
+            };
+
+            // 根据分类名称映射到数据库字段值
+            const categoryMap = {
+                'CPU告警': 'cpu',
+                '内存告警': 'memory',
+                '磁盘告警': 'disk',
+                '网络告警': 'network',
+                '服务告警': 'service',
+                '安全告警': 'security',
+                '温度告警': 'temperature',
+                '其他告警': 'other',
+                'CPU': 'cpu',
+                '内存': 'memory',
+                '磁盘': 'disk',
+                '网络': 'network',
+                '服务': 'service',
+                '安全': 'security',
+                '温度': 'temperature',
+                '其他': 'other'
+            };
+
+            const severity = severityMap[params.seriesName] || '';
+            const category = categoryMap[params.name] || '';
+
+            // 构建筛选条件
+            const filter = {};
+            if (severity) filter.severity = severity;
+            if (category) filter.alertCategory = category;
+
+            // 弹出模态框展示数据
+            openAlertListModal(filter);
+        }
+    });
 }
 
 // 从数据库加载告警处理情况 (按分类堆叠柱状图)
@@ -809,6 +875,41 @@ function updateAlertHandleChart(data) {
         ]
     };
     alertHandleChart.setOption(option);
+
+    // 添加点击事件 - 弹出模态框展示对应数据
+    alertHandleChart.off('click'); // 移除旧的事件监听器
+    alertHandleChart.on('click', function(params) {
+        if (params.seriesName && params.name) {
+            // 根据系列名称映射到状态（与后端统计逻辑一致）
+            // 已处理：status = 'resolved'
+            // 未处理：status IN ('active', 'acknowledged')
+            const statusMap = {
+                '已处理': 'resolved',
+                '未处理': 'active,acknowledged'
+            };
+
+            // 根据分类名称映射到 device_type 字段值（与后端统计逻辑一致）
+            const deviceTypeMap = {
+                '服务器': 'server',
+                '网络': 'network',
+                '存储': 'storage',
+                '安全': 'security',
+                '应用': 'application',
+                '数据库': 'database'
+            };
+
+            const status = statusMap[params.seriesName] || '';
+            const deviceType = deviceTypeMap[params.name] || '';
+
+            // 构建筛选条件
+            const filter = {};
+            if (status) filter.status = status;
+            if (deviceType) filter.deviceType = deviceType;
+
+            // 弹出模态框展示数据
+            openAlertListModal(filter);
+        }
+    });
 }
 
 // 从数据库加载30天告警趋势 (折线图 - 过去实线/未来虚线)
@@ -1057,6 +1158,22 @@ function updateAlertRadialChart(data) {
         ]
     };
     alertRadialChart.setOption(option);
+
+    // 添加点击事件 - 根据点击的部分显示对应分类的告警
+    alertRadialChart.off('click'); // 移除旧的事件监听器
+    alertRadialChart.on('click', function(params) {
+        if (params.data && params.data.name) {
+            // 根据点击的部分映射到过滤条件
+            const filterMap = {
+                '本月告警': { timeRange: 'month', title: '本月告警' },
+                '已解决': { status: 'resolved,acknowledged', title: '已解决告警' },
+                '待处理': { status: 'active', title: '待处理告警' }
+            };
+
+            const filter = filterMap[params.data.name] || {};
+            openAlertListModal(filter);
+        }
+    });
 }
 
 // 从数据库加载告警列表数据
@@ -1927,7 +2044,10 @@ let ticketTrendRepairDetails = [];
 
 async function loadOpsMonitorData() {
     console.log('加载工单管理数据...');
-    
+
+    // 先加载工单类型映射（用于点击事件）
+    await loadTicketTypeKeys();
+
     try {
         const [kpiRes, statusRes, trendRes, sourceRes, slaRes] = await Promise.all([
             fetch('/api/bigscreen/workorder/kpi').then(r => r.json()),
@@ -2004,24 +2124,41 @@ function updateWorkorderKpi(data) {
     }
 }
 
+// 存储工单状态图表的原始数据用于点击事件
+let ticketStatusApiData = null;
+// 存储优先级key映射（用于点击事件）
+let ticketPriorityKeyMap = {};
+
 function initTicketStatusChart(apiData) {
     const chartDom = document.getElementById('ticketStatusChart');
     if (!chartDom) return;
-    
+
     if (ticketStatusChart) ticketStatusChart.dispose();
     ticketStatusChart = echarts.init(chartDom);
-    
-    let priorities, resolved, pending;
+
+    ticketStatusApiData = apiData; // 保存原始数据
+
+    let priorities, priorityKeys, resolved, pending;
     if (apiData) {
         priorities = apiData.priorities.slice().reverse();
+        priorityKeys = apiData.priorityKeys ? apiData.priorityKeys.slice().reverse() : [];
         resolved = apiData.resolved.slice().reverse();
         pending = apiData.pending.slice().reverse();
+        // 构建优先级标签到key的映射
+        ticketPriorityKeyMap = {};
+        for (let i = 0; i < priorities.length; i++) {
+            ticketPriorityKeyMap[priorities[i]] = priorityKeys[i] || priorities[i];
+        }
     } else {
         priorities = ['P4(低)', 'P3(中)', 'P2(高)', 'P1(紧急)'];
+        priorityKeys = ['low', 'medium', 'high', 'urgent'];
         resolved = [5, 6, 4, 2];
         pending = [2, 3, 3, 2];
+        ticketPriorityKeyMap = {
+            'P4(低)': 'low', 'P3(中)': 'medium', 'P2(高)': 'high', 'P1(紧急)': 'urgent'
+        };
     }
-    
+
     const option = {
         tooltip: {
             trigger: 'axis',
@@ -2029,7 +2166,15 @@ function initTicketStatusChart(apiData) {
             backgroundColor: 'rgba(15, 23, 42, 0.95)',
             confine: true,
             borderColor: 'rgba(59, 130, 246, 0.3)',
-            textStyle: { color: '#e0e6ed' }
+            textStyle: { color: '#e0e6ed' },
+            formatter: function(params) {
+                let html = `<div style="font-weight:600;margin-bottom:5px;">${params[0].axisValue}</div>`;
+                params.forEach(p => {
+                    html += `<div>${p.marker} ${p.seriesName}: ${p.value}条</div>`;
+                });
+                html += '<div style="color:#94a3b8;font-size:11px;margin-top:5px;">点击查看详情</div>';
+                return html;
+            }
         },
         grid: { left: '3%', right: '8%', bottom: '8%', top: '8%', containLabel: true },
         xAxis: {
@@ -2050,6 +2195,24 @@ function initTicketStatusChart(apiData) {
         ]
     };
     ticketStatusChart.setOption(option);
+
+    // 添加点击事件
+    ticketStatusChart.off('click');
+    ticketStatusChart.on('click', function(params) {
+        const priorityLabel = params.name; // 如 "P1(紧急)"
+        const status = params.seriesName === '已解决' ? 'resolved' : 'pending';
+        const count = params.value;
+        // 从优先级映射中获取正确的 priority_key
+        const priorityKey = ticketPriorityKeyMap[priorityLabel] || priorityLabel;
+        showWorkorderModal(priorityKey, priorityLabel, status, count);
+    });
+}
+
+// extractPriorityKey 函数已废弃，改用 ticketPriorityKeyMap
+function extractPriorityKey(label) {
+    // 格式如 "P1(紧急)" -> "P1"
+    const match = label.match(/^(P\d+)/);
+    return match ? match[1] : label;
 }
 
 function initTicketTrendChart(apiData) {
@@ -2115,16 +2278,34 @@ function initTicketTrendChart(apiData) {
     ticketTrendChart.setOption(option);
 }
 
+// 存储工单类型映射
+let ticketTypeKeyMap = {};
+
+// 加载工单类型key映射
+async function loadTicketTypeKeys() {
+    try {
+        const response = await fetch('/api/bigscreen/workorder/type-keys');
+        const result = await response.json();
+        if (result.code === 200 && result.data) {
+            result.data.forEach(item => {
+                ticketTypeKeyMap[item.type_name] = item.type_key;
+            });
+        }
+    } catch (error) {
+        console.error('加载工单类型映射失败:', error);
+    }
+}
+
 function initTicketSourceChart(apiData) {
     const chartDom = document.getElementById('ticketSourceChart');
     if (!chartDom) return;
-    
+
     if (ticketSourceChart) ticketSourceChart.dispose();
     ticketSourceChart = echarts.init(chartDom);
-    
+
     // 工单类型颜色配置（与运维管理模块一致）
     const typeColors = { '故障': '#ef4444', '变更': '#3b82f6', '维护': '#10b981', '服务请求': '#f59e0b' };
-    
+
     let sourceData;
     if (apiData && apiData.length > 0) {
         sourceData = apiData.map(item => ({ value: item.value || 0, name: item.name, itemStyle: { color: typeColors[item.name] || '#64748b' } }));
@@ -2136,11 +2317,18 @@ function initTicketSourceChart(apiData) {
             { value: 4, name: '服务请求', itemStyle: { color: '#f59e0b' } }
         ];
     }
-    
+
     const total = sourceData.reduce((sum, item) => sum + item.value, 0);
-    
+
     const option = {
-        tooltip: { trigger: 'item', backgroundColor: 'rgba(15, 23, 42, 0.95)', borderColor: 'rgba(59, 130, 246, 0.3)', textStyle: { color: '#e0e6ed' }, confine: true },
+        tooltip: {
+            trigger: 'item',
+            backgroundColor: 'rgba(15, 23, 42, 0.95)',
+            borderColor: 'rgba(59, 130, 246, 0.3)',
+            textStyle: { color: '#e0e6ed' },
+            confine: true,
+            formatter: '{b}: {c}条 ({d}%)<br/><span style="color:#94a3b8;font-size:11px;">点击查看详情</span>'
+        },
         legend: { orient: 'vertical', right: '5%', top: 'center', itemWidth: 12, itemHeight: 12, textStyle: { color: '#94a3b8', fontSize: 11 } },
         series: [{
             type: 'pie', radius: ['50%', '75%'], center: ['35%', '50%'], avoidLabelOverlap: false,
@@ -2151,6 +2339,153 @@ function initTicketSourceChart(apiData) {
         }]
     };
     ticketSourceChart.setOption(option);
+
+    // 添加点击事件
+    ticketSourceChart.off('click');
+    ticketSourceChart.on('click', function(params) {
+        const typeName = params.name;
+        const count = params.value;
+        const typeKey = ticketTypeKeyMap[typeName] || typeName;
+        showWorkorderTypeModal(typeKey, typeName, count);
+    });
+}
+
+// 显示工单模态框（按优先级和状态筛选）
+async function showWorkorderModal(priorityKey, priorityLabel, status, count) {
+    let modal = document.getElementById('workorderModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'workorderModal';
+        modal.className = 'workorder-modal-overlay';
+        modal.innerHTML = `
+            <div class="workorder-modal">
+                <div class="workorder-modal-header">
+                    <div class="modal-title">
+                        <i class="fas fa-clipboard-list"></i>
+                        <span id="workorderModalTitle">工单列表</span>
+                    </div>
+                    <button class="modal-close" onclick="closeWorkorderModal()">&times;</button>
+                </div>
+                <div class="workorder-modal-body">
+                    <div class="workorder-filter-info">
+                        <span id="workorderFilterInfo">加载中...</span>
+                    </div>
+                    <div class="workorder-table-container">
+                        <table class="workorder-table">
+                            <thead>
+                                <tr>
+                                    <th>工单编号</th>
+                                    <th>标题</th>
+                                    <th>优先级</th>
+                                    <th>类型</th>
+                                    <th>状态</th>
+                                    <th>创建时间</th>
+                                    <th>解决时间</th>
+                                    <th>处理人</th>
+                                </tr>
+                            </thead>
+                            <tbody id="workorderModalTableBody">
+                                <tr><td colspan="8" class="loading-cell">加载中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) closeWorkorderModal();
+        });
+    }
+
+    modal.style.display = 'flex';
+    const statusText = status === 'resolved' ? '已解决' : '待解决';
+    document.getElementById('workorderModalTitle').textContent = `今日工单 - ${priorityLabel} - ${statusText}`;
+    document.getElementById('workorderFilterInfo').textContent = `共 ${count} 条工单`;
+
+    try {
+        const response = await fetch(`/api/bigscreen/workorder/list?priorityKey=${priorityKey}&status=${status}`);
+        const result = await response.json();
+        const tbody = document.getElementById('workorderModalTableBody');
+
+        if (result.code === 200 && result.data && result.data.length > 0) {
+            tbody.innerHTML = result.data.map(item => `
+                <tr>
+                    <td>${item.ticketNo || '-'}</td>
+                    <td title="${item.description || ''}">${item.title || '-'}</td>
+                    <td><span class="priority-tag p${item.priorityLevel}">${item.priorityName || '-'}</span></td>
+                    <td>${item.typeName || '-'}</td>
+                    <td><span class="status-tag ${getWorkorderStatusClass(item.status)}">${item.statusText}</span></td>
+                    <td>${item.createdAt || '-'}</td>
+                    <td>${item.resolvedAt || '-'}</td>
+                    <td>${item.assignee || '-'}</td>
+                </tr>
+            `).join('');
+        } else {
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-cell">暂无数据</td></tr>';
+        }
+    } catch (error) {
+        console.error('加载工单列表失败:', error);
+        document.getElementById('workorderModalTableBody').innerHTML = '<tr><td colspan="8" class="error-cell">加载失败，请重试</td></tr>';
+    }
+}
+
+// 显示工单类型模态框
+async function showWorkorderTypeModal(typeKey, typeName, count) {
+    let modal = document.getElementById('workorderModal');
+    if (!modal) {
+        // 复用上面的模态框创建逻辑
+        await showWorkorderModal('', '', '', 0);
+        modal = document.getElementById('workorderModal');
+    }
+
+    modal.style.display = 'flex';
+    document.getElementById('workorderModalTitle').textContent = `今日工单 - ${typeName}`;
+    document.getElementById('workorderFilterInfo').textContent = `共 ${count} 条工单`;
+
+    try {
+        const response = await fetch(`/api/bigscreen/workorder/list?typeKey=${typeKey}`);
+        const result = await response.json();
+        const tbody = document.getElementById('workorderModalTableBody');
+
+        if (result.code === 200 && result.data && result.data.length > 0) {
+            tbody.innerHTML = result.data.map(item => `
+                <tr>
+                    <td>${item.ticketNo || '-'}</td>
+                    <td title="${item.description || ''}">${item.title || '-'}</td>
+                    <td><span class="priority-tag p${item.priorityLevel}">${item.priorityName || '-'}</span></td>
+                    <td>${item.typeName || '-'}</td>
+                    <td><span class="status-tag ${getWorkorderStatusClass(item.status)}">${item.statusText}</span></td>
+                    <td>${item.createdAt || '-'}</td>
+                    <td>${item.resolvedAt || '-'}</td>
+                    <td>${item.assignee || '-'}</td>
+                </tr>
+            `).join('');
+        } else {
+            tbody.innerHTML = '<tr><td colspan="8" class="empty-cell">暂无数据</td></tr>';
+        }
+    } catch (error) {
+        console.error('加载工单列表失败:', error);
+        document.getElementById('workorderModalTableBody').innerHTML = '<tr><td colspan="8" class="error-cell">加载失败，请重试</td></tr>';
+    }
+}
+
+// 关闭工单模态框
+function closeWorkorderModal() {
+    const modal = document.getElementById('workorderModal');
+    if (modal) modal.style.display = 'none';
+}
+
+// 获取工单状态样式类
+function getWorkorderStatusClass(status) {
+    if (!status) return '';
+    switch (status.toLowerCase()) {
+        case 'open': case 'pending': return 'pending';
+        case 'processing': case 'in_progress': return 'processing';
+        case 'resolved': case 'completed': return 'resolved';
+        case 'closed': return 'closed';
+        default: return '';
+    }
 }
 
 function loadSlaDetailTable(apiData) {
@@ -2596,6 +2931,203 @@ document.addEventListener('click', function(e) {
     const modal = document.getElementById('deviceTrafficModal');
     if (modal && e.target === modal) {
         closeDeviceTrafficModal();
+    }
+});
+
+// 告警列表模态框功能
+let currentAlertFilter = {}; // 当前的过滤条件
+
+// 打开告警列表模态框
+function openAlertListModal(filterParams) {
+    const modal = document.getElementById('alertListModal');
+    if (!modal) return;
+
+    // 保存过滤条件
+    currentAlertFilter = filterParams || {};
+
+    // 显示模态框
+    modal.style.display = 'flex';
+
+    // 更新标题和过滤信息
+    updateAlertModalTitle(filterParams);
+
+    // 加载告警数据
+    loadAlertListData(filterParams);
+}
+
+// 关闭告警列表模态框
+function closeAlertListModal() {
+    const modal = document.getElementById('alertListModal');
+    if (modal) modal.style.display = 'none';
+}
+
+// 更新模态框标题
+function updateAlertModalTitle(filterParams) {
+    const titleEl = document.getElementById('alertModalTitle');
+    const filterInfoEl = document.getElementById('alertFilterInfo');
+
+    let title = '告警列表';
+    let filterInfo = '显示所有告警';
+
+    if (filterParams) {
+        // 优先使用自定义标题
+        if (filterParams.title) {
+            title = filterParams.title;
+        }
+
+        if (filterParams.timeRange === 'month') {
+            filterInfo = '筛选条件：本月所有告警';
+        } else if (filterParams.severity) {
+            const severityMap = {
+                'critical': '紧急',
+                'warning': '警告',
+                'info': '信息'
+            };
+            if (!filterParams.title) {
+                title = `${severityMap[filterParams.severity] || filterParams.severity}告警`;
+            }
+            filterInfo = `筛选条件：严重级别 = ${severityMap[filterParams.severity] || filterParams.severity}`;
+        } else if (filterParams.status) {
+            const statusMap = {
+                'active': '待处理',
+                'resolved,acknowledged': '已解决',
+                'pending': '未处理',
+                'resolved': '已处理'
+            };
+            if (!filterParams.title) {
+                title = `${statusMap[filterParams.status] || filterParams.status}告警`;
+            }
+            filterInfo = `筛选条件：状态 = ${statusMap[filterParams.status] || filterParams.status}`;
+        }
+    }
+
+    if (titleEl) titleEl.textContent = title;
+    if (filterInfoEl) filterInfoEl.textContent = filterInfo;
+}
+
+// 从数据库加载告警数据
+async function loadAlertListData(filterParams) {
+    const tbody = document.getElementById('alertModalTableBody');
+    if (!tbody) return;
+
+    // 显示加载状态
+    tbody.innerHTML = '<tr><td colspan="5" class="loading-cell">加载中...</td></tr>';
+
+    try {
+        // 构建URL参数
+        const params = new URLSearchParams();
+        if (filterParams) {
+            if (filterParams.severity) params.append('severity', filterParams.severity);
+            if (filterParams.status) params.append('status', filterParams.status);
+            if (filterParams.alertCategory) params.append('alertCategory', filterParams.alertCategory);
+            if (filterParams.deviceType) params.append('deviceType', filterParams.deviceType);
+            if (filterParams.timeRange === 'month') {
+                // 本月告警：设置时间范围为本月
+                const now = new Date();
+                const firstDay = new Date(now.getFullYear(), now.getMonth(), 1);
+                const lastDay = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+                params.append('startTime', firstDay.toISOString().split('T')[0]);
+                params.append('endTime', lastDay.toISOString().split('T')[0]);
+            }
+        }
+
+        // 调用API获取数据
+        const response = await fetch(`/api/alert/list?${params.toString()}`);
+        const result = await response.json();
+
+        if (result.code === 200 && result.data) {
+            renderAlertTable(result.data);
+            updateAlertStats(result.data);
+        } else {
+            tbody.innerHTML = '<tr><td colspan="5" class="loading-cell">加载失败：' + (result.message || '未知错误') + '</td></tr>';
+        }
+    } catch (error) {
+        console.error('加载告警数据失败:', error);
+        tbody.innerHTML = '<tr><td colspan="5" class="loading-cell">加载失败，请稍后重试</td></tr>';
+    }
+}
+
+// 渲染告警表格
+function renderAlertTable(alerts) {
+    const tbody = document.getElementById('alertModalTableBody');
+    if (!tbody) return;
+
+    if (!alerts || alerts.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="5" class="loading-cell">暂无数据</td></tr>';
+        return;
+    }
+
+    const severityMap = {
+        'critical': { text: '紧急', class: 'critical' },
+        'warning': { text: '警告', class: 'warning' },
+        'info': { text: '信息', class: 'info' }
+    };
+
+    const html = alerts.map(alert => {
+        const severity = severityMap[alert.severity] || { text: alert.severity, class: '' };
+        const time = alert.occurred_time || alert.occurredTime || alert.create_time || alert.createTime || '-';
+        const deviceName = alert.device_name || alert.deviceName || '-';
+        const alertType = alert.alert_category || alert.alertCategory || alert.metric_name || alert.metricName || '-';
+        const description = alert.description || alert.message || '-';
+
+        return `
+            <tr>
+                <td>${time}</td>
+                <td>${deviceName}</td>
+                <td>${alertType}</td>
+                <td><span class="severity-badge ${severity.class}">${severity.text}</span></td>
+                <td>${description}</td>
+            </tr>
+        `;
+    }).join('');
+
+    tbody.innerHTML = html;
+}
+
+// 更新统计信息
+function updateAlertStats(alerts) {
+    const totalEl = document.getElementById('modalAlertTotal');
+    const criticalEl = document.getElementById('modalAlertCritical');
+    const warningEl = document.getElementById('modalAlertWarning');
+    const infoEl = document.getElementById('modalAlertInfo');
+
+    if (!alerts || alerts.length === 0) {
+        if (totalEl) totalEl.textContent = '0';
+        if (criticalEl) criticalEl.textContent = '0';
+        if (warningEl) warningEl.textContent = '0';
+        if (infoEl) infoEl.textContent = '0';
+        return;
+    }
+
+    const total = alerts.length;
+    // 统计各级别告警数量（兼容驼峰和下划线命名）
+    const critical = alerts.filter(a => (a.severity || a.Severity) === 'critical').length;
+    const warning = alerts.filter(a => (a.severity || a.Severity) === 'warning').length;
+    const info = alerts.filter(a => (a.severity || a.Severity) === 'info').length;
+
+    if (totalEl) totalEl.textContent = total;
+    if (criticalEl) criticalEl.textContent = critical;
+    if (warningEl) warningEl.textContent = warning;
+    if (infoEl) infoEl.textContent = info;
+}
+
+// 查看全部告警（跳转到告警中心）
+function viewAllAlerts() {
+    const params = new URLSearchParams();
+    if (currentAlertFilter.severity) {
+        params.append('severity', currentAlertFilter.severity);
+    }
+    if (currentAlertFilter.status) {
+        params.append('status', currentAlertFilter.status);
+    }
+    window.location.href = `告警中心.html?${params.toString()}`;
+}
+
+// 点击模态框外部关闭
+document.addEventListener('click', function(e) {
+    const modal = document.getElementById('alertListModal');
+    if (modal && e.target === modal) {
+        closeAlertListModal();
     }
 });
 
@@ -4511,7 +5043,18 @@ function initCharts() {
             itemStyle: { borderRadius: [0, 4, 4, 0] }
         }]
     });
-    
+
+    // 设备类型统计图表点击事件 - 点击柱状图显示对应分类的设备列表
+    deviceTypeChart.on('click', function(params) {
+        if (params.name && deviceTypeData) {
+            const category = deviceTypeData.find(d => d.name === params.name);
+            if (category) {
+                // 显示该分类下的全部设备
+                showDeviceListModal(category.id, category.name, 'all', '全部设备');
+            }
+        }
+    });
+
     // 加载设备类型统计数据
     loadDeviceTypeStats();
 
@@ -4605,7 +5148,11 @@ function initCharts() {
     alertRadarChart = echarts.init(document.getElementById('alertRadarChart'));
     alertRadarChart.setOption({
         tooltip: {
-            show: false
+            show: true,
+            trigger: 'item',
+            backgroundColor: 'rgba(15, 23, 42, 0.9)',
+            borderColor: 'rgba(59, 130, 246, 0.3)',
+            textStyle: { color: '#e0e6ed' }
         },
         radar: {
             indicator: [
@@ -4618,10 +5165,10 @@ function initCharts() {
             center: ['50%', '52%'],
             radius: '70%',
             axisName: { color: '#64748b', fontSize: 9 },
-            splitArea: { 
-                areaStyle: { 
+            splitArea: {
+                areaStyle: {
                     color: ['rgba(59, 130, 246, 0.02)', 'rgba(59, 130, 246, 0.05)', 'rgba(59, 130, 246, 0.08)', 'rgba(59, 130, 246, 0.1)']
-                } 
+                }
             },
             axisLine: { lineStyle: { color: 'rgba(59, 130, 246, 0.2)' } },
             splitLine: { lineStyle: { color: 'rgba(59, 130, 246, 0.15)' } }
@@ -4632,7 +5179,7 @@ function initCharts() {
                 {
                     value: [75, 55, 45, 35, 65],
                     name: '告警分布',
-                    areaStyle: { 
+                    areaStyle: {
                         color: new echarts.graphic.RadialGradient(0.5, 0.5, 1, [
                             { offset: 0, color: 'rgba(139, 92, 246, 0.5)' },
                             { offset: 1, color: 'rgba(59, 130, 246, 0.2)' }
@@ -4758,34 +5305,43 @@ function updateTrendChart(data) {
     });
 }
 
+// 存储设备类型数据（用于点击事件）
+let deviceTypeData = null;
+
 // 加载设备类型统计数据
 async function loadDeviceTypeStats() {
     const contextPath = window.contextPath || '/api';
-    
+
     try {
         const response = await fetch(`${contextPath}/asset-category/device-stats`);
         if (response.ok) {
             const result = await response.json();
             if (result.code === 200 && result.data) {
+                deviceTypeData = result.data;
                 updateDeviceTypeChart(result.data);
                 return;
             }
         }
         // 如果API失败，使用默认数据
-        updateDeviceTypeChart(getDefaultDeviceTypeData());
+        const defaultData = getDefaultDeviceTypeData();
+        deviceTypeData = defaultData;
+        updateDeviceTypeChart(defaultData);
     } catch (e) {
         console.log('设备类型统计加载失败，使用默认数据', e);
-        updateDeviceTypeChart(getDefaultDeviceTypeData());
+        const defaultData = getDefaultDeviceTypeData();
+        deviceTypeData = defaultData;
+        updateDeviceTypeChart(defaultData);
     }
 }
 
 // 获取默认设备类型数据
 function getDefaultDeviceTypeData() {
     return [
-        { name: '视频管理', count: 11 },
-        { name: '服务器', count: 8 },
-        { name: '网络设备', count: 7 },
-        { name: '存储设备', count: 2 }
+        { id: 4, name: '视频管理', count: 11 },
+        { id: 1, name: '服务器', count: 8 },
+        { id: 2, name: '网络设备', count: 7 },
+        { id: 3, name: '存储设备', count: 2 },
+        { id: 23, name: '云平台', count: 32 }
     ];
 }
 
@@ -4942,15 +5498,13 @@ async function showDeviceListModal(categoryId, categoryName, statusFilter = 'all
     modal.style.display = 'flex';
     
     try {
-        // 添加状态过滤参数
+        // 添加状态过滤参数，使用带认证的 fetch 请求
+        // fetchWithAuth 直接返回 JSON 解析后的数据
         const url = `${contextPath}/asset-category/${categoryId}/devices?status=${statusFilter}`;
-        const response = await fetch(url);
-        if (response.ok) {
-            const result = await response.json();
-            if (result.code === 200 && result.data) {
-                renderDeviceTable(result.data);
-                return;
-            }
+        const result = await fetchWithAuth(url);
+        if (result.code === 200 && result.data) {
+            renderModalDeviceTable(result.data);
+            return;
         }
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:#ef4444;">加载失败</td></tr>';
     } catch (e) {
@@ -4959,15 +5513,15 @@ async function showDeviceListModal(categoryId, categoryName, statusFilter = 'all
     }
 }
 
-// 渲染设备表格
-function renderDeviceTable(devices) {
+// 渲染模态框设备表格
+function renderModalDeviceTable(devices) {
     const tbody = document.getElementById('deviceModalTableBody');
-    
+
     if (!devices || devices.length === 0) {
         tbody.innerHTML = '<tr><td colspan="5" style="text-align:center;padding:30px;color:#94a3b8;">暂无设备</td></tr>';
         return;
     }
-    
+
     tbody.innerHTML = devices.map(device => {
         const statusClass = getStatusClass(device.status);
         const statusText = getStatusText(device.status);
@@ -5120,6 +5674,75 @@ function updateAlertStats(data) {
 
 // 设备列表数据缓存
 let deviceListCache = [];
+let deviceListFilteredCache = []; // 过滤后的设备列表
+
+// 初始化设备搜索功能
+function initDeviceSearch() {
+    const searchIcon = document.getElementById('deviceSearchIcon');
+    const searchInput = document.getElementById('deviceSearchInput');
+
+    if (!searchIcon || !searchInput) return;
+
+    // 点击搜索图标切换搜索框显示/隐藏
+    searchIcon.addEventListener('click', function(e) {
+        e.stopPropagation();
+        const isVisible = searchInput.classList.contains('show');
+
+        if (isVisible) {
+            // 隐藏搜索框
+            searchInput.classList.remove('show');
+            searchInput.value = '';
+            // 恢复显示所有设备
+            filterDeviceList('');
+        } else {
+            // 显示搜索框并聚焦
+            searchInput.classList.add('show');
+            setTimeout(() => searchInput.focus(), 300);
+        }
+    });
+
+    // 搜索输入事件
+    searchInput.addEventListener('input', function() {
+        filterDeviceList(this.value);
+    });
+
+    // 点击其他地方时隐藏搜索框
+    document.addEventListener('click', function(e) {
+        if (!searchInput.contains(e.target) && !searchIcon.contains(e.target)) {
+            if (searchInput.classList.contains('show') && searchInput.value === '') {
+                searchInput.classList.remove('show');
+            }
+        }
+    });
+
+    // 阻止搜索框点击事件冒泡
+    searchInput.addEventListener('click', function(e) {
+        e.stopPropagation();
+    });
+}
+
+// 过滤设备列表
+function filterDeviceList(keyword) {
+    if (!keyword || keyword.trim() === '') {
+        // 没有关键词，显示所有设备
+        deviceListFilteredCache = deviceListCache;
+    } else {
+        // 根据关键词过滤设备
+        const lowerKeyword = keyword.toLowerCase().trim();
+        deviceListFilteredCache = deviceListCache.filter(device => {
+            const name = (device.assetName || device.deviceName || '').toLowerCase();
+            const ip = (device.ipAddress || '').toLowerCase();
+            const status = (device.assetStatus || '').toLowerCase();
+
+            return name.includes(lowerKeyword) ||
+                   ip.includes(lowerKeyword) ||
+                   status.includes(lowerKeyword);
+        });
+    }
+
+    // 重新渲染设备表格
+    renderDeviceTable(deviceListFilteredCache);
+}
 
 // 更新设备列表 - 从API获取数据
 function updateDeviceTable() {
@@ -5128,7 +5751,8 @@ function updateDeviceTable() {
         .then(result => {
             if (result.code === 200 && result.data) {
                 deviceListCache = result.data.slice(0, 10); // 只显示前10个
-                renderDeviceTable(deviceListCache);
+                deviceListFilteredCache = deviceListCache; // 初始化过滤缓存
+                renderDeviceTable(deviceListFilteredCache);
             } else {
                 console.error('获取设备列表失败:', result.message);
                 renderDeviceTableFallback();
@@ -5195,7 +5819,7 @@ function renderDeviceTable(devices) {
 
 // 显示设备详情
 function showDeviceDetail(index) {
-    const device = deviceListCache[index];
+    const device = deviceListFilteredCache[index];
     if (!device) return;
     
     // 更新选中行样式
@@ -5378,28 +6002,79 @@ async function loadPredictionModels() {
     }
 }
 
+// 切换自定义日期范围显示
+function toggleCustomDateRange() {
+    const timeRange = document.getElementById('predTimeRange').value;
+    const customDateRange = document.getElementById('customDateRange');
+    const customDateRangeEnd = document.getElementById('customDateRangeEnd');
+
+    if (timeRange === 'custom') {
+        customDateRange.style.display = 'block';
+        customDateRangeEnd.style.display = 'block';
+
+        // 设置默认日期（今天和7天前）
+        const today = new Date();
+        const sevenDaysAgo = new Date(today);
+        sevenDaysAgo.setDate(today.getDate() - 7);
+
+        document.getElementById('predEndDate').value = today.toISOString().split('T')[0];
+        document.getElementById('predStartDate').value = sevenDaysAgo.toISOString().split('T')[0];
+    } else {
+        customDateRange.style.display = 'none';
+        customDateRangeEnd.style.display = 'none';
+    }
+}
+
 // 应用筛选器
 function applyPredictionFilters() {
     const predType = document.getElementById('predType').value;
     const predPeriod = document.getElementById('predPeriod').value;
-    
+    const timeRange = document.getElementById('predTimeRange').value;
+
+    // 计算天数
+    let days;
+    let customDates = null;
+    if (timeRange === 'custom') {
+        const startDate = document.getElementById('predStartDate').value;
+        const endDate = document.getElementById('predEndDate').value;
+        const start = new Date(startDate);
+        const end = new Date(endDate);
+        days = Math.ceil((end - start) / (1000 * 60 * 60 * 24));
+        if (days <= 0) {
+            alert('结束日期必须大于开始日期');
+            return;
+        }
+        customDates = { startDate, endDate };
+    } else {
+        days = parseInt(timeRange);
+    }
+
     // 更新标签
     const typeLabels = { cpu: 'CPU', memory: '内存', storage: '存储', network: '网络', alert: '告警' };
     const typeLabel = typeLabels[predType] || 'CPU';
-    
+
     document.getElementById('predTypeLabel').textContent = typeLabel;
     document.getElementById('predTypeLabel2').textContent = typeLabel;
     document.getElementById('predTypeLabel3').textContent = typeLabel;
     document.getElementById('predPeriodLabel').textContent = predPeriod;
-    
+
     // 重新加载图表数据
-    loadPredictionPageData();
+    loadHistoryPredictionData(predType, days, customDates);
+    loadAccuracyHeatmapData(predType, days);
+    loadPredictionKpi(predType);
+    loadErrorTrendData(predType, days);
+    loadAlertDistributionData();
+    loadFuturePredictionData(predType, parseInt(predPeriod));
 }
 
 // 加载历史与预测对比数据
-async function loadHistoryPredictionData(metricType, days) {
+async function loadHistoryPredictionData(metricType, days, customDates = null) {
     try {
-        const response = await fetch(`/api/bigscreen/prediction/history-comparison?metricType=${metricType}&days=${days}`);
+        let url = `/api/bigscreen/prediction/history-comparison?metricType=${metricType}&days=${days}`;
+        if (customDates) {
+            url += `&startDate=${customDates.startDate}&endDate=${customDates.endDate}`;
+        }
+        const response = await fetch(url);
         const result = await response.json();
         if (result.code === 200 && result.data) {
             initHistoryPredictionChart(result.data.dates, result.data.historyData, result.data.predictionData);
@@ -5835,34 +6510,39 @@ async function loadAlertDistributionData() {
     }
 }
 
+// 预警分布环形图 - 存储原始数据用于点击事件
+let predictionAlertData = [];
+
 // 预警分布环形图
 function initAlertDistributionChart(apiData) {
     const chartDom = document.getElementById('alertDistributionChart');
     if (!chartDom) return;
-    
+
     if (alertDistributionChart) {
         alertDistributionChart.dispose();
     }
     alertDistributionChart = echarts.init(chartDom);
-    
+
     let data;
     if (apiData && apiData.length > 0) {
+        predictionAlertData = apiData; // 保存原始数据
         data = apiData.map(item => ({
             value: item.value,
             name: item.name,
+            level: item.level,
             itemStyle: { color: item.color }
         }));
     } else {
+        predictionAlertData = [];
         data = [
-            { value: 30, name: '信息', itemStyle: { color: '#3b82f6' } },
-            { value: 60, name: '警告', itemStyle: { color: '#f59e0b' } },
-            { value: 45, name: '严重', itemStyle: { color: '#ef4444' } },
-            { value: 15, name: '其他', itemStyle: { color: '#64748b' } }
+            { value: 5, name: '严重', level: 'HIGH', itemStyle: { color: '#ef4444' } },
+            { value: 6, name: '警告', level: 'MEDIUM', itemStyle: { color: '#f59e0b' } },
+            { value: 5, name: '信息', level: 'LOW', itemStyle: { color: '#3b82f6' } }
         ];
     }
-    
+
     const total = data.reduce((sum, item) => sum + item.value, 0);
-    
+
     const option = {
         tooltip: {
             trigger: 'item',
@@ -5870,7 +6550,7 @@ function initAlertDistributionChart(apiData) {
             borderColor: 'rgba(59, 130, 246, 0.5)',
             confine: true,
             textStyle: { color: '#e0e6ed' },
-            formatter: '{b}: {c}条 ({d}%)'
+            formatter: '{b}: {c}条 ({d}%)<br/><span style="color:#94a3b8;font-size:12px;">点击查看详情</span>'
         },
         legend: {
             orient: 'vertical',
@@ -5912,8 +6592,148 @@ function initAlertDistributionChart(apiData) {
             }
         }]
     };
-    
+
     alertDistributionChart.setOption(option);
+
+    // 添加点击事件
+    alertDistributionChart.off('click');
+    alertDistributionChart.on('click', function(params) {
+        if (params.data && params.data.level) {
+            showPredictionAlertModal(params.data.level, params.data.name, params.data.value);
+        }
+    });
+}
+
+// 显示预测性预警模态框
+async function showPredictionAlertModal(level, levelName, count) {
+    // 创建模态框（如果不存在）
+    let modal = document.getElementById('predictionAlertModal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'predictionAlertModal';
+        modal.className = 'prediction-alert-modal-overlay';
+        modal.innerHTML = `
+            <div class="prediction-alert-modal">
+                <div class="prediction-alert-modal-header">
+                    <div class="modal-title">
+                        <i class="fas fa-brain"></i>
+                        <span id="predictionAlertModalTitle">预测性预警列表</span>
+                    </div>
+                    <button class="modal-close" onclick="closePredictionAlertModal()">&times;</button>
+                </div>
+                <div class="prediction-alert-modal-body">
+                    <div class="prediction-alert-filter-info">
+                        <span id="predictionAlertFilterInfo">加载中...</span>
+                    </div>
+                    <div class="prediction-alert-table-container">
+                        <table class="prediction-alert-table">
+                            <thead>
+                                <tr>
+                                    <th>预警标题</th>
+                                    <th>资产名称</th>
+                                    <th>指标</th>
+                                    <th>当前值</th>
+                                    <th>预测值</th>
+                                    <th>阈值</th>
+                                    <th>预测时间</th>
+                                    <th>风险评分</th>
+                                    <th>置信度</th>
+                                    <th>状态</th>
+                                </tr>
+                            </thead>
+                            <tbody id="predictionAlertModalTableBody">
+                                <tr><td colspan="10" class="loading-cell">加载中...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+
+        // 点击遮罩层关闭
+        modal.addEventListener('click', function(e) {
+            if (e.target === modal) {
+                closePredictionAlertModal();
+            }
+        });
+    }
+
+    // 显示模态框
+    modal.style.display = 'flex';
+
+    // 更新标题和筛选信息
+    document.getElementById('predictionAlertModalTitle').textContent = `预测性预警列表 - ${levelName}`;
+    document.getElementById('predictionAlertFilterInfo').textContent = `共 ${count} 条${levelName}级别预警`;
+
+    // 加载数据
+    try {
+        const response = await fetch(`/api/bigscreen/prediction/alert-list?level=${level}`);
+        const result = await response.json();
+
+        const tbody = document.getElementById('predictionAlertModalTableBody');
+
+        if (result.code === 200 && result.data && result.data.length > 0) {
+            tbody.innerHTML = result.data.map(item => `
+                <tr>
+                    <td title="${item.message}">${item.title}</td>
+                    <td>${item.assetName || '-'}</td>
+                    <td>${item.metricName || '-'}</td>
+                    <td>${item.metricValue || '-'}</td>
+                    <td class="predicted-value">${item.predictedValue || '-'}</td>
+                    <td>${item.threshold || '-'}</td>
+                    <td>${item.predictedAt || '-'}<br/><small>未来${item.predictionDays}天</small></td>
+                    <td><span class="risk-score ${getRiskScoreClass(item.riskScore)}">${item.riskScore || '-'}</span></td>
+                    <td>${item.confidence ? item.confidence + '%' : '-'}</td>
+                    <td><span class="status-tag ${getStatusClass(item.status)}">${getStatusText(item.status)}</span></td>
+                </tr>
+            `).join('');
+        } else {
+            tbody.innerHTML = '<tr><td colspan="10" class="empty-cell">暂无数据</td></tr>';
+        }
+    } catch (error) {
+        console.error('加载预测性预警列表失败:', error);
+        document.getElementById('predictionAlertModalTableBody').innerHTML =
+            '<tr><td colspan="10" class="error-cell">加载失败，请重试</td></tr>';
+    }
+}
+
+// 关闭预测性预警模态框
+function closePredictionAlertModal() {
+    const modal = document.getElementById('predictionAlertModal');
+    if (modal) {
+        modal.style.display = 'none';
+    }
+}
+
+// 获取风险评分样式类
+function getRiskScoreClass(score) {
+    if (!score) return '';
+    if (score >= 80) return 'high';
+    if (score >= 50) return 'medium';
+    return 'low';
+}
+
+// 获取状态样式类
+function getStatusClass(status) {
+    switch (status) {
+        case 'PENDING': return 'pending';
+        case 'PROCESSING': return 'processing';
+        case 'RESOLVED': return 'resolved';
+        case 'IGNORED': return 'ignored';
+        default: return '';
+    }
+}
+
+// 获取状态文本
+function getStatusText(status) {
+    switch (status) {
+        case 'PENDING': return '待处理';
+        case 'PROCESSING': return '处理中';
+        case 'RESOLVED': return '已解决';
+        case 'IGNORED': return '已忽略';
+        default: return status || '-';
+    }
 }
 
 // 加载未来预测数据

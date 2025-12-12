@@ -81,7 +81,7 @@ captcha:
 
 # 文件上传配置
 file:
-  upload-path: ./upload/
+  upload-path: E:/AI-project2/AI-project2/upload/
   max-size: 10485760  # 10MB
 
 # Swagger配置

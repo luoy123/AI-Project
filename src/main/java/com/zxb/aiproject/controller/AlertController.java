@@ -27,9 +27,13 @@ public class AlertController {
     public Result<List< Alert>> getAlerts(@RequestParam(required = false) String severity,
                                           @RequestParam(required = false) String status,
                                           @RequestParam(required = false) String deviceType,
-                                          @RequestParam(required = false) String keyword){
-        log.info("获取告警列表，参数：severity={},status={},deviceType={},keyword={}",severity,status,deviceType,keyword);
-        return Result.success(alertService.filterAlerts(severity,status,deviceType,keyword));
+                                          @RequestParam(required = false) String keyword,
+                                          @RequestParam(required = false) String alertCategory,
+                                          @RequestParam(required = false) String startTime,
+                                          @RequestParam(required = false) String endTime){
+        log.info("获取告警列表，参数：severity={},status={},deviceType={},keyword={},alertCategory={},startTime={},endTime={}",
+                severity,status,deviceType,keyword,alertCategory,startTime,endTime);
+        return Result.success(alertService.filterAlerts(severity,status,deviceType,keyword,alertCategory,startTime,endTime));
 
     }
 

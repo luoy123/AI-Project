@@ -34,4 +34,9 @@ public interface CloudHostService extends IService<CloudHost> {
      * 重启云主机
      */
     boolean rebootHost(Long id);
+
+    /**
+     * 获取概览统计数据
+     */
+    java.util.Map<String, Object> getOverviewStats(String provider);
 }

@@ -44,8 +44,6 @@ logs/
 *.log
 server.log
 
-### Upload Files ###
-upload/
 
 ### Test Files ###
 test-*.png

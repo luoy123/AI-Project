@@ -1022,9 +1022,9 @@ function editRoleInline(roleId) {
                     document.getElementById('editRoleId').value = role.id;
                     document.getElementById('editRoleName').value = role.roleName;
                     document.getElementById('editRoleCode').value = role.roleCode;
-                    document.getElementById('editRoleDesc').value = role.roleDesc || '';
+                    document.getElementById('editRoleDesc').value = role.description || '';
                     document.getElementById('editRoleStatus').value = role.status;
-                    document.getElementById('editRoleSort').value = role.sort || 0;
+                    document.getElementById('editRoleSort').value = role.sortOrder || 0;
                     
                     // 显示模态框
                     document.getElementById('editRoleModal').style.display = 'flex';
@@ -1069,9 +1069,9 @@ function saveEditRole() {
         id: roleId,
         roleName: roleName,
         roleCode: roleCode,
-        roleDesc: roleDesc,
+        description: roleDesc,
         status: parseInt(status),
-        sort: parseInt(sort)
+        sortOrder: parseInt(sort)
     };
     
     fetch(`/api/role/update`, {
@@ -1195,9 +1195,9 @@ function saveAddRole() {
     const roleData = {
         roleName: roleName,
         roleCode: roleCode,
-        roleDesc: roleDesc,
+        description: roleDesc,
         status: parseInt(status),
-        sort: parseInt(sort)
+        sortOrder: parseInt(sort)
     };
     
     fetch(`/api/role/add`, {

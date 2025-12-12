@@ -181,13 +181,69 @@ public class CloudPlatformController {
     }
     
     /**
-     * 获取概览统计数据
+     * 获取概览统计数据（虚拟机 + 云主机）
      */
     @GetMapping("/overview/{provider}")
     public Map<String, Object> getOverview(@PathVariable String provider) {
         Map<String, Object> result = new HashMap<>();
         try {
-            Map<String, Object> stats = vmService.getOverviewStats(provider);
+            // 获取虚拟机统计
+            Map<String, Object> vmStats = vmService.getOverviewStats(provider);
+            System.out.println("虚拟机统计: " + vmStats);
+
+            // 获取云主机统计
+            Map<String, Object> hostStats = hostService.getOverviewStats(provider);
+            System.out.println("云主机统计: " + hostStats);
+
+            // 合并统计数据
+            Map<String, Object> stats = new HashMap<>();
+
+            // 总实例数 = 虚拟机数 + 云主机数
+            Object vmCountObj = vmStats.get("totalCount");
+            Object hostCountObj = hostStats.get("totalCount");
+            long vmCount = vmCountObj != null ? ((Number) vmCountObj).longValue() : 0L;
+            long hostCount = hostCountObj != null ? ((Number) hostCountObj).longValue() : 0L;
+            System.out.println("虚拟机数量: " + vmCount + ", 云主机数量: " + hostCount + ", 总数: " + (vmCount + hostCount));
+            stats.put("totalCount", vmCount + hostCount);
+
+            // 运行中实例数 = 虚拟机运行中 + 云主机运行中
+            Object vmRunningObj = vmStats.get("runningCount");
+            Object hostRunningObj = hostStats.get("runningCount");
+            long vmRunning = vmRunningObj != null ? ((Number) vmRunningObj).longValue() : 0L;
+            long hostRunning = hostRunningObj != null ? ((Number) hostRunningObj).longValue() : 0L;
+            stats.put("runningCount", vmRunning + hostRunning);
+
+            // 已停止实例数
+            Object vmStoppedObj = vmStats.get("stoppedCount");
+            Object hostStoppedObj = hostStats.get("stoppedCount");
+            long vmStopped = vmStoppedObj != null ? ((Number) vmStoppedObj).longValue() : 0L;
+            long hostStopped = hostStoppedObj != null ? ((Number) hostStoppedObj).longValue() : 0L;
+            stats.put("stoppedCount", vmStopped + hostStopped);
+
+            // 异常实例数
+            Object vmErrorObj = vmStats.get("errorCount");
+            Object hostErrorObj = hostStats.get("errorCount");
+            long vmError = vmErrorObj != null ? ((Number) vmErrorObj).longValue() : 0L;
+            long hostError = hostErrorObj != null ? ((Number) hostErrorObj).longValue() : 0L;
+            stats.put("errorCount", vmError + hostError);
+
+            // CPU总核数 = 虚拟机CPU + 云主机CPU
+            Object vmCpuObj = vmStats.get("totalCpu");
+            Object hostCpuObj = hostStats.get("totalCpu");
+            int vmCpu = vmCpuObj != null ? ((Number) vmCpuObj).intValue() : 0;
+            int hostCpu = hostCpuObj != null ? ((Number) hostCpuObj).intValue() : 0;
+            stats.put("totalCpu", vmCpu + hostCpu);
+
+            // 内存总量 = 虚拟机内存 + 云主机内存
+            Object vmMemoryObj = vmStats.get("totalMemory");
+            Object hostMemoryObj = hostStats.get("totalMemory");
+            int vmMemory = vmMemoryObj != null ? ((Number) vmMemoryObj).intValue() : 0;
+            int hostMemory = hostMemoryObj != null ? ((Number) hostMemoryObj).intValue() : 0;
+            stats.put("totalMemory", vmMemory + hostMemory);
+
+            // 存储总量（只统计虚拟机的磁盘）
+            stats.put("totalStorage", vmStats.getOrDefault("totalStorage", 0));
+
             result.put("code", 200);
             result.put("message", "获取成功");
             result.put("data", stats);
@@ -232,6 +288,28 @@ public class CloudPlatformController {
         return result;
     }
     
+    /**
+     * 创建云主机
+     */
+    @PostMapping("/host/create")
+    public Map<String, Object> createHost(@RequestBody CloudHost host) {
+        Map<String, Object> result = new HashMap<>();
+        try {
+            boolean success = hostService.createHost(host);
+            if (success) {
+                result.put("code", 200);
+                result.put("message", "创建成功");
+            } else {
+                result.put("code", 500);
+                result.put("message", "创建失败");
+            }
+        } catch (Exception e) {
+            result.put("code", 500);
+            result.put("message", "创建失败: " + e.getMessage());
+        }
+        return result;
+    }
+
     /**
      * 获取云主机详情
      */

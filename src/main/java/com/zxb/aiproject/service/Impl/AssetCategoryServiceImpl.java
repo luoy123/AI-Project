@@ -2,8 +2,14 @@ package com.zxb.aiproject.service.Impl;
 
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.zxb.aiproject.entity.AssetCategory;
+import com.zxb.aiproject.entity.CloudHost;
+import com.zxb.aiproject.entity.CloudVirtualMachine;
+import com.zxb.aiproject.entity.CloudStorage;
 import com.zxb.aiproject.mapper.AssetCategoryMapper;
 import com.zxb.aiproject.mapper.AssetMapper;
+import com.zxb.aiproject.mapper.CloudHostMapper;
+import com.zxb.aiproject.mapper.CloudVirtualMachineMapper;
+import com.zxb.aiproject.mapper.CloudStorageMapper;
 import com.zxb.aiproject.service.AssetCategoryService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -23,6 +29,15 @@ public class AssetCategoryServiceImpl implements AssetCategoryService {
 
     @Autowired
     private AssetMapper assetMapper;
+
+    @Autowired
+    private CloudHostMapper cloudHostMapper;
+
+    @Autowired
+    private CloudVirtualMachineMapper cloudVirtualMachineMapper;
+
+    @Autowired
+    private CloudStorageMapper cloudStorageMapper;
 
     @Override
     public List<AssetCategory> getTopLevelCategories() {
@@ -420,19 +435,36 @@ public class AssetCategoryServiceImpl implements AssetCategoryService {
                 stat.put("color", parent.getColor());
                 stat.put("icon", parent.getIcon());
 
-                // 获取该大类下的所有小类ID
-                QueryWrapper<AssetCategory> childQuery = new QueryWrapper<>();
-                childQuery.eq("deleted", 0);
-                childQuery.eq("parent_id", parent.getId());
-                List<AssetCategory> children = assetCategoryMapper.selectList(childQuery);
-
-                // 统计所有小类下的设备总数
                 long totalCount = 0;
-                for (AssetCategory child : children) {
-                    QueryWrapper<com.zxb.aiproject.entity.Asset> assetQuery = new QueryWrapper<>();
-                    assetQuery.eq("category_id", child.getId());
-                    assetQuery.eq("deleted", 0);
-                    totalCount += assetMapper.selectCount(assetQuery);
+
+                // 云平台特殊处理（category_id = 23）
+                if (parent.getId() != null && parent.getId() == 23L) {
+                    // 统计云主机数量
+                    QueryWrapper<CloudHost> hostQuery = new QueryWrapper<>();
+                    totalCount += cloudHostMapper.selectCount(hostQuery);
+
+                    // 统计虚拟机数量
+                    QueryWrapper<CloudVirtualMachine> vmQuery = new QueryWrapper<>();
+                    totalCount += cloudVirtualMachineMapper.selectCount(vmQuery);
+
+                    // 统计云存储数量
+                    QueryWrapper<CloudStorage> storageQuery = new QueryWrapper<>();
+                    totalCount += cloudStorageMapper.selectCount(storageQuery);
+                } else {
+                    // 其他分类从asset表统计
+                    // 获取该大类下的所有小类ID
+                    QueryWrapper<AssetCategory> childQuery = new QueryWrapper<>();
+                    childQuery.eq("deleted", 0);
+                    childQuery.eq("parent_id", parent.getId());
+                    List<AssetCategory> children = assetCategoryMapper.selectList(childQuery);
+
+                    // 统计所有小类下的设备总数
+                    for (AssetCategory child : children) {
+                        QueryWrapper<com.zxb.aiproject.entity.Asset> assetQuery = new QueryWrapper<>();
+                        assetQuery.eq("category_id", child.getId());
+                        assetQuery.eq("deleted", 0);
+                        totalCount += assetMapper.selectCount(assetQuery);
+                    }
                 }
 
                 stat.put("count", totalCount);
@@ -471,30 +503,60 @@ public class AssetCategoryServiceImpl implements AssetCategoryService {
                 stat.put("id", parent.getId());
                 stat.put("name", parent.getCategoryName());
 
-                // 获取该大类下的所有小类ID
-                QueryWrapper<AssetCategory> childQuery = new QueryWrapper<>();
-                childQuery.eq("deleted", 0);
-                childQuery.eq("parent_id", parent.getId());
-                List<AssetCategory> children = assetCategoryMapper.selectList(childQuery);
-
-                // 统计在线和离线设备数量
                 long onlineCount = 0;
                 long offlineCount = 0;
 
-                for (AssetCategory child : children) {
-                    // 在线设备（asset_status = 'online' 或 'running'）
-                    QueryWrapper<com.zxb.aiproject.entity.Asset> onlineQuery = new QueryWrapper<>();
-                    onlineQuery.eq("category_id", child.getId());
-                    onlineQuery.eq("deleted", 0);
-                    onlineQuery.in("asset_status", "online", "running");
-                    onlineCount += assetMapper.selectCount(onlineQuery);
+                // 云平台特殊处理（category_id = 23）
+                if (parent.getId() != null && parent.getId() == 23L) {
+                    // 云主机在线（running）/离线
+                    QueryWrapper<CloudHost> hostOnlineQuery = new QueryWrapper<>();
+                    hostOnlineQuery.eq("status", "running");
+                    onlineCount += cloudHostMapper.selectCount(hostOnlineQuery);
 
-                    // 离线设备（其他状态）
-                    QueryWrapper<com.zxb.aiproject.entity.Asset> offlineQuery = new QueryWrapper<>();
-                    offlineQuery.eq("category_id", child.getId());
-                    offlineQuery.eq("deleted", 0);
-                    offlineQuery.notIn("asset_status", "online", "running");
-                    offlineCount += assetMapper.selectCount(offlineQuery);
+                    QueryWrapper<CloudHost> hostOfflineQuery = new QueryWrapper<>();
+                    hostOfflineQuery.ne("status", "running");
+                    offlineCount += cloudHostMapper.selectCount(hostOfflineQuery);
+
+                    // 虚拟机在线（running）/离线
+                    QueryWrapper<CloudVirtualMachine> vmOnlineQuery = new QueryWrapper<>();
+                    vmOnlineQuery.eq("status", "running");
+                    onlineCount += cloudVirtualMachineMapper.selectCount(vmOnlineQuery);
+
+                    QueryWrapper<CloudVirtualMachine> vmOfflineQuery = new QueryWrapper<>();
+                    vmOfflineQuery.ne("status", "running");
+                    offlineCount += cloudVirtualMachineMapper.selectCount(vmOfflineQuery);
+
+                    // 云存储在线（in-use）/离线
+                    QueryWrapper<CloudStorage> storageOnlineQuery = new QueryWrapper<>();
+                    storageOnlineQuery.eq("status", "in-use");
+                    onlineCount += cloudStorageMapper.selectCount(storageOnlineQuery);
+
+                    QueryWrapper<CloudStorage> storageOfflineQuery = new QueryWrapper<>();
+                    storageOfflineQuery.ne("status", "in-use");
+                    offlineCount += cloudStorageMapper.selectCount(storageOfflineQuery);
+                } else {
+                    // 其他分类从asset表统计
+                    // 获取该大类下的所有小类ID
+                    QueryWrapper<AssetCategory> childQuery = new QueryWrapper<>();
+                    childQuery.eq("deleted", 0);
+                    childQuery.eq("parent_id", parent.getId());
+                    List<AssetCategory> children = assetCategoryMapper.selectList(childQuery);
+
+                    for (AssetCategory child : children) {
+                        // 在线设备（asset_status = 'online' 或 'running'）
+                        QueryWrapper<com.zxb.aiproject.entity.Asset> onlineQuery = new QueryWrapper<>();
+                        onlineQuery.eq("category_id", child.getId());
+                        onlineQuery.eq("deleted", 0);
+                        onlineQuery.in("asset_status", "online", "running");
+                        onlineCount += assetMapper.selectCount(onlineQuery);
+
+                        // 离线设备（其他状态）
+                        QueryWrapper<com.zxb.aiproject.entity.Asset> offlineQuery = new QueryWrapper<>();
+                        offlineQuery.eq("category_id", child.getId());
+                        offlineQuery.eq("deleted", 0);
+                        offlineQuery.notIn("asset_status", "online", "running");
+                        offlineCount += assetMapper.selectCount(offlineQuery);
+                    }
                 }
 
                 stat.put("online", onlineCount); // 已用（在线）
@@ -518,6 +580,11 @@ public class AssetCategoryServiceImpl implements AssetCategoryService {
         List<Map<String, Object>> result = new ArrayList<>();
 
         try {
+            // 云平台分类ID为23，需要特殊处理
+            if (categoryId != null && categoryId == 23L) {
+                return getCloudPlatformDevices(status);
+            }
+
             // 获取该大类下的所有小类
             QueryWrapper<AssetCategory> childQuery = new QueryWrapper<>();
             childQuery.eq("deleted", 0);
@@ -566,5 +633,82 @@ public class AssetCategoryServiceImpl implements AssetCategoryService {
             log.error("获取大类设备列表失败", e);
             return result;
         }
+    }
+
+    /**
+     * 获取云平台设备列表
+     * 从 cloud_host, cloud_virtual_machine, cloud_storage 表中获取
+     */
+    private List<Map<String, Object>> getCloudPlatformDevices(String status) {
+        List<Map<String, Object>> result = new ArrayList<>();
+
+        // 1. 获取云主机
+        QueryWrapper<CloudHost> hostQuery = new QueryWrapper<>();
+        if ("online".equalsIgnoreCase(status)) {
+            hostQuery.eq("status", "running");
+        } else if ("offline".equalsIgnoreCase(status)) {
+            hostQuery.ne("status", "running");
+        }
+        List<CloudHost> hosts = cloudHostMapper.selectList(hostQuery);
+        for (CloudHost host : hosts) {
+            Map<String, Object> deviceInfo = new HashMap<>();
+            deviceInfo.put("id", "host_" + host.getId());
+            deviceInfo.put("name", host.getHostName());
+            deviceInfo.put("deviceName", host.getHostName());
+            deviceInfo.put("categoryName", "云主机");
+            deviceInfo.put("status", host.getStatus());
+            deviceInfo.put("ipAddress", host.getPublicIp() != null ? host.getPublicIp() : host.getPrivateIp());
+            deviceInfo.put("location", host.getRegion());
+            deviceInfo.put("manufacturer", host.getProvider());
+            deviceInfo.put("model", host.getInstanceType());
+            result.add(deviceInfo);
+        }
+
+        // 2. 获取虚拟机
+        QueryWrapper<CloudVirtualMachine> vmQuery = new QueryWrapper<>();
+        if ("online".equalsIgnoreCase(status)) {
+            vmQuery.eq("status", "running");
+        } else if ("offline".equalsIgnoreCase(status)) {
+            vmQuery.ne("status", "running");
+        }
+        List<CloudVirtualMachine> vms = cloudVirtualMachineMapper.selectList(vmQuery);
+        for (CloudVirtualMachine vm : vms) {
+            Map<String, Object> deviceInfo = new HashMap<>();
+            deviceInfo.put("id", "vm_" + vm.getId());
+            deviceInfo.put("name", vm.getVmName());
+            deviceInfo.put("deviceName", vm.getVmName());
+            deviceInfo.put("categoryName", "虚拟机");
+            deviceInfo.put("status", vm.getStatus());
+            deviceInfo.put("ipAddress", vm.getIpAddress());
+            deviceInfo.put("location", vm.getRegion());
+            deviceInfo.put("manufacturer", vm.getProvider());
+            deviceInfo.put("model", vm.getSpecType());
+            result.add(deviceInfo);
+        }
+
+        // 3. 获取云存储
+        QueryWrapper<CloudStorage> storageQuery = new QueryWrapper<>();
+        if ("online".equalsIgnoreCase(status)) {
+            storageQuery.eq("status", "in-use");
+        } else if ("offline".equalsIgnoreCase(status)) {
+            storageQuery.ne("status", "in-use");
+        }
+        List<CloudStorage> storages = cloudStorageMapper.selectList(storageQuery);
+        for (CloudStorage storage : storages) {
+            Map<String, Object> deviceInfo = new HashMap<>();
+            deviceInfo.put("id", "storage_" + storage.getId());
+            deviceInfo.put("name", storage.getStorageName());
+            deviceInfo.put("deviceName", storage.getStorageName());
+            deviceInfo.put("categoryName", "云存储");
+            deviceInfo.put("status", storage.getStatus());
+            deviceInfo.put("ipAddress", "-");
+            deviceInfo.put("location", storage.getRegion());
+            deviceInfo.put("manufacturer", storage.getProvider());
+            deviceInfo.put("model", storage.getStorageType());
+            result.add(deviceInfo);
+        }
+
+        log.info("获取到{}台云平台设备", result.size());
+        return result;
     }
 }

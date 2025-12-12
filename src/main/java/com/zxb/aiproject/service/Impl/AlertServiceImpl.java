@@ -3,8 +3,14 @@ package com.zxb.aiproject.service.Impl;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.zxb.aiproject.entity.Alert;
 import com.zxb.aiproject.entity.Asset;
+import com.zxb.aiproject.entity.CloudHost;
+import com.zxb.aiproject.entity.CloudVirtualMachine;
+import com.zxb.aiproject.entity.CloudStorage;
 import com.zxb.aiproject.mapper.AlertMapper;
 import com.zxb.aiproject.mapper.AssetMapper;
+import com.zxb.aiproject.mapper.CloudHostMapper;
+import com.zxb.aiproject.mapper.CloudVirtualMachineMapper;
+import com.zxb.aiproject.mapper.CloudStorageMapper;
 import com.zxb.aiproject.service.AlertService;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,40 +31,49 @@ public class AlertServiceImpl implements AlertService {
     @Autowired
     private AssetMapper assetMapper;
 
+    @Autowired
+    private CloudHostMapper cloudHostMapper;
+
+    @Autowired
+    private CloudVirtualMachineMapper cloudVirtualMachineMapper;
+
+    @Autowired
+    private CloudStorageMapper cloudStorageMapper;
+
     @Override
-    public List<Alert> filterAlerts(String severity, String status, String deviceType, String keyword) {
-        log.info("筛选告警信息: severity={}, status={}, deviceType={}, keyword={}", 
-                severity, status, deviceType, keyword);
-        
+    public List<Alert> filterAlerts(String severity, String status, String deviceType, String keyword, String alertCategory, String startTime, String endTime) {
+        log.info("筛选告警信息: severity={}, status={}, deviceType={}, keyword={}, alertCategory={}, startTime={}, endTime={}",
+                severity, status, deviceType, keyword, alertCategory, startTime, endTime);
+
         try {
             QueryWrapper<Alert> queryWrapper = new QueryWrapper<>();
-            
+
             // 基本过滤条件
             queryWrapper.eq("deleted", 0);
-            
+
             // 严重程度过滤
             if (severity != null && !severity.trim().isEmpty() && !"全部".equals(severity)) {
                 queryWrapper.eq("severity", severity);
             }
-            
-            // 状态过滤
+
+            // 状态过滤（支持多状态，用逗号分隔）
             if (status != null && !status.trim().isEmpty() && !"全部".equals(status)) {
-                // 状态映射：前端中文 -> 数据库英文
-                String dbStatus = status;
-                switch (status) {
-                    case "活跃":
-                        dbStatus = "active";
-                        break;
-                    case "已确认":
-                        dbStatus = "acknowledged";
-                        break;
-                    case "已解决":
-                        dbStatus = "resolved";
-                        break;
+                // 检查是否包含多个状态（用逗号分隔）
+                if (status.contains(",")) {
+                    // 多状态筛选
+                    String[] statusArray = status.split(",");
+                    List<String> dbStatusList = new ArrayList<>();
+                    for (String s : statusArray) {
+                        dbStatusList.add(mapStatusToDb(s.trim()));
+                    }
+                    queryWrapper.in("status", dbStatusList);
+                } else {
+                    // 单状态筛选
+                    String dbStatus = mapStatusToDb(status);
+                    queryWrapper.eq("status", dbStatus);
                 }
-                queryWrapper.eq("status", dbStatus);
             }
-            
+
             // 设备类型过滤
             if (deviceType != null && !deviceType.trim().isEmpty() && !"全部".equals(deviceType)) {
                 // 设备类型映射：前端中文 -> 数据库英文
@@ -76,7 +91,12 @@ public class AlertServiceImpl implements AlertService {
                 }
                 queryWrapper.eq("device_type", dbDeviceType);
             }
-            
+
+            // 告警分类过滤
+            if (alertCategory != null && !alertCategory.trim().isEmpty()) {
+                queryWrapper.eq("alert_category", alertCategory);
+            }
+
             // 关键字搜索
             if (keyword != null && !keyword.trim().isEmpty()) {
                 queryWrapper.and(wrapper -> wrapper
@@ -87,7 +107,15 @@ public class AlertServiceImpl implements AlertService {
                     .like("description", keyword)
                 );
             }
-            
+
+            // 时间范围过滤
+            if (startTime != null && !startTime.trim().isEmpty()) {
+                queryWrapper.ge("occurred_time", startTime + " 00:00:00");
+            }
+            if (endTime != null && !endTime.trim().isEmpty()) {
+                queryWrapper.le("occurred_time", endTime + " 23:59:59");
+            }
+
             // 按发生时间倒序
             queryWrapper.orderByDesc("occurred_time");
             
@@ -164,6 +192,35 @@ public class AlertServiceImpl implements AlertService {
                              .in("category_id", 13, 14)
                              .in("asset_status", "online", "normal", "运行中", "正常");
             Long storageOnlineDevices = assetMapper.selectCount(storageOnlineQuery);
+
+            // 云平台设备统计（从独立的云平台表中获取）
+            // 云主机
+            QueryWrapper<CloudHost> cloudHostQuery = new QueryWrapper<>();
+            Long cloudHostTotal = cloudHostMapper.selectCount(cloudHostQuery);
+
+            QueryWrapper<CloudHost> cloudHostOnlineQuery = new QueryWrapper<>();
+            cloudHostOnlineQuery.eq("status", "running");
+            Long cloudHostOnline = cloudHostMapper.selectCount(cloudHostOnlineQuery);
+
+            // 虚拟机
+            QueryWrapper<CloudVirtualMachine> vmQuery = new QueryWrapper<>();
+            Long vmTotal = cloudVirtualMachineMapper.selectCount(vmQuery);
+
+            QueryWrapper<CloudVirtualMachine> vmOnlineQuery = new QueryWrapper<>();
+            vmOnlineQuery.eq("status", "running");
+            Long vmOnline = cloudVirtualMachineMapper.selectCount(vmOnlineQuery);
+
+            // 云存储
+            QueryWrapper<CloudStorage> cloudStorageQuery = new QueryWrapper<>();
+            Long cloudStorageTotal = cloudStorageMapper.selectCount(cloudStorageQuery);
+
+            QueryWrapper<CloudStorage> cloudStorageOnlineQuery = new QueryWrapper<>();
+            cloudStorageOnlineQuery.eq("status", "in-use");
+            Long cloudStorageOnline = cloudStorageMapper.selectCount(cloudStorageOnlineQuery);
+
+            // 云平台汇总
+            Long cloudDevices = cloudHostTotal + vmTotal + cloudStorageTotal;
+            Long cloudOnlineDevices = cloudHostOnline + vmOnline + cloudStorageOnline;
             
             // 4. 构建返回结果
             Map<String, Object> statistics = new HashMap<>();
@@ -189,6 +246,16 @@ public class AlertServiceImpl implements AlertService {
             statistics.put("serverOnlineDevices", serverOnlineDevices);
             statistics.put("storageDevices", storageDevices);
             statistics.put("storageOnlineDevices", storageOnlineDevices);
+
+            // 云平台统计
+            statistics.put("cloudDevices", cloudDevices);
+            statistics.put("cloudOnlineDevices", cloudOnlineDevices);
+            statistics.put("cloudHostTotal", cloudHostTotal);
+            statistics.put("cloudHostOnline", cloudHostOnline);
+            statistics.put("vmTotal", vmTotal);
+            statistics.put("vmOnline", vmOnline);
+            statistics.put("cloudStorageTotal", cloudStorageTotal);
+            statistics.put("cloudStorageOnline", cloudStorageOnline);
             
             // 5. 授权管理信息
             // 假设最大授权设备数为215台（可以从配置文件或数据库读取）
@@ -458,6 +525,23 @@ public class AlertServiceImpl implements AlertService {
         } catch (Exception e) {
             log.error("获取最近告警列表失败", e);
             return new ArrayList<>();
+        }
+    }
+
+    /**
+     * 状态映射：前端值 -> 数据库值
+     */
+    private String mapStatusToDb(String status) {
+        if (status == null) return status;
+        switch (status) {
+            case "活跃":
+                return "active";
+            case "已确认":
+                return "acknowledged";
+            case "已解决":
+                return "resolved";
+            default:
+                return status; // 如果已经是英文状态值，直接返回
         }
     }
 }

@@ -1629,45 +1629,96 @@ public class BigScreenController {
     }
 
     /**
-     * 获取预警分布数据
+     * 获取预测性预警分布数据（从prediction_alert表查询）
      */
     @GetMapping("/prediction/alert-distribution")
-    @ApiOperation("获取预警分布数据")
+    @ApiOperation("获取预测性预警分布数据")
     public Result<List<Map<String, Object>>> getAlertDistribution() {
         try {
-            String sql = "SELECT severity, COUNT(*) as count FROM alert " +
-                    "WHERE deleted = 0 AND occurred_time >= DATE_SUB(NOW(), INTERVAL 30 DAY) " +
-                    "GROUP BY severity";
+            String sql = "SELECT alert_level, COUNT(*) as count FROM prediction_alert " +
+                    "WHERE deleted = 0 " +
+                    "GROUP BY alert_level";
 
             List<Map<String, Object>> data = jdbcTemplate.queryForList(sql);
             List<Map<String, Object>> result = new ArrayList<>();
 
-            Map<String, String> severityNames = new HashMap<>();
-            severityNames.put("critical", "严重");
-            severityNames.put("high", "高");
-            severityNames.put("warning", "警告");
-            severityNames.put("info", "信息");
-            severityNames.put("low", "其他");
+            Map<String, String> levelNames = new HashMap<>();
+            levelNames.put("HIGH", "严重");
+            levelNames.put("MEDIUM", "警告");
+            levelNames.put("LOW", "信息");
 
-            Map<String, String> severityColors = new HashMap<>();
-            severityColors.put("critical", "#ef4444");
-            severityColors.put("high", "#f97316");
-            severityColors.put("warning", "#f59e0b");
-            severityColors.put("info", "#3b82f6");
-            severityColors.put("low", "#64748b");
+            Map<String, String> levelColors = new HashMap<>();
+            levelColors.put("HIGH", "#ef4444");
+            levelColors.put("MEDIUM", "#f59e0b");
+            levelColors.put("LOW", "#3b82f6");
 
             for (Map<String, Object> row : data) {
-                String severity = (String) row.get("severity");
+                String level = (String) row.get("alert_level");
                 Map<String, Object> item = new HashMap<>();
-                item.put("name", severityNames.getOrDefault(severity, severity));
+                item.put("name", levelNames.getOrDefault(level, level));
                 item.put("value", ((Number) row.get("count")).intValue());
-                item.put("color", severityColors.getOrDefault(severity, "#64748b"));
+                item.put("color", levelColors.getOrDefault(level, "#64748b"));
+                item.put("level", level);
                 result.add(item);
             }
 
             return Result.success(result);
         } catch (Exception e) {
-            log.error("获取预警分布失败", e);
+            log.error("获取预测性预警分布失败", e);
+            return Result.error("获取数据失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取预测性预警列表（按级别筛选）
+     */
+    @GetMapping("/prediction/alert-list")
+    @ApiOperation("获取预测性预警列表")
+    public Result<List<Map<String, Object>>> getPredictionAlertList(
+            @RequestParam(required = false) String level) {
+        try {
+            String sql = "SELECT id, alert_title, alert_message, alert_level, asset_name, " +
+                    "metric_name, metric_value, predicted_value, threshold_value, " +
+                    "prediction_time, predicted_at, risk_score, confidence, " +
+                    "risk_description, status, algorithm_type " +
+                    "FROM prediction_alert WHERE deleted = 0 ";
+
+            if (level != null && !level.isEmpty()) {
+                sql += "AND alert_level = '" + level + "' ";
+            }
+            sql += "ORDER BY predicted_at DESC";
+
+            List<Map<String, Object>> data = jdbcTemplate.queryForList(sql);
+
+            // 格式化数据
+            List<Map<String, Object>> result = new ArrayList<>();
+            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+            for (Map<String, Object> row : data) {
+                Map<String, Object> item = new HashMap<>();
+                item.put("id", row.get("id"));
+                item.put("title", row.get("alert_title"));
+                item.put("message", row.get("alert_message"));
+                item.put("level", row.get("alert_level"));
+                item.put("assetName", row.get("asset_name"));
+                item.put("metricName", row.get("metric_name"));
+                item.put("metricValue", row.get("metric_value"));
+                item.put("predictedValue", row.get("predicted_value"));
+                item.put("threshold", row.get("threshold_value"));
+                item.put("predictionDays", row.get("prediction_time"));
+                item.put("predictedAt", row.get("predicted_at") != null ?
+                        ((java.time.LocalDateTime) row.get("predicted_at")).format(formatter) : "");
+                item.put("riskScore", row.get("risk_score"));
+                item.put("confidence", row.get("confidence"));
+                item.put("riskDescription", row.get("risk_description"));
+                item.put("status", row.get("status"));
+                item.put("algorithm", row.get("algorithm_type"));
+                result.add(item);
+            }
+
+            return Result.success(result);
+        } catch (Exception e) {
+            log.error("获取预测性预警列表失败", e);
             return Result.error("获取数据失败: " + e.getMessage());
         }
     }
@@ -1843,6 +1894,7 @@ public class BigScreenController {
             List<Map<String, Object>> data = jdbcTemplate.queryForList(sql);
 
             List<String> priorities = new ArrayList<>();
+            List<String> priorityKeys = new ArrayList<>();
             List<Integer> resolved = new ArrayList<>();
             List<Integer> pending = new ArrayList<>();
 
@@ -1851,11 +1903,13 @@ public class BigScreenController {
                 String priorityKey = (String) row.get("priority_key");
                 String label = "P" + row.get("priority_level") + "(" + priorityName + ")";
                 priorities.add(label);
+                priorityKeys.add(priorityKey);
                 resolved.add(((Number) row.getOrDefault("resolved", 0)).intValue());
                 pending.add(((Number) row.getOrDefault("pending", 0)).intValue());
             }
 
             Map<String, Object> result = new HashMap<>();
+            result.put("priorityKeys", priorityKeys);
             result.put("priorities", priorities);
             result.put("resolved", resolved);
             result.put("pending", pending);
@@ -2030,6 +2084,102 @@ public class BigScreenController {
         } catch (Exception e) {
             log.error("获取SLA详情失败", e);
             return Result.error("获取数据失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取工单列表（按优先级和状态筛选）
+     */
+    @GetMapping("/workorder/list")
+    @ApiOperation("获取工单列表")
+    public Result<List<Map<String, Object>>> getWorkorderList(
+            @RequestParam(required = false) String priorityKey,
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String typeKey) {
+        try {
+            StringBuilder sql = new StringBuilder();
+            sql.append("SELECT t.id, t.ticket_no, t.title, t.description, ");
+            sql.append("t.priority_key, p.priority_name, p.priority_level, ");
+            sql.append("t.type_key, tp.type_name, ");
+            sql.append("t.status, t.created_at, t.resolved_at, t.assignee_name ");
+            sql.append("FROM ops_ticket t ");
+            sql.append("LEFT JOIN ticket_priority p ON t.priority_key = p.priority_key ");
+            sql.append("LEFT JOIN ticket_type tp ON t.type_key = tp.type_key ");
+            sql.append("WHERE t.deleted = 0 AND DATE(t.created_at) = CURDATE() ");
+
+            if (priorityKey != null && !priorityKey.isEmpty()) {
+                sql.append("AND t.priority_key = '").append(priorityKey).append("' ");
+            }
+            if (status != null && !status.isEmpty()) {
+                if ("resolved".equals(status)) {
+                    sql.append("AND t.status IN ('resolved', 'closed', 'completed') ");
+                } else if ("pending".equals(status)) {
+                    sql.append("AND t.status NOT IN ('resolved', 'closed', 'completed') ");
+                }
+            }
+            if (typeKey != null && !typeKey.isEmpty()) {
+                sql.append("AND t.type_key = '").append(typeKey).append("' ");
+            }
+            sql.append("ORDER BY t.created_at DESC");
+
+            List<Map<String, Object>> data = jdbcTemplate.queryForList(sql.toString());
+
+            List<Map<String, Object>> result = new ArrayList<>();
+            java.time.format.DateTimeFormatter formatter = java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
+
+            for (Map<String, Object> row : data) {
+                Map<String, Object> item = new HashMap<>();
+                item.put("id", row.get("id"));
+                item.put("ticketNo", row.get("ticket_no"));
+                item.put("title", row.get("title"));
+                item.put("description", row.get("description"));
+                item.put("priorityKey", row.get("priority_key"));
+                item.put("priorityName", row.get("priority_name"));
+                item.put("priorityLevel", row.get("priority_level"));
+                item.put("typeKey", row.get("type_key"));
+                item.put("typeName", row.get("type_name"));
+                item.put("status", row.get("status"));
+                item.put("statusText", getTicketStatusText((String) row.get("status")));
+                item.put("createdAt", row.get("created_at") != null ?
+                        ((java.time.LocalDateTime) row.get("created_at")).format(formatter) : "");
+                item.put("resolvedAt", row.get("resolved_at") != null ?
+                        ((java.time.LocalDateTime) row.get("resolved_at")).format(formatter) : "-");
+                item.put("assignee", row.get("assignee_name") != null ? row.get("assignee_name") : "-");
+                result.add(item);
+            }
+
+            return Result.success(result);
+        } catch (Exception e) {
+            log.error("获取工单列表失败", e);
+            return Result.error("获取数据失败: " + e.getMessage());
+        }
+    }
+
+    /**
+     * 获取工单类型key映射
+     */
+    @GetMapping("/workorder/type-keys")
+    @ApiOperation("获取工单类型key映射")
+    public Result<List<Map<String, Object>>> getWorkorderTypeKeys() {
+        try {
+            String sql = "SELECT type_key, type_name FROM ticket_type WHERE deleted = 0 AND is_active = 1";
+            List<Map<String, Object>> data = jdbcTemplate.queryForList(sql);
+            return Result.success(data);
+        } catch (Exception e) {
+            log.error("获取工单类型映射失败", e);
+            return Result.error("获取数据失败: " + e.getMessage());
+        }
+    }
+
+    // 辅助方法：获取工单状态文本
+    private String getTicketStatusText(String status) {
+        if (status == null) return "未知";
+        switch (status.toLowerCase()) {
+            case "open": case "pending": return "待处理";
+            case "processing": case "in_progress": return "处理中";
+            case "resolved": case "completed": return "已解决";
+            case "closed": return "已关闭";
+            default: return status;
         }
     }
 

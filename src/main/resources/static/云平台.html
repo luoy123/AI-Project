@@ -729,14 +729,19 @@
                     <!-- 华为云虚拟机页面 -->
                     <div class="content-page" id="huawei-vm">
                         <h2>华为云虚拟机管理</h2>
-                        <div class="filter-bar" style="display: flex; gap: 10px; margin-bottom: 20px;">
-                            <select id="huaweiVmStatusFilter" style="padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px;">
-                                <option value="">全部状态</option>
-                                <option value="running">运行中</option>
-                                <option value="stopped">已停止</option>
-                            </select>
-                            <input type="text" id="huaweiVmSearchKeyword" placeholder="搜索虚拟机名称..." style="padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px; width: 200px;">
-                            <button onclick="searchVMs('huawei')" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">搜索</button>
+                        <div class="filter-bar" style="display: flex; gap: 10px; margin-bottom: 20px; justify-content: space-between;">
+                            <div style="display: flex; gap: 10px;">
+                                <select id="huaweiVmStatusFilter" style="padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px;">
+                                    <option value="">全部状态</option>
+                                    <option value="running">运行中</option>
+                                    <option value="stopped">已停止</option>
+                                </select>
+                                <input type="text" id="huaweiVmSearchKeyword" placeholder="搜索虚拟机名称..." style="padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px; width: 200px;">
+                                <button onclick="searchVMs('huawei')" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">搜索</button>
+                            </div>
+                            <button onclick="showAddVMDialog('huawei')" style="padding: 8px 16px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                <i class="fas fa-plus"></i> 添加虚拟机
+                            </button>
                         </div>
                         <div class="table-container" style="background: white; border-radius: 8px; overflow: hidden;">
                             <table style="width: 100%; border-collapse: collapse;">
@@ -758,14 +763,19 @@
                     <!-- 华为云云主机页面 -->
                     <div class="content-page" id="huawei-host">
                         <h2>华为云云主机管理</h2>
-                        <div class="filter-bar" style="display: flex; gap: 10px; margin-bottom: 20px;">
-                            <select id="huaweiHostStatusFilter" style="padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px;">
-                                <option value="">全部状态</option>
-                                <option value="running">运行中</option>
-                                <option value="stopped">已停止</option>
-                            </select>
-                            <input type="text" id="huaweiHostSearchKeyword" placeholder="搜索云主机..." style="padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px; width: 200px;">
-                            <button onclick="searchHosts('huawei')" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">搜索</button>
+                        <div class="filter-bar" style="display: flex; gap: 10px; margin-bottom: 20px; justify-content: space-between;">
+                            <div style="display: flex; gap: 10px;">
+                                <select id="huaweiHostStatusFilter" style="padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px;">
+                                    <option value="">全部状态</option>
+                                    <option value="running">运行中</option>
+                                    <option value="stopped">已停止</option>
+                                </select>
+                                <input type="text" id="huaweiHostSearchKeyword" placeholder="搜索云主机..." style="padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px; width: 200px;">
+                                <button onclick="searchHosts('huawei')" style="padding: 8px 16px; background: #667eea; color: white; border: none; border-radius: 4px; cursor: pointer;">搜索</button>
+                            </div>
+                            <button onclick="showAddHostDialog('huawei')" style="padding: 8px 16px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                <i class="fas fa-plus"></i> 添加云主机
+                            </button>
                         </div>
                         <div class="table-container" style="background: white; border-radius: 8px; overflow: hidden;">
                             <table style="width: 100%; border-collapse: collapse;">
@@ -926,14 +936,19 @@
                     <!-- 阿里云虚拟机页面 -->
                     <div class="content-page" id="aliyun-vm">
                         <h2>阿里云虚拟机管理</h2>
-                        <div class="filter-bar" style="display: flex; gap: 10px; margin-bottom: 20px;">
-                            <select id="aliyunVmStatusFilter" style="padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px;">
-                                <option value="">全部状态</option>
-                                <option value="running">运行中</option>
-                                <option value="stopped">已停止</option>
-                            </select>
-                            <input type="text" id="aliyunVmSearchKeyword" placeholder="搜索虚拟机名称..." style="padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px; width: 200px;">
-                            <button onclick="searchVMs('aliyun')" style="padding: 8px 16px; background: #ff6a00; color: white; border: none; border-radius: 4px; cursor: pointer;">搜索</button>
+                        <div class="filter-bar" style="display: flex; gap: 10px; margin-bottom: 20px; justify-content: space-between;">
+                            <div style="display: flex; gap: 10px;">
+                                <select id="aliyunVmStatusFilter" style="padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px;">
+                                    <option value="">全部状态</option>
+                                    <option value="running">运行中</option>
+                                    <option value="stopped">已停止</option>
+                                </select>
+                                <input type="text" id="aliyunVmSearchKeyword" placeholder="搜索虚拟机名称..." style="padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px; width: 200px;">
+                                <button onclick="searchVMs('aliyun')" style="padding: 8px 16px; background: #ff6a00; color: white; border: none; border-radius: 4px; cursor: pointer;">搜索</button>
+                            </div>
+                            <button onclick="showAddVMDialog('aliyun')" style="padding: 8px 16px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                <i class="fas fa-plus"></i> 添加虚拟机
+                            </button>
                         </div>
                         <div class="table-container" style="background: white; border-radius: 8px; overflow: hidden;">
                             <table style="width: 100%; border-collapse: collapse;">
@@ -955,14 +970,19 @@
                     <!-- 阿里云云主机页面 -->
                     <div class="content-page" id="aliyun-host">
                         <h2>阿里云云主机管理</h2>
-                        <div class="filter-bar" style="display: flex; gap: 10px; margin-bottom: 20px;">
-                            <select id="aliyunHostStatusFilter" style="padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px;">
-                                <option value="">全部状态</option>
-                                <option value="running">运行中</option>
-                                <option value="stopped">已停止</option>
-                            </select>
-                            <input type="text" id="aliyunHostSearchKeyword" placeholder="搜索云主机..." style="padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px; width: 200px;">
-                            <button onclick="searchHosts('aliyun')" style="padding: 8px 16px; background: #ff6a00; color: white; border: none; border-radius: 4px; cursor: pointer;">搜索</button>
+                        <div class="filter-bar" style="display: flex; gap: 10px; margin-bottom: 20px; justify-content: space-between;">
+                            <div style="display: flex; gap: 10px;">
+                                <select id="aliyunHostStatusFilter" style="padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px;">
+                                    <option value="">全部状态</option>
+                                    <option value="running">运行中</option>
+                                    <option value="stopped">已停止</option>
+                                </select>
+                                <input type="text" id="aliyunHostSearchKeyword" placeholder="搜索云主机..." style="padding: 8px 12px; border: 1px solid #e0e0e0; border-radius: 4px; width: 200px;">
+                                <button onclick="searchHosts('aliyun')" style="padding: 8px 16px; background: #ff6a00; color: white; border: none; border-radius: 4px; cursor: pointer;">搜索</button>
+                            </div>
+                            <button onclick="showAddHostDialog('aliyun')" style="padding: 8px 16px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer;">
+                                <i class="fas fa-plus"></i> 添加云主机
+                            </button>
                         </div>
                         <div class="table-container" style="background: white; border-radius: 8px; overflow: hidden;">
                             <table style="width: 100%; border-collapse: collapse;">
@@ -1050,6 +1070,120 @@
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+
+    <!-- 添加虚拟机对话框 -->
+    <div id="addVMDialog" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; border-radius: 8px; padding: 30px; width: 600px; max-height: 80vh; overflow-y: auto;">
+            <h2 style="margin-top: 0; margin-bottom: 20px;">添加虚拟机</h2>
+            <form id="addVMForm">
+                <input type="hidden" id="vmProvider" name="provider">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">虚拟机名称 *</label>
+                    <input type="text" id="vmName" name="vmName" required style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">虚拟机ID *</label>
+                    <input type="text" id="vmId" name="vmId" required style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">规格类型 *</label>
+                    <input type="text" id="specType" name="specType" required placeholder="例如: s6.medium.2" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">CPU核数 *</label>
+                        <input type="number" id="cpuCores" name="cpuCores" required min="1" value="2" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">内存(GB) *</label>
+                        <input type="number" id="memoryGb" name="memoryGb" required min="1" value="4" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                    </div>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">磁盘(GB) *</label>
+                    <input type="number" id="diskGb" name="diskGb" required min="10" value="40" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">IP地址 *</label>
+                    <input type="text" id="ipAddress" name="ipAddress" required placeholder="例如: 192.168.1.100" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">区域</label>
+                    <input type="text" id="vmRegion" name="region" placeholder="例如: cn-north-1" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">状态</label>
+                    <select id="vmStatus" name="status" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                        <option value="running">运行中</option>
+                        <option value="stopped">已停止</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button type="button" onclick="closeAddVMDialog()" style="padding: 8px 20px; background: #f0f0f0; color: #333; border: none; border-radius: 4px; cursor: pointer;">取消</button>
+                    <button type="submit" style="padding: 8px 20px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer;">确定添加</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- 添加云主机对话框 -->
+    <div id="addHostDialog" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center;">
+        <div style="background: white; border-radius: 8px; padding: 30px; width: 600px; max-height: 80vh; overflow-y: auto;">
+            <h2 style="margin-top: 0; margin-bottom: 20px;">添加云主机</h2>
+            <form id="addHostForm">
+                <input type="hidden" id="hostProvider" name="provider">
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">主机名称 *</label>
+                    <input type="text" id="hostName" name="hostName" required style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">主机ID *</label>
+                    <input type="text" id="hostId" name="hostId" required style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">实例类型 *</label>
+                    <input type="text" id="instanceType" name="instanceType" required placeholder="例如: ecs.c6.large" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                </div>
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 15px;">
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">CPU核数 *</label>
+                        <input type="number" id="hostCpuCores" name="cpuCores" required min="1" value="2" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                    </div>
+                    <div>
+                        <label style="display: block; margin-bottom: 5px; font-weight: 500;">内存(GB) *</label>
+                        <input type="number" id="hostMemoryGb" name="memoryGb" required min="1" value="4" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                    </div>
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">操作系统</label>
+                    <input type="text" id="osType" name="osType" placeholder="例如: CentOS 7.9" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">公网IP *</label>
+                    <input type="text" id="publicIp" name="publicIp" required placeholder="例如: 120.76.100.123" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">私网IP</label>
+                    <input type="text" id="privateIp" name="privateIp" placeholder="例如: 172.16.0.10" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">区域</label>
+                    <input type="text" id="hostRegion" name="region" placeholder="例如: cn-beijing" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                </div>
+                <div style="margin-bottom: 15px;">
+                    <label style="display: block; margin-bottom: 5px; font-weight: 500;">状态</label>
+                    <select id="hostStatus" name="status" style="width: 100%; padding: 8px; border: 1px solid #d9d9d9; border-radius: 4px;">
+                        <option value="running">运行中</option>
+                        <option value="stopped">已停止</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px;">
+                    <button type="button" onclick="closeAddHostDialog()" style="padding: 8px 20px; background: #f0f0f0; color: #333; border: none; border-radius: 4px; cursor: pointer;">取消</button>
+                    <button type="submit" style="padding: 8px 20px; background: #52c41a; color: white; border: none; border-radius: 4px; cursor: pointer;">确定添加</button>
+                </div>
+            </form>
         </div>
     </div>
 

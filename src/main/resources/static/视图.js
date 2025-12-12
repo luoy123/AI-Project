@@ -598,16 +598,17 @@ function navigateToAlertCenter(alert) {
 // 更新系统概览图表
 function updateSystemOverviewChart(stats) {
     if (!window.systemOverviewChart) return;
-    
-    const serverCount = stats.serverCount || 0;
-    const networkCount = stats.networkCount || 0;
-    const storageCount = stats.storageCount || 0;
+
+    // 修正字段名：后端返回的是 serverDevices、networkDevices、storageDevices
+    const serverCount = stats.serverDevices || 0;
+    const networkCount = stats.networkDevices || 0;
+    const storageCount = stats.storageDevices || 0;
     const totalDevices = stats.totalDevices || 0;
-    
+
     // 更新图表数据
     window.systemOverviewChart.data.datasets[0].data = [serverCount, networkCount, storageCount];
     window.systemOverviewChart.update();
-    
+
     console.log(`系统概览图表已更新: 服务器=${serverCount}, 网络设备=${networkCount}, 存储设备=${storageCount}, 总计=${totalDevices}`);
 }
 

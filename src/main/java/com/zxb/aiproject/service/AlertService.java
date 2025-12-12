@@ -13,9 +13,12 @@ public interface AlertService {
      * @param status
      * @param deviceType
      * @param keyword
+     * @param alertCategory
+     * @param startTime 开始时间
+     * @param endTime 结束时间
      * @return
      */
-    List<Alert> filterAlerts(String severity, String status,String deviceType,String keyword);
+    List<Alert> filterAlerts(String severity, String status,String deviceType,String keyword,String alertCategory,String startTime,String endTime);
 
     /**
      * 获取告警信息

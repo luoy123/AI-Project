@@ -40,13 +40,34 @@ public class SysPermissionServiceImpl extends ServiceImpl<SysPermissionMapper, S
         // 查询所有权限
         QueryWrapper<SysPermission> wrapper = new QueryWrapper<>();
         wrapper.eq("status", 1)
+               .eq("deleted", 0)
                .orderByAsc("sort_order");
         List<SysPermission> allPermissions = list(wrapper);
-        
-        // 构建树形结构（只返回一级菜单，前端可以根据parentId自行构建树）
-        return allPermissions.stream()
-            .filter(p -> p.getParentId() == null)
-            .collect(Collectors.toList());
+
+        // 构建树形结构
+        return buildTree(allPermissions, 0L);
+    }
+
+    /**
+     * 递归构建权限树
+     */
+    private List<SysPermission> buildTree(List<SysPermission> allPermissions, Long parentId) {
+        List<SysPermission> tree = new ArrayList<>();
+
+        for (SysPermission permission : allPermissions) {
+            Long pid = permission.getParentId();
+            // 处理parentId为null或0的情况
+            if ((pid == null && parentId == 0L) || (pid != null && pid.equals(parentId))) {
+                // 递归查找子节点
+                List<SysPermission> children = buildTree(allPermissions, permission.getId());
+                if (!children.isEmpty()) {
+                    permission.setChildren(children);
+                }
+                tree.add(permission);
+            }
+        }
+
+        return tree;
     }
     
     @Override

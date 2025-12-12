@@ -74,4 +74,10 @@ public class SysPermission {
      */
     @TableLogic
     private Integer deleted;
+
+    /**
+     * 子权限列表（非数据库字段，用于构建树形结构）
+     */
+    @TableField(exist = false)
+    private java.util.List<SysPermission> children;
 }

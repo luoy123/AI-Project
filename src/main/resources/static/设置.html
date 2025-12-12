@@ -174,11 +174,8 @@
                     </div>
                 </div>
                 <div class="header-right">
-                    <div class="user-menu">
-                        <div class="user-avatar">
-                            <img id="settingsUserAvatar" src="1.png" alt="用户头像">
-                        </div>
-                    </div>
+                    <!-- 用户下拉菜单容器 -->
+                    <div id="user-dropdown-container"></div>
                 </div>
             </header>
 
@@ -1184,5 +1181,8 @@
         console.log('🎯 设置页面头像修复脚本已加载');
     })();
     </script>
+
+    <!-- 引入用户下拉菜单加载器 -->
+    <script src="js/user-dropdown-loader.js"></script>
 </body>
 </html>
