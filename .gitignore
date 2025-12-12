@@ -55,6 +55,7 @@ playwright-report/
 ### Database ###
 *.sql
 src/main/resources/sql/**/*.sql
+!aiops_db.sql
 
 ### Backup Files ###
 backups/
